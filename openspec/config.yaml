@@ -3,7 +3,7 @@ schema: spec-driven
 # ─────────────────────────────────────────────
 # ACTIVE STACK
 # ─────────────────────────────────────────────
-stack: python-fastapi
+stack: frontend-react
 
 # ─────────────────────────────────────────────
 # ACTIVE AGENT
