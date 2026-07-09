@@ -1,220 +1,527 @@
-# OpenSpec Developer — Spec-Driven AI Development Platform
+# SST Auditor — Frontend Angular
 
-OpenSpec connects your project management tool (Jira), your codebase, and your AI agent
-(Copilot, Claude Code, Cursor, etc.) into a single coherent workflow — driven by specs
-and standards, not by improvisation.
+Frontend de auditoría de Seguridad y Salud en el Trabajo (SST), construido con **Angular 17+** y potenciado por **OpenSpec**, un framework de desarrollo impulsado por IA.
 
-> **This is the developer edition.** It ships with stacks for Java, Python, Node.js, Go,
-> React, and Angular. For the Thought Machine Vault Smart Contracts stack, see the
-> `spec-driven-project` repository.
+## 📋 Contenidos
 
----
-
-## The Problem
-
-Modern development teams using AI assistants face a recurring gap: the AI knows
-how to code, but it doesn't know *your* project. It doesn't know your architecture,
-your conventions, your Jira tickets, or your stack. Every prompt has to re-explain
-context that already exists somewhere — scattered across Jira, README files,
-and tribal knowledge.
-
-The result: AI output that's generic, inconsistent, and requires heavy review
-and rework before it fits your codebase.
+- [Sobre OpenSpec](#sobre-openspec)
+- [Sobre SST Auditor](#sobre-sst-auditor)
+- [Requisitos](#requisitos)
+- [Instalación](#instalación)
+- [Desarrollo](#desarrollo)
+- [Comandos OpenSpec](#comandos-openspec)
+- [Arquitectura Angular](#arquitectura-angular)
+- [Git Workflow](#git-workflow)
+- [Testing](#testing)
 
 ---
 
-## The Solution
+## 🤖 Sobre OpenSpec
 
-OpenSpec acts as the bridge. It stores your project's architectural decisions,
-stack conventions, and quality standards as structured spec files. A lightweight
-CLI reads those specs, fetches context from Jira, and builds a complete,
-context-rich prompt — then delivers it to whatever AI agent your team uses.
+**OpenSpec** es un framework que conecta **Jira**, el repositorio de código y un agente IA en un flujo de desarrollo unificado y spec-driven.
+
+### Cómo funciona
 
 ```
-Jira Ticket
+Ticket Jira
     +
-Project Specs (architecture, standards, conventions)
+Specs del Proyecto (arquitectura, estándares, convenciones)
     +
-Active Stack (Java, Python, Node, Go, Angular, React)
+Stack Activo (Angular, Java, Python, Node, Go, React)
     +
-Active AI Agent (Copilot, Claude Code, Cursor, Aider)
+Agente IA Activo (Copilot, Claude Code, Cursor, Aider)
     ↓
-One CLI command
+Un comando CLI
     ↓
-Context-rich prompt → AI generates plan / implementation / review
+Prompt enriquecido → IA genera plan / implementación / review
+```
+
+### Características
+
+- ✅ **Spec-driven**: Toda la arquitectura se almacena en specs estructurados
+- ✅ **Multi-stack**: Java, Python, Node, Go, Angular, React
+- ✅ **Multi-agent**: GitHub Copilot, Claude Code, Cursor, Aider, Windsurf
+- ✅ **Jira integration**: Automaticamente conecta con Jira
+- ✅ **Git workflow**: Automatiza rama, commit, PR, code review
+
+### 13 Comandos CLI
+
+| Comando | Descripción |
+|---------|-------------|
+| `os-stack --list` | Listar stacks disponibles |
+| `os-stack angular` | Cambiar stack activo |
+| `os-agent --list` | Listar agentes disponibles |
+| `os-agent copilot` | Cambiar agente activo |
+| `os-tickets` | Ver todos los tickets |
+| `os-enrich KAN-XX` | Enriquecer ticket con detalles técnicos |
+| `os-enrich-apply KAN-XX` | Subir enriquecimiento a Jira |
+| `os-plan KAN-XX` | Generar plan de implementación |
+| `os-develop KAN-XX` | Crear rama feature + prompt |
+| `os-commit KAN-XX` | Commitear + push + crear PR |
+| `os-review 1` | Generar code review con IA |
+| `os-review-apply 1` | Publicar review en GitHub |
+| `os-transition KAN-XX "Done"` | Cambiar estado del ticket |
+
+---
+
+## 📱 Sobre SST Auditor
+
+**SST Auditor** es una aplicación web para auditoría y gestión de Seguridad y Salud en el Trabajo.
+
+### Características
+
+- 📊 Dashboard de auditorías
+- 👥 Gestión de candidatos
+- 📋 Auditorías de cumplimiento
+- 📈 Reportes y estadísticas
+- 🔐 Autenticación y permisos
+
+### Stack Tecnológico
+
+| Capa | Tecnología |
+|------|-----------|
+| **Framework** | Angular 17+ (Standalone Components) |
+| **Lenguaje** | TypeScript 5.x (strict mode) |
+| **State** | NgRx / Angular Signals |
+| **Estilos** | SCSS + Angular Material / Tailwind CSS |
+| **HTTP** | Angular HttpClient |
+| **Testing** | Jest + Angular Testing Library |
+| **Build** | Angular CLI |
+
+---
+
+## 📁 Estructura del Proyecto
+
+```
+sst-auditor-agent-pro-frontend/
+├── src/
+│   ├── app/                    # Aplicación Angular
+│   │   ├── core/               # Servicios, guards, interceptores
+│   │   ├── shared/             # Componentes reutilizables
+│   │   ├── features/           # Features de negocio
+│   │   ├── layout/             # Shell app
+│   │   └── index.ts            # Barrel file
+│   ├── assets/                 # Imágenes, iconos, estilos
+│   ├── environments/           # Configuración (dev, prod)
+│   └── main.ts                 # Entry point
+│
+├── ai-specs/                   # Contexto del Proyecto (OpenSpec)
+│   ├── .agents/stacks/
+│   │   └── frontend-angular.md  # Perfil del agente Angular
+│   ├── specs/stacks/
+│   │   └── frontend-angular-standards.mdc  # Estándares Angular
+│   ├── changes/
+│   │   ├── planes/             # Planes generados
+│   │   └── enriquecimientos/   # Enriquecimientos
+│   └── README.md               # Documentación de specs
+│
+├── .openspec-cli/              # CLI de OpenSpec
+│   ├── commands/               # 13 comandos
+│   ├── lib/                    # Librerías compartidas
+│   └── install.sh              # Instalador
+│
+├── .github/workflows/          # GitHub Actions
+│   └── ci.yml                  # Pipeline CI/CD
+│
+├── angular.json                # Config Angular
+├── tsconfig.json               # Config TypeScript + path aliases
+├── package.json                # Dependencias npm
+├── .env.example                # Template de variables
+├── ARCHITECTURE.md             # Guía de arquitectura Angular
+└── README.md                   # Este archivo
 ```
 
 ---
 
-## Core Concepts
+## ✅ Requisitos
 
-### Spec-Driven Development
-All architectural decisions live in `ai-specs/specs/`. Agents read these
-before generating any output. The AI always works within your conventions —
-not against them.
-
-### Multi-Stack Support
-One repo can support multiple technology stacks. Switch between them with
-`os-stack <name>`. The active stack determines which agent file, standards,
-and tooling commands are loaded.
-
-### Multi-Agent Support
-Works with any AI agent. Switch between them with `os-agent <name>`.
-Clipboard agents (Copilot, Cursor, Windsurf) copy prompts for manual paste.
-CLI agents (Claude Code, Aider) send prompts automatically via terminal.
-
-### Jira Integration
-Every command that generates a prompt starts by fetching the real ticket
-from Jira — title, description, status, assignee. No copy-pasting context.
+- **Node.js**: 18+ (LTS)
+- **npm**: 9+
+- **Angular CLI**: 17+
+- **Git**: 2.35+
+- **Git Bash**: Para Windows (incluido con Git)
+- **API Token Jira**: https://id.atlassian.com/manage-profile/security/api-tokens
+- **GitHub Token**: https://github.com/settings/tokens
 
 ---
 
-## Supported Stacks
+## 📦 Instalación
 
-| Stack | Technologies |
-| --- | --- |
-| `java-spring` | Java 17, Spring Boot, Spring Data JPA, Flyway, JUnit 5 |
-| `python-fastapi` | Python 3.12, FastAPI, SQLAlchemy, Alembic, pytest |
-| `node-express` | Node.js 20, Express, TypeScript, Prisma, Jest |
-| `go-gin` | Go 1.22, Gin, GORM, golang-migrate, testify |
-| `frontend-react` | React 18, Vite, TypeScript, TanStack Query, Vitest |
-| `frontend-angular` | Angular 17, TypeScript, NgRx, Jest |
-
----
-
-## Supported AI Agents
-
-| Agent | Delivery |
-| --- | --- |
-| GitHub Copilot | Clipboard — paste in VS Code chat |
-| Cursor | Clipboard — paste in Cursor chat |
-| Windsurf | Clipboard — paste in Windsurf chat |
-| Claude Code | CLI — automatic via `claude` terminal command |
-| Aider | CLI — automatic via `aider` terminal command |
-
----
-
-## CLI Commands
-
-### Configuration
-
-| Command | What it does |
-| --- | --- |
-| `os-stack [--list\|<name>]` | List or switch active tech stack |
-| `os-agent [--list\|<name>]` | List or switch active AI agent |
-
-### Jira
-
-| Command | What it does |
-| --- | --- |
-| `os-tickets [status]` | List all project tickets, optionally filtered by status |
-| `os-create-ticket --hu` | Create a ticket with an AI-generated user story |
-| `os-create-ticket "<title>" <type>` | Create a ticket quickly (Task, Bug, Story…) |
-| `--project <KEY>` (either command) | Target a different Jira project than `JIRA_PROJECT_KEY` in `.env` |
-| `os-enrich <TICKET-ID>` | Enrich a ticket with technical detail |
-| `os-enrich-apply <TICKET-ID>` | Upload enriched content to Jira |
-| `os-transition <TICKET-ID> [--list\|<state>]` | List transitions or move ticket to a state |
-
-### Development workflow
-
-| Command | What it does |
-| --- | --- |
-| `os-plan <TICKET-ID>` | Generate an implementation plan from a Jira ticket |
-| `os-develop <TICKET-ID>` | Create feature branch + implementation prompt |
-| `os-commit <TICKET-ID>` | Commit, push and open PR → develop |
-| `os-review <PR>` | Generate a structured AI code review for a PR |
-| `os-review-apply <PR>` | Publish the review to GitHub and apply verdict |
-| `os-review-fix <PR>` | Auto-fix REQUEST CHANGES feedback, re-review and re-publish |
-
----
-
-## Project Structure
-
-```
-open-spec-developer/
-├── .openspec-cli/           # CLI commands and libraries
-│   ├── commands/            # Executable commands (os-plan, os-commit, etc.)
-│   ├── lib/                 # Shared shell and Python helpers
-│   │   ├── colors.sh        # Terminal colour helpers
-│   │   ├── config.sh        # Stack + env config loader
-│   │   ├── jira.sh          # Jira API helpers
-│   │   └── agent.sh         # Agent delivery helpers
-│   └── install.sh           # Global installer
-├── ai-specs/
-│   ├── .agents/
-│   │   └── stacks/          # Stack-specific agent files (role + conventions)
-│   ├── .commands/           # Prompt templates for each workflow step
-│   ├── changes/             # Generated implementation plans (per ticket)
-│   └── specs/
-│       ├── stacks/          # Stack-specific standards files
-│       ├── base-standards.mdc
-│       ├── api-spec.yml
-│       ├── data-model.md
-│       └── documentation-standards.mdc
-├── openspec/
-│   └── config.yaml          # Active stack, active agent, stack registry
-├── src/                     # Application source code
-├── tests/                   # Test suite
-├── pytest.ini               # pytest config
-├── .env.example             # Environment variable template
-└── README.md                # This file
-```
-
----
-
-## Quick Start
+### 1. Clonar repositorio
 
 ```bash
-# 1. Install the CLI
-sh .openspec-cli/install.sh
-source ~/.bashrc
+git clone https://github.com/ingjohnaragon-crypto/sst-auditor-agent-pro-frontend.git
+cd sst-auditor-agent-pro-frontend
+```
 
-# 2. Configure credentials
+### 2. Instalar dependencias
+
+```bash
+npm install
+```
+
+### 3. Configurar variables de entorno
+
+```bash
 cp .env.example .env
-# Edit .env: JIRA_BASE_URL, JIRA_EMAIL, JIRA_TOKEN
-gh auth login
+# Editar .env con tus credenciales
+```
 
-# 3. Select your stack and agent
-os-stack --list
-os-stack python-fastapi
-os-agent --list
-os-agent copilot
+**Contenido de .env**:
+```bash
+JIRA_BASE_URL=https://tu-workspace.atlassian.net
+JIRA_EMAIL=tu-email@example.com
+JIRA_TOKEN=tu-jira-api-token
+```
 
-# 4. Start with a ticket
-os-enrich KAN-1          # enrich ticket with technical detail
-os-plan KAN-1            # generate implementation plan
-os-develop KAN-1         # create branch + implementation
-os-commit KAN-1          # commit + PR
-os-review 1              # AI code review
-os-review-apply 1        # publish review to GitHub
+### 4. Verificar instalación
+
+```bash
+ng serve              # Dev server en http://localhost:4200
+npm test              # Ejecutar tests
 ```
 
 ---
 
-## Architecture Principles
+## 💻 Desarrollo
 
-OpenSpec enforces these principles across all stacks:
+### Iniciar dev server
 
-- **Domain-Driven Design (DDD)** — Domain, Application, Presentation layers
-- **Test-Driven Development (TDD)** — tests before implementation, always
-- **90% coverage threshold** — enforced per stack
-- **English only** — all code, comments, docs, and commits
-- **Conventional commits** — `feat`, `fix`, `test`, `docs`, `chore`
-- **No secrets in code** — environment variables only
+```bash
+ng serve
+# Abrir: http://localhost:4200
+```
+
+### Ejecutar tests
+
+```bash
+ng test --watch=false          # Tests una sola vez
+ng test --code-coverage        # Con coverage
+ng test                        # En modo watch
+```
+
+### Build para producción
+
+```bash
+ng build --prod
+# Output: dist/sst-auditor/
+```
+
+### Lint y formateo
+
+```bash
+ng lint                        # ESLint
+npm run format                 # Formatear código
+```
 
 ---
 
-## Contributing
+## 🤖 Comandos OpenSpec
 
-1. Pick a ticket from Jira
-2. Run `os-enrich <TICKET-ID>` to add technical detail
-3. Run `os-plan <TICKET-ID>` to generate the implementation plan
-4. Run `os-develop <TICKET-ID>` to implement
-5. Run `os-commit <TICKET-ID>` to open a PR
-6. Request review — `os-review <PR>` generates an AI code review
+### Workflow completo
+
+```bash
+# 1. Seleccionar stack y agente
+os-stack frontend-angular
+os-agent copilot
+
+# 2. Ver y crear tickets
+os-tickets
+os-create-ticket --hu
+
+# 3. Enriquecer ticket
+os-enrich SP-136
+os-enrich-apply SP-136
+
+# 4. Generar plan
+os-plan SP-136
+
+# 5. Implementar (pegar prompt en Copilot)
+os-develop SP-136
+
+# 6. Tests
+ng test --watch=false
+
+# 7. Commitear
+os-commit SP-136
+
+# 8. Code review
+os-review 1
+os-review-apply 1
+
+# 9. Marcar como completado
+os-transition SP-136 "Done"
+```
 
 ---
 
-## License
+## 🏗️ Arquitectura Angular
 
-ISC
+### Patrón Modular: Core-Shared-Features
+
+```
+core/       ← Singletons (servicios, guards, interceptores)
+  ↑
+shared/     ← Componentes reutilizables (botones, modales)
+  ↑
+features/   ← Features de negocio (candidates, audits)
+  ↑
+layout/     ← Shell app (header, nav, footer)
+```
+
+### Capas
+
+| Capa | Ubicación | Responsabilidad | Ejemplo |
+|------|-----------|-----------------|---------|
+| **Core** | `src/app/core/` | Servicios singleton, guards, interceptores | `AuthService`, `AuthGuard` |
+| **Shared** | `src/app/shared/` | Componentes dumb, pipes, directivas | `ButtonComponent`, `SafeHtmlPipe` |
+| **Features** | `src/app/features/[feature]/` | Lógica de dominio | `CandidatesFeature`, `AuditsFeature` |
+| **Layout** | `src/app/layout/` | Shell components | `HeaderComponent`, `NavComponent` |
+
+### Convenciones
+
+- **Componentes**: `PascalCase` + `Component` → archivo: `kebab-case.component.ts`
+- **Servicios**: `PascalCase` + `Service` → archivo: `kebab-case.service.ts`
+- **Pipes**: `lowercase.pipe.ts`
+- **Directivas**: `lowercase.directive.ts`
+- **Guards**: `lowercase.guard.ts`
+- **Interceptores**: `lowercase.interceptor.ts`
+- **Imports**: Usar path aliases `@app/*`, `@core/*`, `@shared/*`
+
+### Reglas de Importación
+
+```typescript
+// ✓ Correcto
+import { AuthService } from '@app/core';
+import { ButtonComponent } from '@app/shared';
+import { CandidateListComponent } from '@app/features/candidates';
+
+// ✗ Incorrecto
+import { AuthService } from '@app/core/services/auth.service';  // Usar barrel
+import { ButtonComponent } from '@app/shared/components/button';  // Usar barrel
+import { AuditService } from '@app/features/audits';  // NO: feature importa feature
+```
+
+### Smart vs Dumb Components
+
+**Dumb (Presentacionales)**:
+- Solo `@Input` y `@Output`
+- No inyectan servicios
+- Reutilizables
+- En `components/`
+
+**Smart (Contenedores)**:
+- Conectan a servicios/store
+- Manejan lógica
+- En `containers/`
+
+**Para más detalles, ver [ARCHITECTURE.md](./ARCHITECTURE.md)**
+
+---
+
+## 🔄 Git Workflow
+
+### Ramas
+
+```
+main/       ← Producción
+  ↑
+develop/    ← Staging
+  ↑
+feature/*   ← Features (creadas por os-develop)
+```
+
+### Commits Convencionales (Español)
+
+```
+tipo(alcance): descripción
+
+[cuerpo opcional]
+[pie de página]
+```
+
+**Tipos**:
+- `feat`: Nueva característica
+- `fix`: Bug fix
+- `docs`: Documentación
+- `style`: Formato (espacios, comillas)
+- `refactor`: Refactorización
+- `perf`: Performance
+- `test`: Tests
+- `chore`: Build, deps, etc
+
+**Ejemplo**:
+```
+feat(candidates): agregar filtro de estado
+
+- Agregar campo de búsqueda
+- Implementar servicio de filtrado
+- Tests para componente
+
+Fixes SP-136
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
+```
+
+---
+
+## 🧪 Testing
+
+### Estructura
+
+```
+src/
+├── app/
+│   ├── services/
+│   │   ├── auth.service.ts
+│   │   └── auth.service.spec.ts      ← Test
+│   └── components/
+│       ├── button.component.ts
+│       └── button.component.spec.ts  ← Test
+```
+
+### Test de Componente
+
+```typescript
+describe('ButtonComponent', () => {
+  let component: ButtonComponent;
+  let fixture: ComponentFixture<ButtonComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [ButtonComponent]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(ButtonComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should emit clicked event', () => {
+    spyOn(component.clicked, 'emit');
+    component.onClick();
+    expect(component.clicked.emit).toHaveBeenCalled();
+  });
+});
+```
+
+### Test de Servicio
+
+```typescript
+describe('AuthService', () => {
+  let service: AuthService;
+  let httpMock: HttpTestingController;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      providers: [AuthService]
+    });
+
+    service = TestBed.inject(AuthService);
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  it('should login', () => {
+    service.login('user@test.com', 'password').subscribe(token => {
+      expect(token).toBeTruthy();
+    });
+
+    const req = httpMock.expectOne('/api/auth/login');
+    req.flush({ token: 'jwt-token' });
+  });
+
+  afterEach(() => {
+    httpMock.verify();
+  });
+});
+```
+
+### Coverage
+
+```bash
+ng test --code-coverage --watch=false
+# Abrir: coverage/sst-auditor/index.html
+```
+
+**Meta**: 90% coverage
+
+---
+
+## 📚 Documentación
+
+- **ARCHITECTURE.md** — Guía completa de arquitectura Angular
+- **src/app/core/README.md** — Documentación de capa core
+- **src/app/shared/README.md** — Documentación de componentes compartidos
+- **src/app/features/README.md** — Cómo crear nuevas features
+- **src/app/layout/README.md** — Documentación de shell app
+
+---
+
+## 🚀 Deployment
+
+### Build
+
+```bash
+ng build --prod
+```
+
+### Entornos
+
+**Desarrollo** (`src/environments/environment.ts`):
+```typescript
+export const environment = {
+  production: false,
+  apiUrl: 'http://localhost:3000/api'
+};
+```
+
+**Producción** (`src/environments/environment.prod.ts`):
+```typescript
+export const environment = {
+  production: true,
+  apiUrl: 'https://api.sst-auditor.com/api'
+};
+```
+
+---
+
+## 🤝 Contribución
+
+1. **Seleccionar ticket**: `os-tickets`
+2. **Enriquecer**: `os-enrich KAN-XX` → `os-enrich-apply KAN-XX`
+3. **Generar plan**: `os-plan KAN-XX`
+4. **Implementar**: `os-develop KAN-XX` (pegar prompt en Copilot)
+5. **Validar**: `ng test --watch=false`
+6. **Commitear**: `os-commit KAN-XX`
+7. **Review**: `os-review PR_NUMBER` → `os-review-apply PR_NUMBER`
+
+---
+
+## 📖 Recursos
+
+- [Angular Docs](https://angular.io)
+- [RxJS Docs](https://rxjs.dev)
+- [TypeScript Docs](https://www.typescriptlang.org)
+- [ARCHITECTURE.md](./ARCHITECTURE.md)
+- [Jira Project](https://ingjohnaragon.atlassian.net)
+
+---
+
+## 📝 Licencia
+
+Código propietario — SST Auditor
+
+---
+
+## 👨‍💻 Autores
+
+- **John Aragón** — Lead Frontend Developer
+- **Copilot AI** — IA Asistente
+
+---
+
+## 🔗 Enlaces
+
+- Repositorio: https://github.com/ingjohnaragon-crypto/sst-auditor-agent-pro-frontend
+- Jira: https://ingjohnaragon.atlassian.net
+- Arquitectura: [ARCHITECTURE.md](./ARCHITECTURE.md)

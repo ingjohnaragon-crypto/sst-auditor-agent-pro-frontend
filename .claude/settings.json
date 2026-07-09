@@ -20,7 +20,8 @@
       "Bash(py -m pytest tests/ -v --cov=contracts *)",
       "Write(contracts/*)",
       "Write(tests/*)",
-      "Write(ai-specs/*)"
+      "Write(ai-specs/**)",
+      "Edit(ai-specs/**)"
     ]
   }
 }

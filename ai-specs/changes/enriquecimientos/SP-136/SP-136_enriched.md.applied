@@ -1,0 +1,554 @@
+# Ticket Enriquecido: SP-136 — Diseñar Arquitectura de Carpetas Angular
+
+## Descripción Original
+Diseñar y documentar la estructura modular del frontend en Angular.
+
+---
+
+## Descripción Enriquecida
+
+Establecer e implementar la arquitectura de carpetas modular para el frontend Angular 17+, siguiendo las mejores prácticas de escalabilidad, mantenibilidad y reutilización de código. Esta historia cubre la creación de la estructura de directorios base, configuración de módulos y barrel files para facilitar imports limpios, y documentación de convenciones de nomenclatura y organización.
+
+### Contexto Técnico
+- **Framework**: Angular 17+ con componentes standalone
+- **TypeScript**: modo estricto (strict mode)
+- **Objetivo**: Estructura escalable que soporte features independientes, código compartido reutilizable y servicios centralizados sin acoplamiento
+
+### Alcance
+1. Definir y crear la estructura de carpetas: `core/`, `shared/`, `features/`, `layout/`, `assets/`, `environments/`
+2. Configurar barrel files (`index.ts`) en directorios clave para simplificar imports
+3. Documentar convenciones de nomenclatura, patrones de organización y directrices para nuevas features
+4. Crear la estructura base lista para agregar features específicas del dominio
+
+---
+
+## Criterios de Aceptación
+- [ ] Estructura de carpetas `src/app/` creada completamente siguiendo patrón core-shared-features
+- [ ] Todos los directorios contienen archivos barrel (`index.ts`) que exponen sus públicas
+- [ ] Archivo `ARCHITECTURE.md` documentando la estructura, convenciones y guía para agregar nuevas features
+- [ ] Archivo `.eslintrc.json` o equivalente configura reglas de import para evitar violaciones de capas
+- [ ] Validación manual: imports dentro de un feature no pueden consumir otros features (solo core y shared)
+- [ ] Ningún error de compilación TypeScript (`ng build --strict`)
+- [ ] Documentación legible y ejemplos prácticos en README de cada capa
+
+---
+
+## Archivos a Crear o Modificar
+
+| Archivo | Capa | Acción | Descripción |
+|---|---|---|---|
+| `src/app/` | Presentation | Crear | Raíz de la aplicación Angular |
+| `src/app/core/` | Application | Crear | Servicios singleton, guards, interceptores (providedIn: 'root') |
+| `src/app/core/index.ts` | Application | Crear | Barrel file exportando guards, interceptores, servicios públicos |
+| `src/app/core/guards/` | Application | Crear | Directorio para route guards (auth, permission, etc.) |
+| `src/app/core/interceptors/` | Application | Crear | Directorio para HTTP interceptores (error handling, auth tokens) |
+| `src/app/core/services/` | Application | Crear | Servicios de aplicación (autenticación, global state, logging) |
+| `src/app/shared/` | Presentation | Crear | Componentes, pipes, directivas reutilizables compartidas |
+| `src/app/shared/index.ts` | Presentation | Crear | Barrel file exportando componentes y pipes públicos |
+| `src/app/shared/components/` | Presentation | Crear | Componentes presentacionales dumb sin lógica de negocio |
+| `src/app/shared/pipes/` | Presentation | Crear | Pipes reutilizables (date formatting, filtering, etc.) |
+| `src/app/shared/directives/` | Presentation | Crear | Directivas personalizadas (focus, permissions, etc.) |
+| `src/app/features/` | Presentation | Crear | Directorio raíz para todos los módulos de features |
+| `src/app/features/[feature-name]/` | Presentation | Crear | Template para cada feature (candidates, audits, users, etc.) |
+| `src/app/features/[feature-name]/index.ts` | Presentation | Crear | Barrel file para la feature (solo exporta contenedor principal) |
+| `src/app/features/[feature-name]/components/` | Presentation | Crear | Componentes presentacionales específicos de la feature |
+| `src/app/features/[feature-name]/containers/` | Presentation | Crear | Smart components conectados a store/servicios |
+| `src/app/features/[feature-name]/services/` | Application | Crear | Servicios específicos de la feature (HTTP, state logic) |
+| `src/app/features/[feature-name]/models/` | Domain | Crear | Interfaces TypeScript del modelo de datos de la feature |
+| `src/app/layout/` | Presentation | Crear | Componentes de shell (header, nav, footer) |
+| `src/app/layout/index.ts` | Presentation | Crear | Barrel file del layout |
+| `src/assets/` | Infrastructure | Crear | Imágenes, iconos, archivos estáticos |
+| `src/environments/environment.ts` | Infrastructure | Modificar | Configuración de desarrollo |
+| `src/environments/environment.prod.ts` | Infrastructure | Crear | Configuración de producción |
+| `ARCHITECTURE.md` | Documentation | Crear | Guía de arquitectura, estructura y convenciones |
+| `.eslintrc.json` o `eslint.config.js` | Infrastructure | Modificar | Agregar reglas para import boundaries entre capas |
+
+---
+
+## Estructura Detallada de Directorios
+
+```
+src/
+├── app/
+│   ├── core/                           # Singleton services, guards, interceptors
+│   │   ├── index.ts                    # Barrel file
+│   │   ├── guards/
+│   │   │   ├── auth.guard.ts
+│   │   │   ├── permission.guard.ts
+│   │   │   └── index.ts
+│   │   ├── interceptors/
+│   │   │   ├── error.interceptor.ts
+│   │   │   ├── auth.interceptor.ts
+│   │   │   └── index.ts
+│   │   ├── services/
+│   │   │   ├── auth.service.ts
+│   │   │   ├── logger.service.ts
+│   │   │   └── index.ts
+│   │   └── models/
+│   │       ├── auth.model.ts
+│   │       └── index.ts
+│   │
+│   ├── shared/                         # Reusable components, pipes, directives
+│   │   ├── index.ts                    # Barrel file
+│   │   ├── components/
+│   │   │   ├── button/
+│   │   │   │   ├── button.component.ts
+│   │   │   │   ├── button.component.html
+│   │   │   │   ├── button.component.scss
+│   │   │   │   └── button.component.spec.ts
+│   │   │   ├── modal/
+│   │   │   ├── loader/
+│   │   │   └── index.ts
+│   │   ├── pipes/
+│   │   │   ├── safe-html.pipe.ts
+│   │   │   ├── truncate.pipe.ts
+│   │   │   └── index.ts
+│   │   └── directives/
+│   │       ├── has-permission.directive.ts
+│   │       ├── focus.directive.ts
+│   │       └── index.ts
+│   │
+│   ├── features/                       # Domain-specific features
+│   │   ├── candidates/
+│   │   │   ├── index.ts
+│   │   │   ├── components/
+│   │   │   │   ├── candidate-card/
+│   │   │   │   │   ├── candidate-card.component.ts
+│   │   │   │   │   ├── candidate-card.component.html
+│   │   │   │   │   ├── candidate-card.component.scss
+│   │   │   │   │   └── candidate-card.component.spec.ts
+│   │   │   │   └── index.ts
+│   │   │   ├── containers/
+│   │   │   │   ├── candidate-list/
+│   │   │   │   │   ├── candidate-list.component.ts
+│   │   │   │   │   ├── candidate-list.component.html
+│   │   │   │   │   └── candidate-list.component.spec.ts
+│   │   │   │   ├── candidate-detail/
+│   │   │   │   └── index.ts
+│   │   │   ├── services/
+│   │   │   │   ├── candidate.service.ts
+│   │   │   │   └── index.ts
+│   │   │   └── models/
+│   │   │       ├── candidate.model.ts
+│   │   │       └── index.ts
+│   │   │
+│   │   ├── audits/
+│   │   │   ├── index.ts
+│   │   │   ├── components/
+│   │   │   ├── containers/
+│   │   │   ├── services/
+│   │   │   └── models/
+│   │   │
+│   │   └── users/
+│   │       ├── index.ts
+│   │       ├── components/
+│   │       ├── containers/
+│   │       ├── services/
+│   │       └── models/
+│   │
+│   ├── layout/                         # Shell, navigation, header
+│   │   ├── index.ts
+│   │   ├── components/
+│   │   │   ├── header/
+│   │   │   │   ├── header.component.ts
+│   │   │   │   ├── header.component.html
+│   │   │   │   ├── header.component.scss
+│   │   │   │   └── header.component.spec.ts
+│   │   │   ├── nav/
+│   │   │   ├── footer/
+│   │   │   └── index.ts
+│   │   └── shell.component.ts
+│   │
+│   ├── app.component.ts                # Root component
+│   ├── app.component.html
+│   ├── app.config.ts                   # Angular app config (providers, etc.)
+│   ├── app.routes.ts                   # Main routing configuration
+│   └── index.ts                        # Root barrel file
+│
+├── assets/                             # Static files (images, icons)
+│   ├── images/
+│   ├── icons/
+│   └── styles/                         # Global SCSS variables, mixins
+│
+├── environments/
+│   ├── environment.ts                  # Development config
+│   ├── environment.prod.ts             # Production config
+│   └── environment.model.ts            # Type definition for environment
+│
+├── main.ts                             # Application entry point
+└── styles.scss                         # Global styles
+
+```
+
+---
+
+## Convenciones de Nomenclatura
+
+| Elemento | Convención | Ejemplo |
+|---|---|---|
+| **Componentes** | PascalCase + sufijo Component | `CandidateListComponent`, `HeaderComponent` |
+| **Services** | PascalCase + sufijo Service | `CandidateService`, `AuthService` |
+| **Pipes** | lowercase + sufijo pipe | `safe-html.pipe.ts` |
+| **Directives** | lowercase + sufijo directive | `has-permission.directive.ts` |
+| **Guards** | lowercase + sufijo guard | `auth.guard.ts` |
+| **Interceptors** | lowercase + sufijo interceptor | `error.interceptor.ts` |
+| **Models/Interfaces** | PascalCase, singular, sufijo Model/DTO | `CandidateModel`, `UserDTO` |
+| **Archivos TS** | kebab-case | `candidate-list.component.ts`, `auth.service.ts` |
+| **Archivos HTML** | kebab-case | `candidate-list.component.html` |
+| **Archivos SCSS** | kebab-case | `candidate-list.component.scss` |
+| **Variables (TypeScript)** | camelCase | `candidateId`, `isLoading` |
+| **Constantes** | UPPER_SNAKE_CASE | `MAX_RETRIES`, `API_TIMEOUT` |
+
+---
+
+## Reglas de Arquitectura Enforzables
+
+### 1. Importación entre Capas
+```typescript
+// ✅ PERMITIDO
+import { CandidateService } from '@app/features/candidates/services';
+import { ButtonComponent } from '@app/shared/components';
+import { AuthService } from '@app/core/services';
+
+// ❌ PROHIBIDO (feature importa otra feature)
+import { AuditService } from '@app/features/audits/services'; // ← Desde candidates/
+
+// ❌ PROHIBIDO (importar interno de feature)
+import { CandidateCardComponent } from '@app/features/candidates/components/candidate-card';
+// → Usar barrel: import { CandidateCardComponent } from '@app/features/candidates';
+```
+
+### 2. Organización interna de Features
+```
+features/[feature-name]/
+├── components/          # Presentational (dumb) components
+├── containers/          # Smart components (conectan a store/services)
+├── services/            # API calls, business logic
+├── models/              # TypeScript interfaces
+└── index.ts             # Exporta SOLO el contenedor principal
+```
+
+### 3. Barrel Files (`index.ts`)
+- **core/index.ts**: Exporta guards, interceptores, servicios públicos
+- **shared/index.ts**: Exporta componentes, pipes, directivas públicas
+- **features/[feature]/index.ts**: Exporta SOLO el contenedor principal
+- **No exportar**: modelos privados, componentes dumb, servicios internos
+
+```typescript
+// ✅ Correcto: shared/index.ts
+export * from './components';
+export * from './pipes';
+export * from './directives';
+
+// ❌ Incorrecto: features/candidates/index.ts
+export * from './components';      // ← Abre los internos
+export * from './containers';
+export * from './services';
+
+// ✅ Correcto: features/candidates/index.ts
+export { CandidateListComponent } from './containers'; // ← Solo el contenedor
+```
+
+### 4. ChangeDetectionStrategy
+Todos los componentes DEBEN usar `OnPush`:
+```typescript
+@Component({
+  selector: 'app-candidate-card',
+  template: `...`,
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class CandidateCardComponent {}
+```
+
+### 5. Servicios
+- **core/services**: `providedIn: 'root'` (singleton)
+- **features/[feature]/services**: `providedIn: 'root'` (singleton por ahora; migrará a signal store)
+- Nunca `new ServiceName()` — siempre inyectar
+
+---
+
+## Documentación Requerida (ARCHITECTURE.md)
+
+Crear archivo `ARCHITECTURE.md` en raíz del proyecto con:
+
+1. **Descripción general** de la arquitectura modular
+2. **Diagrama ASCII** de la estructura de capas
+3. **Guía paso a paso** para crear una nueva feature
+4. **Ejemplos de componentes**: dumb, smart, con inputs/outputs
+5. **Importación correcta**: qué se puede importar de dónde
+6. **Barrel files**: cuándo y cómo crear index.ts
+7. **Servicios**: providedIn vs injection
+8. **Testing**: estructura de tests por capa
+9. **Lint rules**: cómo se validan los import boundaries
+
+---
+
+## Casos de Prueba Unitarios
+
+### Por definir (en subtarea SP-162/SP-163):
+- [ ] Validar que `ng build --strict` compila sin errores
+- [ ] Verificar que barrel files exportan los símbolos esperados
+- [ ] ESLint detecta imports prohibidos entre features
+- [ ] Documentación incluye ejemplos funcionales
+
+---
+
+## Requisitos No-Funcionales
+
+### Seguridad
+- No exportar servicios privados en barrel files
+- Guards en rutas protegidas validan autenticación antes de cargar features
+
+### Performance
+- Lazy loading de features (configurar en `app.routes.ts`)
+- Componentes standalone evitan carga de módulos innecesarios
+
+### Mantenibilidad
+- Estructura escalable para +10 features sin acoplamiento
+- Imports claros y trazables mediante barrel files
+- Linting enforza reglas de capas automáticamente
+
+### Documentación
+- README legible en cada directorio (`core/README.md`, `shared/README.md`, etc.)
+- ARCHITECTURE.md actualizado con ejemplos prácticos
+
+---
+
+## Subtareas
+
+<!-- SUBTASK:SP-161 -->
+### Subtask: SP-161 — Definir Estructura de Carpetas por Features (core, shared, modules)
+
+#### Descripción Original
+Establecer convención de carpetas: core, shared, features, layout y assets siguiendo buenas prácticas de Angular.
+
+#### Descripción Enriquecida
+
+Crear la estructura de directorios base del frontend Angular 17+ implementando el patrón core-shared-features. Esta subtarea cubre:
+
+1. **Crear directorios raíz**:
+   - `src/app/core/` con subdirectorios `guards/`, `interceptors/`, `services/`, `models/`
+   - `src/app/shared/` con subdirectorios `components/`, `pipes/`, `directives/`
+   - `src/app/features/` (vacío, plantilla para agregar features)
+   - `src/app/layout/` con subdirectorios `components/`
+   - `src/assets/` con subdirectorios `images/`, `icons/`, `styles/`
+   - `src/environments/`
+
+2. **Crear directorios de plantilla para features**:
+   - `src/app/features/[feature-name]/components/`
+   - `src/app/features/[feature-name]/containers/`
+   - `src/app/features/[feature-name]/services/`
+   - `src/app/features/[feature-name]/models/`
+
+3. **Validar**: Estructura creada localmente, sin errores de compilación
+
+#### Criterios de Aceptación
+- [ ] Directorio `src/app/core/` existe con subdirectorios `guards/`, `interceptors/`, `services/`, `models/`
+- [ ] Directorio `src/app/shared/` existe con subdirectorios `components/`, `pipes/`, `directives/`
+- [ ] Directorio `src/app/features/` existe (vacío, listo para features)
+- [ ] Directorio `src/app/layout/` existe con `components/`
+- [ ] Directorio `src/assets/` existe con `images/`, `icons/`, `styles/`
+- [ ] Directorio `src/environments/` existe con `environment.ts` y `environment.prod.ts`
+- [ ] Template `src/app/features/[feature-template]/` incluye estructura `components/`, `containers/`, `services/`, `models/`
+- [ ] Ejecución `ng build --strict` compila sin errores
+- [ ] No hay archivos ni código migrado en esta subtarea; solo estructura vacía
+
+<!-- /SUBTASK:SP-161 -->
+
+<!-- SUBTASK:SP-162 -->
+### Subtask: SP-162 — Configurar Módulos y Barrel Files (index.ts)
+
+#### Descripción Original
+Crear módulos Angular por dominio funcional y archivos barrel para simplificar imports.
+
+#### Descripción Enriquecida
+
+Implementar barrel files (`index.ts`) estratégicamente en cada capa para exponer APIs públicas y ocultar detalles internos. Esta subtarea requiere:
+
+1. **Crear barrel files en capas principales**:
+   - `src/app/core/index.ts` exporta guards, interceptores, servicios
+   - `src/app/shared/index.ts` exporta componentes, pipes, directivas
+   - `src/app/layout/index.ts` exporta componentes del layout
+   - `src/app/index.ts` raíz de la aplicación
+
+2. **Crear barrel files en subcapas de core**:
+   - `src/app/core/guards/index.ts`
+   - `src/app/core/interceptors/index.ts`
+   - `src/app/core/services/index.ts`
+
+3. **Crear barrel files en subcapas de shared**:
+   - `src/app/shared/components/index.ts`
+   - `src/app/shared/pipes/index.ts`
+   - `src/app/shared/directives/index.ts`
+
+4. **Template para features**:
+   - `src/app/features/[feature-name]/index.ts` exporta SOLO el contenedor principal
+
+5. **Configurar path aliases en tsconfig.json**:
+   - `@app/*` → `src/app/*`
+   - `@core/*` → `src/app/core/*` (opcional, para imports más limpios)
+   - `@shared/*` → `src/app/shared/*` (opcional)
+   - `@assets/*` → `src/assets/*`
+
+6. **Implementar pattern de barrel files según reglas**:
+   - core/index.ts: `export * from './guards'; export * from './interceptors'; export * from './services';`
+   - shared/index.ts: `export * from './components'; export * from './pipes'; export * from './directives';`
+   - features/[feature]/index.ts: Solo exportar contenedor principal, NO todo
+
+#### Criterios de Aceptación
+- [ ] Archivo `src/app/core/index.ts` exporta públicamente guards, interceptores, servicios
+- [ ] Archivo `src/app/shared/index.ts` exporta públicamente componentes, pipes, directives
+- [ ] Archivo `src/app/core/guards/index.ts` exporta todos los guards
+- [ ] Archivo `src/app/core/interceptors/index.ts` exporta todos los interceptores
+- [ ] Archivo `src/app/core/services/index.ts` exporta servicios públicos
+- [ ] Archivo `src/app/shared/components/index.ts` exporta componentes compartidos
+- [ ] Archivo `src/app/shared/pipes/index.ts` exporta pipes compartidas
+- [ ] Archivo `src/app/shared/directives/index.ts` exporta directivas compartidas
+- [ ] Archivo `src/app/layout/index.ts` exporta componentes del layout
+- [ ] Path aliases `@app`, `@assets` configurados en `tsconfig.json`
+- [ ] Imports utilizan aliases: `import { ... } from '@app/core';`
+- [ ] `ng build --strict` compila sin errores
+- [ ] Tests validan que imports funcionen correctamente a través de barrel files
+
+#### Ejemplo de Implementación
+```typescript
+// src/app/core/index.ts
+export * from './guards';
+export * from './interceptors';
+export * from './services';
+
+// src/app/shared/index.ts
+export * from './components';
+export * from './pipes';
+export * from './directives';
+
+// src/app/features/candidates/index.ts
+export { CandidateListComponent } from './containers';
+// NO exportar internos como components, services, models
+
+// En componente:
+import { AuthService, AuthGuard } from '@app/core';
+import { ButtonComponent } from '@app/shared/components';
+import { CandidateListComponent } from '@app/features/candidates';
+```
+
+<!-- /SUBTASK:SP-162 -->
+
+<!-- SUBTASK:SP-163 -->
+### Subtask: SP-163 — Documentar Convenciones de Nomenclatura y Estilos de Carpeta
+
+#### Descripción Original
+Redactar guía interna (README) con estándares de organización para el equipo frontend.
+
+#### Descripción Enriquecida
+
+Crear documentación completa (`ARCHITECTURE.md` y READMEs por capa) que documente:
+
+1. **Archivo principal: ARCHITECTURE.md**
+   - Descripción de la estructura de carpetas
+   - Diagrama ASCII de capas (core → shared → features)
+   - Tabla de convenciones de nomenclatura (componentes, servicios, pipes, guards, etc.)
+   - Reglas de importación permitidas/prohibidas
+   - Patrón smart (container) vs dumb (presentational) components
+   - Guía paso a paso: crear una nueva feature
+   - Ejemplo completo: feature "candidates" con todos los archivos
+   - Importación correcta usando barrel files
+   - Testing: estructura de tests por capa
+   - Linting: configuración de import boundaries (ESLint)
+
+2. **README por capa**:
+   - `src/app/core/README.md` → Qué va aquí, ejemplos de servicios singleton
+   - `src/app/shared/README.md` → Componentes reutilizables, regla de no-lógica-negocio
+   - `src/app/features/README.md` → Cómo agregar una feature nueva
+   - `src/app/layout/README.md` → Shell components, uso en rutas
+
+3. **Estructura de documentación**:
+   - [ ] Tabla de convenciones: archivo, selector, clase, interfaz
+   - [ ] Diagrama: capas y dependencias permitidas
+   - [ ] Checklist: pasos para crear feature
+   - [ ] Ejemplos de código: componente dumb, componente smart, servicio
+   - [ ] Anti-patrones: qué NO hacer
+   - [ ] Troubleshooting: errores comunes
+
+#### Criterios de Aceptación
+- [ ] Archivo `ARCHITECTURE.md` existe en raíz del proyecto
+- [ ] ARCHITECTURE.md contiene tabla de convenciones de nomenclatura
+- [ ] ARCHITECTURE.md incluye diagrama de capas y relaciones permitidas
+- [ ] ARCHITECTURE.md incluye guía paso a paso para crear nueva feature
+- [ ] ARCHITECTURE.md incluye ejemplo completo (feature, componente, servicio, test)
+- [ ] ARCHITECTURE.md documenta reglas de ESLint para import boundaries
+- [ ] Existe `src/app/core/README.md` explicando qué va en core
+- [ ] Existe `src/app/shared/README.md` con ejemplos de componentes reutilizables
+- [ ] Existe `src/app/features/README.md` con pasos para agregar feature
+- [ ] Existe `src/app/layout/README.md` describiendo componentes de shell
+- [ ] Documentación es legible y clara para desarrolladores jr
+- [ ] Ejemplos de código son prácticos y ejecutables (copy-paste friendly)
+- [ ] Documentación menciona path aliases (`@app/*`, etc.)
+- [ ] Se definen anti-patrones: qué NO hacer y por qué
+
+#### Estructura de ARCHITECTURE.md
+```markdown
+# Arquitectura Angular — SST Auditor
+
+## 1. Visión General
+Estructura modular escalable basada en core-shared-features.
+
+## 2. Diagrama de Capas
+```
+core (singletons, guards, interceptors)
+  ↑
+shared (componentes reutilizables)
+  ↑
+features (dominio específico)
+  ↑
+layout (shell)
+```
+
+## 3. Tabla de Convenciones
+| Elemento | Convención | Ejemplo |
+
+## 4. Reglas de Importación
+✅ Permitido
+❌ Prohibido
+
+## 5. Guía: Crear Nueva Feature
+Pasos 1-10
+
+## 6. Patrón Smart vs Dumb
+Ejemplos de código
+
+## 7. Servicios y Dependency Injection
+providedIn: 'root'
+
+## 8. Barrel Files
+Cuándo y cómo
+
+## 9. Testing
+Estructura por capa
+
+## 10. Troubleshooting
+Errores comunes
+```
+
+<!-- /SUBTASK:SP-163 -->
+
+---
+
+## Próximos Pasos
+
+1. Ejecutar SP-161: crear estructura base de directorios
+2. Ejecutar SP-162: configurar barrel files y path aliases
+3. Ejecutar SP-163: documentar convenciones en ARCHITECTURE.md y READMEs
+4. Validar: `ng build --strict` compila sin errores
+5. Revisión de código: verificar que structure sigue las reglas de arquitectura
+
+---
+
+## Notas Importantes
+
+- **No incluir features específicas** en esta historia; solo estructura y documentación
+- **Componentes de ejemplo** se crearán en stories posteriores (SP-XXX)
+- **Lazy loading** de features se configurará después en `app.routes.ts`
+- **NgRx o Signal Store** para estado global se implementará en historia separada
+- **Configuración ESLint** para validar import boundaries es crítica para enforcer la arquitectura
+
