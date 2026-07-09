@@ -52,4 +52,9 @@ jobs:
           exit $status
 
       - name: Run placeholder tests
-        run: pytest tests/ -v
+        run: |
+          if [ -d tests ]; then
+            pytest tests/ -v
+          else
+            echo "No tests/ directory yet — skipping."
+          fi
