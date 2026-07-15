@@ -174,3 +174,24 @@ pip install fastapi uvicorn pydantic pytest ruff
 ---
 
 Archivo generado para soporte a la tarea frontend SP-172: endpoint de verificación requerido por `ServicioSalud` en el frontend. Este plan está enfocado a un backend minimalista y probado para desarrollo local.
+
+## 11. Cambios realizados en este repositorio (registro de trabajo en vivo)
+Resumen de acciones realizadas durante la ejecución de SP-172 en este repositorio:
+
+- Se añadió un esqueleto Angular standalone mínimo: `src/main.ts`, `src/index.html`, `src/app/root.component.ts` (standalone, ChangeDetectionStrategy.OnPush).
+- Se integró Tailwind CSS: `tailwind.config.cjs`, `postcss.config.cjs`, `src/styles.css` con `@tailwind base/components/utilities` y la clase utilitaria `.ping-resultado` que aplica `text-emerald-600`.
+- Se creó el servicio frontend `ServicioSalud` en `src/app/nucleo/servicios/servicio-salud.ts` que consume `environment.apiBaseUrl + '/ping'` y devuelve `Observable<{ mensaje: string }>`.
+- Se añadieron archivos de entorno: `src/environments/environment.ts` y `environment.prod.ts` con `apiBaseUrl: 'http://localhost:8000/api/v1'`.
+- Se actualizaron `package.json` devDependencies (añadido `tailwindcss`, `postcss`, `autoprefixer`; ajuste de `typescript` a 5.4.5) y se instaló dependencias con `npm install --legacy-peer-deps` para resolver peer conflicts.
+- Se ajustó `angular.json` para usar builders compatibles de `@angular-devkit/build-angular` y se normalizaron opciones `outputPath`, `index`, `main` y `assets` necesarias para `ng serve`.
+- Se instaló `tslib` y se desactivó `importHelpers` en `tsconfig.json` para evitar errores de helpers en tiempo de compilación.
+- Se resolvieron errores en tiempo de ejecución: se añadió `import 'zone.js'` en `src/main.ts`, y se registró `HttpClientModule` globalmente usando `importProvidersFrom(HttpClientModule)` en el bootstrap para evitar `No provider for HttpClient`.
+- Se hicieron commits atómicos en la rama `feature/SP-172-backend` con mensajes en español y trailer Co-authored-by Copilot.
+
+Ejecución y verificación:
+- Comandos clave ejecutados: `npm install --legacy-peer-deps`, `npm run start` / `npx ng serve --port 4210`.
+- Resultado: servidor de desarrollo corriendo en http://localhost:4210; la aplicación compila correctamente y la verificación visual (ping) está integrada — abrir la URL confirma que el texto `pong` se renderiza y Tailwind aplica la clase `text-emerald-600`.
+
+Notas finales:
+- Los cambios de frontend se hicieron aquí para facilitar pruebas de integración. El repositorio final del frontend debería residir en `sst-auditor-agent-pro-frontend` independiente según la HU; migración/transferencia recomendada.
+- Próximos pasos recomendados: configurar ESLint + Prettier, agregar hook pre-commit con ESLint, y subir los cambios a un repositorio remoto con PR que documente los pasos de verificación.
