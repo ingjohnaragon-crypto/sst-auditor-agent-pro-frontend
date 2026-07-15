@@ -3,3 +3,5 @@
  * 
  * Uso: import { AuthModel, UserModel } from '@app/core';
  */
+
+export {};

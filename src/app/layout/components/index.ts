@@ -3,3 +3,5 @@
  * 
  * Uso: import { HeaderComponent, NavComponent } from '@app/layout';
  */
+
+export {};

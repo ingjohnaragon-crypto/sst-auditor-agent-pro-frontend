@@ -3,3 +3,5 @@
  * 
  * Uso: import { ErrorInterceptor } from '@app/core';
  */
+
+export {};

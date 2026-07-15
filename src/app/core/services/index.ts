@@ -3,3 +3,5 @@
  * 
  * Uso: import { AuthService, LoggerService } from '@app/core';
  */
+
+export {};
