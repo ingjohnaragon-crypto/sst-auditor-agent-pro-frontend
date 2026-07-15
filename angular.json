@@ -14,20 +14,22 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular/build:application",
+          "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "browser": "src/main.ts",
-            "tsConfig": "tsconfig.app.json",
-            "assets": [
-              {
-                "glob": "**/*",
-                "input": "public"
-              }
-            ],
-            "styles": [
-              "src/styles.css"
-            ]
-          },
+                      "outputPath": "dist/sst-temp",
+                      "index": "src/index.html",
+                      "main": "src/main.ts",
+                      "tsConfig": "tsconfig.app.json",
+                      "assets": [
+                        "src/assets",
+                        "src/favicon.ico"
+                      ],
+                      "styles": [
+                        "src/styles.css"
+                      ],
+                      "scripts": []
+                    },
+
           "configurations": {
             "production": {
               "budgets": [
@@ -53,7 +55,7 @@
           "defaultConfiguration": "production"
         },
         "serve": {
-          "builder": "@angular/build:dev-server",
+          "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
               "buildTarget": "sst-temp:build:production"
@@ -65,7 +67,7 @@
           "defaultConfiguration": "development"
         },
         "test": {
-          "builder": "@angular/build:unit-test"
+          "builder": "@angular-devkit/build-angular:karma"
         }
       }
     }

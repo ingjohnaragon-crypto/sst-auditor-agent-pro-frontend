@@ -3,3 +3,5 @@
  * 
  * Uso: import { HasPermissionDirective, FocusDirective } from '@app/shared';
  */
+
+export {};

@@ -3,3 +3,5 @@
  * 
  * Uso: import { SafeHtmlPipe, TruncatePipe } from '@app/shared';
  */
+
+export {};

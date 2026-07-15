@@ -3,3 +3,5 @@
  * 
  * Uso: import { ButtonComponent, ModalComponent } from '@app/shared';
  */
+
+export {};

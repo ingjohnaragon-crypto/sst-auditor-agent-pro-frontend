@@ -3,3 +3,5 @@
  * 
  * Uso: import { AuthGuard } from '@app/core';
  */
+
+export {};

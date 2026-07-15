@@ -67,10 +67,10 @@ stacks:
   frontend-angular:
     label: Angular
     build_command: ng build
-    test_command: ng test --watch=false
+    test_command: npm test
     run_command: ng serve
-    lint_command: ng lint
-    coverage_command: ng test --code-coverage --watch=false
+    lint_command: npm run lint:eslint
+    coverage_command: npm run test:coverage
     agent: ai-specs/.agents/stacks/frontend-angular.md
     standards: ai-specs/specs/stacks/frontend-angular-standards.mdc
 
