@@ -80,3 +80,6 @@ venv/
 .openspec-cli/.last-simulation.json
 .openspec-cli/.fix-prompt.md
 node_modules
+
+# Angular build cache
+.angular/

@@ -5,7 +5,7 @@ module.exports = {
     {
       files: ['*.ts'],
       parserOptions: {
-        project: ['tsconfig.json'],
+        project: ['tsconfig.app.json'],
         createDefaultProgram: true,
       },
       extends: [
