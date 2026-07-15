@@ -1,0 +1,4 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+npx --no-install eslint 'src/**/*.{ts,html}' --ext .ts,.html --max-warnings=0 || (echo 'ESLint falló. Corrige errores antes de cometer.' && exit 1)
