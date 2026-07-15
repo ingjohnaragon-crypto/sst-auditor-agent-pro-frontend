@@ -83,3 +83,7 @@ node_modules
 
 # Angular build cache
 .angular/
+
+# Jest / coverage
+coverage/
+
