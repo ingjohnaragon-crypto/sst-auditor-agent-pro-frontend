@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilo de verificación visual de Tailwind */
+.ping-resultado {
+  @apply text-emerald-600 font-medium;
+}

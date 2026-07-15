@@ -22,9 +22,9 @@
     "@angular/platform-browser": "^17.3.0",
     "@angular/platform-browser-dynamic": "^17.3.0",
     "@angular/router": "^17.3.0",
-    "@ngrx/store": "^18.0.0",
-    "@ngrx/effects": "^18.0.0",
-    "@ngrx/store-devtools": "^18.0.0",
+    "@ngrx/store": "^17.0.0",
+    "@ngrx/effects": "^17.0.0",
+    "@ngrx/store-devtools": "^17.0.0",
     "rxjs": "^7.8.1",
     "tslib": "^2.6.2",
     "zone.js": "^0.14.2"
@@ -51,8 +51,13 @@
     "jest-environment-jsdom": "^29.7.0",
     "ts-jest": "^29.1.1",
     "typescript": "^5.3.3",
-    "sass": "^1.69.5"
+    "sass": "^1.69.5",
+    "tailwindcss": "^3.4.19",
+    "postcss": "^8.4.0",
+    "autoprefixer": "^10.4.0"
   },
+  "optionalDependencies": {},
+  "peerDependencies": {},
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
