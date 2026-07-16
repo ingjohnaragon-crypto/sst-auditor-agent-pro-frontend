@@ -1,6 +1,6 @@
 # Autenticación HTTP (JWT)
 
-Módulo de sesión e interceptor Bearer para el backend FastAPI.
+Módulo de sesión, interceptor Bearer, guards de ruta y autorización UX.
 
 ## Storage
 
@@ -17,6 +17,19 @@ Módulo de sesión e interceptor Bearer para el backend FastAPI.
 4. Reintenta la petición original con el nuevo token.
 5. Si el refresh falla → limpia sesión y navega a `/login`.
 
+## Guards (UX, no seguridad)
+
+> Los guards y `*appSiTieneRol` solo controlan navegación/UI. La autorización real la impone el backend con `requerir_roles`.
+
+| Guard | Comportamiento |
+|---|---|
+| `guardAutenticacion` | Sin sesión → `/login?returnUrl=...` |
+| `guardRoles` | Lee `data.rolesPermitidos`; rol no permitido → `/acceso-denegado` |
+
+Componer en rutas sensibles: `canActivate: [guardAutenticacion, guardRoles]`.
+
+Roles de auditoría sensible (médica / siniestralidad): `ROLES_AUDITORIA_SENSIBLE` → `ADMINISTRADOR`, `AUDITOR_SST`.
+
 ## Archivos
 
 | Archivo | Rol |
@@ -24,3 +37,6 @@ Módulo de sesión e interceptor Bearer para el backend FastAPI.
 | `servicio-autenticacion.ts` | login, refresh, yo, logout |
 | `almacen-tokens.ts` | persistencia de tokens |
 | `interceptor-autenticacion.ts` | Bearer + refresh automático |
+| `guard-autenticacion.ts` | sesión requerida |
+| `guard-roles.ts` | rol en `route.data` |
+| `resolver-url-retorno.ts` | evita open-redirect en `returnUrl` |

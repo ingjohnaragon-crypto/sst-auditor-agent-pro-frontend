@@ -32,6 +32,7 @@ layout/     Shell, navigation, header components
 - Smart (container) components connect to state; dumb (presentational) components use `@Input`/`@Output` only
 - HTTP interceptor centralizes error mapping — services never catch HTTP errors individually
 - JWT: functional `HttpInterceptorFn` with Bearer injection and single-flight refresh on 401 (`nucleo/auth`)
+- Route auth: functional `CanActivateFn` guards (`guardAutenticacion`, `guardRoles`) + `*appSiTieneRol` — UX only; backend enforces `requerir_roles`
 
 ## Naming Conventions
 | Element | Convention | Example |

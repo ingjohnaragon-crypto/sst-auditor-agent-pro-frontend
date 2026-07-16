@@ -10,7 +10,7 @@ export type VistaPing =
   | { estado: 'error'; ping: null; error: string };
 
 @Component({
-  selector: 'app-root',
+  selector: 'app-pagina-inicio',
   standalone: true,
   imports: [CommonModule],
   template: `

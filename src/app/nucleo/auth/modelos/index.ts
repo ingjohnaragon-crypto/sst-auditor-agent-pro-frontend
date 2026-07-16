@@ -3,3 +3,4 @@ export type { RespuestaTokens } from './respuesta-tokens';
 export type { RespuestaTokenAcceso } from './respuesta-token-acceso';
 export type { UsuarioAutenticado, RolUsuario } from './usuario-autenticado';
 export type { RespuestaErrorApi } from './respuesta-error-api';
+export type { DatosRutaRoles } from './datos-ruta-roles';

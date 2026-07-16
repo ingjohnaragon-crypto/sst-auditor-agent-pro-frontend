@@ -2,13 +2,14 @@ import 'zone.js';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
-import { RootComponent } from './app/root.component';
+
+import { AppComponent } from './app/app.component';
+import { rutasApp } from './app/app.routes';
 import { interceptorAutenticacion } from './app/nucleo/auth/interceptor-autenticacion';
 
-// Arranque de la aplicación standalone con proveedores globales
-bootstrapApplication(RootComponent, {
+bootstrapApplication(AppComponent, {
   providers: [
-    provideRouter([{ path: 'login', children: [] }]),
+    provideRouter(rutasApp),
     provideHttpClient(withInterceptors([interceptorAutenticacion])),
   ],
-}).catch(err => console.error('Error al arrancar la aplicación:', err));
+}).catch((err) => console.error('Error al arrancar la aplicación:', err));

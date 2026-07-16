@@ -15,10 +15,23 @@ shared/
 ## Características
 
 - **Componentes dumb**: Solo `@Input` y `@Output`
-- **Sin servicios**: No inyectan AuthService, HttpClient, etc
+- **Sin servicios de dominio en componentes presentacionales** (excepto directivas de autorización UX)
 - **Reutilizables**: Usables en múltiples features
 - **OnPush**: Todos con `ChangeDetectionStrategy.OnPush`
 - **Typed Forms**: Formularios fuertemente tipados
+
+## Directivas
+
+### `*appSiTieneRol`
+
+Muestra el contenido si el usuario autenticado tiene **alguno** de los roles indicados.
+Es control de UX — la autorización real la impone el backend.
+
+```html
+<button *appSiTieneRol="['AUDITOR_SST', 'ADMINISTRADOR']">Auditoría</button>
+```
+
+Archivo: `shared/directivas/si-tiene-rol.directive.ts`
 
 ## Componentes
 
