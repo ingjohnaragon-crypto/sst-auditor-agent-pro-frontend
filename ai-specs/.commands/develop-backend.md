@@ -9,27 +9,28 @@ Analyze and implement the Jira ticket: $ARGUMENTS
    - Stack agent path (`stacks.<stack>.agent`)
    - Stack standards path (`stacks.<stack>.standards`)
    - Tooling commands: `build_command`, `test_command`, `run_command`, `coverage_command`
+   - Side suffix from stack: `frontend-*` → `frontend`, otherwise `backend`
 2. Load and internalize the resolved stack agent and standards files
 3. Read `ai-specs/specs/base-standards.mdc`
 4. Read `ai-specs/specs/documentation-standards.mdc`
-5. If a plan already exists at `ai-specs/changes/planes/<ticket-id>/<ticket-id>_backend.md`, read it before starting
+5. If a plan already exists at `ai-specs/changes/planes/<ticket-id>/<ticket-id>_{{side}}.md`, read it before starting
 
 ## Implementation steps
 
 ### Step 0 — Create feature branch
 ```bash
-git checkout main && git pull origin main
-git checkout -b feature/<ticket-id>-backend
+git checkout develop && git pull origin develop
+git checkout -b feature/<ticket-id>-{{side}}
 git branch  # verify
 ```
 
 ### Step 1 — Understand the ticket
 - Use Jira MCP to fetch ticket details if available; otherwise read from the plan file
-- Identify all affected layers: Domain, Application, Presentation, Infrastructure
+- Identify all affected layers for the active stack
 
 ### Step 2 — Write tests first (TDD)
 - Write failing unit tests for the business logic **before** any implementation
-- Write failing controller slice tests for the new endpoint **before** the controller exists
+- Write failing controller/component tests for the new surface **before** it exists
 - Run tests and confirm they fail for the right reason:
   ```bash
   {{test_command}}
@@ -80,7 +81,7 @@ feat(<scope>): <short imperative description>
 ```
 Push and open a PR using GitHub CLI:
 ```bash
-git push -u origin feature/<ticket-id>-backend
+git push -u origin feature/<ticket-id>-{{side}}
 gh pr create --title "[<ticket-id>] <summary>" --body "<description>"
 ```
 
@@ -88,5 +89,6 @@ gh pr create --title "[<ticket-id>] <summary>" --body "<description>"
 - **Never skip Step 0** (branch) or Step 6 (docs)
 - **TDD is mandatory** — tests before implementation, always
 - **Use resolved tooling commands** from `openspec/config.yaml` — never hardcode
+- **Branch suffix must match stack side**: `feature/<ticket-id>-{{side}}` (never hardcode `-backend` on frontend stacks)
 - All code, comments, and commit messages must use the project's configured language (see "## Active Language" above)
 - Do not commit unrelated files; stage only what belongs to this ticket

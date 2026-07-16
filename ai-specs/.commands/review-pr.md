@@ -17,7 +17,8 @@ actionable code review. Save the result to `ai-specs/changes/reviews/` for trace
 3. Fetch PR metadata: title, author, branch, base, additions, deletions, changed files
 4. Download the PR diff
 5. If the branch contains a ticket ID (e.g. `KAN-XX`), load its plan from
-   `ai-specs/changes/planes/<ticket-id>/<ticket-id>_backend.md` if it exists
+   `ai-specs/changes/planes/<ticket-id>/<ticket-id>_{{side}}.md` if it exists
+   (fallback to `*_backend.md` for older plans)
 
 ## Review areas
 

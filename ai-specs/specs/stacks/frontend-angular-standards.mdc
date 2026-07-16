@@ -31,6 +31,7 @@ layout/     Shell, navigation, header components
 - All API calls go through feature services — never directly inside components
 - Smart (container) components connect to state; dumb (presentational) components use `@Input`/`@Output` only
 - HTTP interceptor centralizes error mapping — services never catch HTTP errors individually
+- JWT: functional `HttpInterceptorFn` with Bearer injection and single-flight refresh on 401 (`nucleo/auth`)
 
 ## Naming Conventions
 | Element | Convention | Example |

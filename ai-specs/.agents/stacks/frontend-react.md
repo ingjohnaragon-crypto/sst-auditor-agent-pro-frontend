@@ -62,6 +62,15 @@ src/
 
 ---
 
+## Git Workflow
+
+- Branch naming: `feature/<ticket-id>-frontend`
+- Never use `-backend` in branch names on this stack
+- Commits: project's configured language, conventional commits
+- Prefer `os-develop` / `os-commit` so the CLI applies the frontend suffix
+
+---
+
 ## Tooling Commands
 
 | Purpose | Command |

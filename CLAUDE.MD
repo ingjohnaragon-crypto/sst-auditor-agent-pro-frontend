@@ -82,8 +82,8 @@ os-transition KAN-XX "En curso"        # mover ticket de estado
 ```bash
 os-enrich KAN-XX                       # enriquecer ticket con contexto técnico
 os-enrich-apply KAN-XX                 # subir enriquecimiento a Jira
-os-plan KAN-XX                         # generar plan → ai-specs/changes/planes/KAN-XX/KAN-XX_backend.md
-os-develop KAN-XX                      # crear rama feature/KAN-XX-backend + implementar
+os-plan KAN-XX                         # generar plan → ai-specs/changes/planes/KAN-XX/KAN-XX_frontend.md
+os-develop KAN-XX                      # crear rama feature/KAN-XX-frontend + implementar
 os-commit KAN-XX                       # commit + push + PR → develop
 os-review PR_NUMBER                    # generar code review del PR
 os-review-apply PR_NUMBER              # publicar review en GitHub
@@ -95,8 +95,8 @@ os-review-fix PR_NUMBER                # fix automático si REQUEST CHANGES + re
 ## Flujo completo para un ticket
 
 ```bash
-os-stack python-fastapi
-os-agent claude-code
+os-stack frontend-angular
+os-agent cursor
 
 os-create-ticket --hu
 

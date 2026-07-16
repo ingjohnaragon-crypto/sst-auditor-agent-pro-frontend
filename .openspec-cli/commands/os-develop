@@ -27,7 +27,7 @@ os_jira_fetch_ticket "$TICKET_ID"
 os_jira_print_ticket
 
 # ── Create feature branch from develop ───────────────────────
-BRANCH="feature/${TICKET_ID}-backend"
+BRANCH="feature/${TICKET_ID}-${OS_SIDE}"
 os_step "Setting up branch: $BRANCH"
 cd "$OS_REPO_ROOT"
 
@@ -53,7 +53,7 @@ DOC_STANDARDS="";    DOC_FILE="$OS_REPO_ROOT/ai-specs/specs/documentation-standa
 UPDATE_DOCS_TASK="";  UPDATE_DOCS_FILE="$OS_REPO_ROOT/ai-specs/.commands/update-docs.md"
                      [ -f "$UPDATE_DOCS_FILE" ] && UPDATE_DOCS_TASK=$(cat "$UPDATE_DOCS_FILE")
 
-PLAN_FILE="$OS_REPO_ROOT/ai-specs/changes/planes/${TICKET_ID}/${TICKET_ID}_backend.md"
+PLAN_FILE="$(os_plan_file_for_ticket "$TICKET_ID")"
 PLAN_SECTION=""
 if [ -f "$PLAN_FILE" ]; then
   os_success "Found existing plan: $PLAN_FILE"
@@ -73,13 +73,14 @@ COMMAND_TEMPLATE="";  CMD_FILE="$OS_REPO_ROOT/ai-specs/.commands/develop-backend
   | sed "s|{{run_command}}|$OS_RUN_CMD|g" \
   | sed "s|{{lint_command}}|$OS_LINT_CMD|g" \
   | sed "s|{{coverage_command}}|$OS_COVERAGE_CMD|g" \
+  | sed "s|{{side}}|$OS_SIDE|g" \
   | sed "s|\$ARGUMENTS|$TICKET_ID|g")
 
 # ── Build prompt ─────────────────────────────────────────────
 os_step "Building implementation prompt..."
 
 PROMPT=$(cat << PROMPT_EOF
-You are acting as the backend-developer agent for an openspec project.
+You are acting as the ${OS_SIDE}-developer agent for an openspec project.
 You are on branch: $BRANCH
 IMPLEMENT the following Jira ticket following the plan below.
 

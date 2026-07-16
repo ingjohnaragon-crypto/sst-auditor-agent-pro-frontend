@@ -76,9 +76,9 @@ if [ "$IS_PROTECTED" = "true" ]; then
   os_warn "OpenSpec never commits directly to $CURRENT_BRANCH."
   os_divider
 
-  # Build feature branch name
+  # Build feature branch name using stack side (frontend|backend)
   if [ -n "$TICKET_ID" ]; then
-    FEATURE_BRANCH="feature/${TICKET_ID}-$(date +%Y%m%d)"
+    FEATURE_BRANCH="feature/${TICKET_ID}-${OS_SIDE}"
   else
     os_info "No ticket ID found. Enter branch name suffix:"
     printf "feature/": read -r SUFFIX

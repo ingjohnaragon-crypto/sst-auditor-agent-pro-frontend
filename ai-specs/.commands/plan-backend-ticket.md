@@ -3,8 +3,8 @@
 Ticket ID: $ARGUMENTS
 
 ## Goal
-Generate a step-by-step backend implementation plan for a Jira ticket, ready to hand
-off to a developer for autonomous implementation.
+Generate a step-by-step implementation plan for a Jira ticket, ready to hand
+off to a developer for autonomous implementation on the active stack.
 
 ## Pre-flight checklist
 
@@ -13,6 +13,7 @@ off to a developer for autonomous implementation.
    - Stack agent path and load it
    - Stack standards path and load it
    - Tooling commands: `build_command`, `test_command`, `run_command`, `coverage_command`
+   - Side suffix from stack: `frontend-*` → `frontend`, otherwise `backend` (use `{{side}}`)
 2. Read `ai-specs/specs/base-standards.mdc`
 3. Read any existing plans under `ai-specs/changes/planes/` for related context
 4. Fetch ticket details from Jira MCP (if available) or from a provided description
@@ -20,18 +21,18 @@ off to a developer for autonomous implementation.
 ## Process
 
 1. Adopt the role defined in the active stack agent
-2. Analyze the ticket: identify affected layers (Domain, Application, Presentation, Infrastructure)
+2. Analyze the ticket: identify affected layers for the active stack
 3. Propose the implementation plan following the output format below
-4. Save the plan at `ai-specs/changes/planes/<ticket-id>/<ticket-id>_backend.md`
+4. Save the plan at `ai-specs/changes/planes/<ticket-id>/<ticket-id>_{{side}}.md`
 5. **Do not write any implementation code — plan only**
 
 ## Output format
 
-Save a markdown file at `ai-specs/changes/planes/<ticket-id>/<ticket-id>_backend.md` with this structure:
+Save a markdown file at `ai-specs/changes/planes/<ticket-id>/<ticket-id>_{{side}}.md` with this structure:
 
 ---
 
-### `# Backend Implementation Plan: <TICKET-ID> <Feature Name>`
+### `# Implementation Plan: <TICKET-ID> <Feature Name>`
 
 ### `## 1. Overview`
 Brief description of the feature and relevant architecture principles.
@@ -56,39 +57,39 @@ directly from the HU."
 
 #### Step 0: Create Feature Branch
 - **Action**: Create and switch to a new feature branch
-- **Branch**: `feature/<ticket-id>-backend`
+- **Branch**: `feature/<ticket-id>-{{side}}`
 - **Commands**:
   ```bash
-  git checkout main && git pull origin main
-  git checkout -b feature/<ticket-id>-backend
+  git checkout develop && git pull origin develop
+  git checkout -b feature/<ticket-id>-{{side}}
   ```
 
-#### Step 1: [Schema Migration — if needed]
-- File: migration script path (stack-specific location)
-- Content: SQL or migration DSL changes
+#### Step 1: [Schema Migration / Models — if needed]
+- File: migration or model path (stack-specific location)
+- Content: schema or model changes
 
 #### Step 2: [Domain Entity / Model]
-- File: domain model file path
+- File: domain/model file path
 - Changes: new fields, factory methods, domain methods
 
-#### Step 3: [Repository Interface]
-- File: repository interface path
+#### Step 3: [Repository / Data Access]
+- File: repository or data-access path
 - Changes: new methods required
 
-#### Step 4: [DTOs]
-- Files: request and response DTO paths
+#### Step 4: [DTOs / Types]
+- Files: request/response DTO or TypeScript interface paths
 - Fields and validation rules
 
 #### Step 5: [Service]
 - File: service file path
 - Method signature and business logic summary
 
-#### Step 6: [Controller / Router / Handler]
+#### Step 6: [Controller / Router / Component]
 - File: presentation layer file path
-- HTTP method, path, request/response contract
+- HTTP method/path or UI surface contract
 
-#### Step 7: [Exception Handling]
-- New domain exceptions and their HTTP mappings
+#### Step 7: [Exception / Error Handling]
+- New domain exceptions or UI error mappings
 
 #### Step 8: [Unit Tests]
 - Test file paths
@@ -108,7 +109,7 @@ Numbered list of steps in sequence. Must start with Step 0 and end with document
 Post-implementation verification:
 - [ ] `{{test_command}}` passes with 0 failures
 - [ ] `{{coverage_command}}` shows >= 90%
-- [ ] All new endpoints manually tested (happy path + all error cases)
+- [ ] All new endpoints/surfaces manually tested (happy path + all error cases)
 - [ ] Existing tests not broken
 
 ### `## 6. Tooling Reference`
@@ -137,15 +138,14 @@ New libraries or tools required (if any), with install instructions for the acti
 
 ### `## 9. Notes`
 Business rules, constraints, and important reminders.
+Branch naming must use `feature/<ticket-id>-{{side}}` (derived from the active stack — never hardcode `-backend` on frontend stacks).
 
 ### `## 10. Implementation Verification Checklist`
-- [ ] Code quality: no compilation errors, linting passes, constructor injection used
-- [ ] Domain: entities/models enforce invariants via factory methods
-- [ ] Application: services use DTOs, delegate to repositories — no raw DB access
-- [ ] Presentation: handlers are thin, all inputs validated before reaching service
-- [ ] Migrations: schema changes applied via migration scripts, not ORM auto-migrate
-- [ ] Tests: all green, coverage >= 90%, all HTTP status codes covered
-- [ ] Documentation: data-model.md, api-spec.yml, and standards files updated
+- [ ] Code quality: no compilation errors, linting passes
+- [ ] Architecture: follows active stack agent and standards
+- [ ] Tests: all green, coverage >= 90%
+- [ ] Documentation: data-model.md, api-spec.yml, and standards files updated as needed
+- [ ] Branch: `feature/<ticket-id>-{{side}}`
 
 ---
 
@@ -153,5 +153,5 @@ Business rules, constraints, and important reminders.
 
 Your final message must include the plan file path:
 
-> I've created a plan at `ai-specs/changes/planes/<ticket-id>/<ticket-id>_backend.md`.
+> I've created a plan at `ai-specs/changes/planes/<ticket-id>/<ticket-id>_{{side}}.md`.
 > Please review it before proceeding with implementation.
