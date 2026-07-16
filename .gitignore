@@ -87,3 +87,6 @@ node_modules
 # Jest / coverage
 coverage/
 
+# Cursor / agent tooling dumps accidentally staged at repo root
+/[0-9a-f]*-[0-9a-f]*-[0-9a-f]*-[0-9a-f]*-[0-9a-f]*.txt
+

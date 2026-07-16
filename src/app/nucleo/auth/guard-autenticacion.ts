@@ -11,7 +11,8 @@ export const guardAutenticacion: CanActivateFn = (_route, state) => {
   const autenticacion = inject(ServicioAutenticacion);
   const router = inject(Router);
 
-  if (autenticacion.estaAutenticado()) {
+  // Requiere token y perfil hidratado; token solo no basta (hidratación fallida → login).
+  if (autenticacion.estaAutenticado() && autenticacion.usuarioActual() !== null) {
     return true;
   }
 
