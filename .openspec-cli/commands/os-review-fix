@@ -139,7 +139,7 @@ fi
 # ── Build fix prompt ──────────────────────────────────────────
 os_step "Building fix prompt..."
 
-FIX_PROMPT="You are acting as the backend-developer agent for an openspec project.
+FIX_PROMPT="You are acting as the ${OS_SIDE}-developer agent for an openspec project.
 A code review has been completed for PR #$PR_NUMBER and changes are requested.
 Your task is to fix ALL the issues identified in the review below.
 

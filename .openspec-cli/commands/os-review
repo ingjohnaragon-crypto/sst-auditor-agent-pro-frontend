@@ -76,7 +76,7 @@ BASE_STANDARDS="";   BASE_FILE="$OS_REPO_ROOT/ai-specs/specs/base-standards.mdc"
 PLAN_CONTENT=""
 TICKET_ID=$(echo "$PR_BRANCH" | grep -oE '[A-Z]+-[0-9]+' | head -1 || true)
 if [ -n "$TICKET_ID" ]; then
-  PLAN_FILE="$OS_REPO_ROOT/ai-specs/changes/planes/${TICKET_ID}/${TICKET_ID}_backend.md"
+  PLAN_FILE="$(os_plan_file_for_ticket "$TICKET_ID")"
   [ -f "$PLAN_FILE" ] && PLAN_CONTENT=$(cat "$PLAN_FILE")
 fi
 
@@ -87,7 +87,8 @@ if [ -f "$REVIEW_CMD_FILE" ]; then
   REVIEW_TEMPLATE=$(cat "$REVIEW_CMD_FILE" \
     | sed "s|\$ARGUMENTS|$PR_NUMBER|g" \
     | sed "s|{{test_command}}|$OS_TEST_CMD|g" \
-    | sed "s|{{coverage_command}}|$OS_COVERAGE_CMD|g")
+    | sed "s|{{coverage_command}}|$OS_COVERAGE_CMD|g" \
+    | sed "s|{{side}}|$OS_SIDE|g")
 fi
 
 # ── Build prompt ─────────────────────────────────────────────

@@ -67,13 +67,14 @@ if [ -f "$CMD_FILE" ]; then
     | sed "s|{{run_command}}|$OS_RUN_CMD|g" \
     | sed "s|{{lint_command}}|$OS_LINT_CMD|g" \
     | sed "s|{{coverage_command}}|$OS_COVERAGE_CMD|g" \
+    | sed "s|{{side}}|$OS_SIDE|g" \
     | sed "s|\$ARGUMENTS|$TICKET_ID|g")
 fi
 
 # ── Build prompt ─────────────────────────────────────────────
 os_step "Building prompt..."
 
-PROMPT="You are acting as the backend-developer agent for an openspec project.
+PROMPT="You are acting as the ${OS_SIDE}-developer agent for an openspec project.
 
 ## Active Language
 $OS_LANGUAGE_LABEL
@@ -127,7 +128,7 @@ printf '%s' "$PROMPT" > "$PROMPT_FILE"
 NEXT_STEPS="1. Open $OS_AGENT_LABEL
 2. Paste the prompt
 3. The AI will generate the plan at:
-   ai-specs/changes/planes/${TICKET_ID}/${TICKET_ID}_backend.md
+   ai-specs/changes/planes/${TICKET_ID}/${TICKET_ID}_${OS_SIDE}.md
 4. Review the plan, then run:
    os-develop $TICKET_ID"
 

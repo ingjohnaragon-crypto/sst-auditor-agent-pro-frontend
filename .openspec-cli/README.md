@@ -61,11 +61,11 @@ os-enrich-apply KAN-6                        # uploads to Jira automatically
 # 4. Generate implementation plan
 os-plan KAN-6
 # Prompt is delivered automatically to your active agent
-# → AI generates ai-specs/changes/planes/KAN-6/KAN-6_backend.md
+# → AI generates ai-specs/changes/planes/KAN-6/KAN-6_frontend.md
 
 # 5. Implement
 os-develop KAN-6
-# → AI implements step by step on branch feature/KAN-6-backend
+# → AI implements step by step on branch feature/KAN-6-frontend
 
 # 6. Commit and open PR
 os-commit KAN-6
@@ -124,7 +124,7 @@ Creates the feature branch and delivers the implementation prompt.
 
 ```bash
 os-develop KAN-6
-# Creates branch: feature/KAN-6-backend
+# Creates branch: feature/KAN-6-frontend  (suffix from active stack: frontend-* → frontend)
 ```
 
 ### `os-enrich <TICKET-ID>`

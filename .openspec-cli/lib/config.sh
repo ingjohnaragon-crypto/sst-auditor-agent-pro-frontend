@@ -37,17 +37,39 @@ os_load_config() {
   OS_STANDARDS_REL=$(echo "$result" | grep "^standards="        | cut -d= -f2-)
   OS_AGENT_PATH="$OS_REPO_ROOT/$OS_AGENT_REL"
   OS_STANDARDS_PATH="$OS_REPO_ROOT/$OS_STANDARDS_REL"
+  case "$OS_ACTIVE_STACK" in
+    frontend-*) OS_SIDE="frontend" ;;
+    *)          OS_SIDE="backend" ;;
+  esac
   export OS_REPO_ROOT OS_CONFIG OS_ACTIVE_STACK OS_STACK_LABEL OS_PYTHON
   export OS_BUILD_CMD OS_TEST_CMD OS_RUN_CMD OS_LINT_CMD OS_COVERAGE_CMD
-  export OS_AGENT_PATH OS_STANDARDS_PATH
+  export OS_AGENT_PATH OS_STANDARDS_PATH OS_SIDE
+}
+
+# Resolve plan path for a ticket using the active side (frontend|backend).
+# Falls back to *_backend.md so older frontend plans still resolve.
+os_plan_file_for_ticket() {
+  ticket_id="$1"
+  preferred="$OS_REPO_ROOT/ai-specs/changes/planes/${ticket_id}/${ticket_id}_${OS_SIDE}.md"
+  fallback="$OS_REPO_ROOT/ai-specs/changes/planes/${ticket_id}/${ticket_id}_backend.md"
+  if [ -f "$preferred" ]; then
+    echo "$preferred"
+  elif [ -f "$fallback" ]; then
+    echo "$fallback"
+  else
+    echo "$preferred"
+  fi
 }
 
 os_load_env() {
   env_file="${OS_REPO_ROOT:-$(pwd)}/.env"
   if [ ! -f "$env_file" ]; then os_warn ".env not found"; return; fi
-  JIRA_BASE_URL=$(grep "^JIRA_BASE_URL=" "$env_file" | cut -d= -f2- | tr -d "")
-  JIRA_EMAIL=$(grep    "^JIRA_EMAIL="    "$env_file" | cut -d= -f2- | tr -d "")
-  JIRA_TOKEN=$(grep    "^JIRA_TOKEN="    "$env_file" | cut -d= -f2- | tr -d "")
+  JIRA_BASE_URL=$(grep "^JIRA_BASE_URL=" "$env_file" | cut -d= -f2- | tr -d "
+")
+  JIRA_EMAIL=$(grep    "^JIRA_EMAIL="    "$env_file" | cut -d= -f2- | tr -d "
+")
+  JIRA_TOKEN=$(grep    "^JIRA_TOKEN="    "$env_file" | cut -d= -f2- | tr -d "
+")
   export JIRA_BASE_URL JIRA_EMAIL JIRA_TOKEN
   os_success "Loaded .env"
 }
@@ -67,6 +89,7 @@ os_print_config() {
   os_info "Repo root : $OS_REPO_ROOT"
   os_info "Python    : ${OS_PYTHON:-not found}"
   os_info "Stack     : $OS_ACTIVE_STACK ($OS_STACK_LABEL)"
+  os_info "Side      : $OS_SIDE"
   os_info "Build     : $OS_BUILD_CMD"
   os_info "Test      : $OS_TEST_CMD"
   os_info "Coverage  : $OS_COVERAGE_CMD"
