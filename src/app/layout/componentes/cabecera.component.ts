@@ -1,0 +1,74 @@
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+
+import { ServicioAutenticacion } from '../../nucleo/auth/servicio-autenticacion';
+
+@Component({
+  selector: 'app-cabecera',
+  standalone: true,
+  template: `
+    <header
+      class="mb-8 flex flex-col gap-5 border-b border-slate-200 pb-6 sm:flex-row sm:items-end sm:justify-between md:mb-12 md:pb-8"
+    >
+      <div>
+        <p class="mb-2 text-[10px] font-black uppercase tracking-[0.3em] text-indigo-600">
+          SST Digital
+        </p>
+        <h1 class="text-3xl font-black uppercase tracking-tight text-slate-900 md:text-5xl">
+          Control Central
+        </h1>
+        <p class="mt-2 text-sm font-medium text-slate-400 md:text-base">
+          Bienvenido, {{ autenticacion.usuarioActual()?.nombre_completo ?? 'Usuario' }}
+        </p>
+      </div>
+
+      <div class="flex items-center justify-between gap-3 sm:justify-end">
+        <div class="min-w-0 text-right">
+          <p class="truncate text-sm font-bold text-slate-700">
+            {{ autenticacion.usuarioActual()?.nombre_completo ?? 'Cargando perfil…' }}
+          </p>
+          <p class="text-[9px] font-black uppercase tracking-widest text-indigo-600">
+            {{ nombreRol }}
+          </p>
+        </div>
+        <button
+          type="button"
+          class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-red-100 hover:bg-red-50 hover:text-red-600"
+          aria-label="Cerrar sesión"
+          title="Cerrar sesión"
+          (click)="cerrarSesion()"
+        >
+          <svg
+            class="h-5 w-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M10 17l5-5-5-5" />
+            <path d="M15 12H3" />
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+          </svg>
+        </button>
+      </div>
+    </header>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class CabeceraComponent {
+  readonly autenticacion = inject(ServicioAutenticacion);
+
+  get nombreRol(): string {
+    const rol = this.autenticacion.usuarioActual()?.rol;
+    if (!rol) {
+      return 'Sin rol';
+    }
+    return rol.replace('_', ' ');
+  }
+
+  cerrarSesion(): void {
+    this.autenticacion.cerrarSesion();
+  }
+}

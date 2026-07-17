@@ -60,6 +60,15 @@ describe('PaginaLoginComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should mostrar identidad visual y formulario accesible', () => {
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelector('h1')?.textContent).toContain('SST-Audit');
+    expect(element.querySelector('input[autocomplete="username"]')).toBeTruthy();
+    expect(element.querySelector('input[autocomplete="current-password"]')).toBeTruthy();
+    expect(element.querySelector('button[type="submit"]')?.textContent).toContain('Iniciar sesión');
+  });
+
   it('should navegar a returnUrl tras login exitoso', () => {
     component.formulario.setValue({
       correo: 'ana@empresa.com',
