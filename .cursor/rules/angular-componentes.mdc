@@ -1,0 +1,47 @@
+---
+description: Estructura y estilos obligatorios para componentes Angular
+globs: src/app/**/*.{ts,html,css}
+alwaysApply: false
+---
+
+# Componentes Angular
+
+Cada componente de producción vive en su propia carpeta (misma carpeta =
+mismo componente). Nunca mezclar varios componentes en un mismo directorio.
+
+```text
+nombre-componente/
+├── nombre-componente.component.ts
+├── nombre-componente.component.html
+├── nombre-componente.component.css
+└── nombre-componente.component.spec.ts
+```
+
+Ejemplos:
+
+```text
+layout/componentes/barra-lateral/
+features/dashboard/componentes/tarjeta-resumen/
+features/auth/paginas/pagina-login/
+layout/shell/
+```
+
+- Usar `templateUrl` y `styleUrls`; no usar `template` ni `styles` inline.
+- El `.ts` contiene estado, inyección y comportamiento; no markup ni CSS.
+- El `.html` contiene presentación y bindings.
+- El `.css` contiene solo estilos específicos del componente.
+- El `.spec.ts` cubre comportamiento, estados y accesibilidad.
+- Mantener `standalone: true` y `ChangeDetectionStrategy.OnPush`.
+- Agrupar por rol: `paginas/` (smart) y `componentes/` (presentacionales);
+  dentro de cada una, una carpeta por componente.
+
+## Estilos compartidos
+
+- Tokens y clases genéricas viven en `src/styles/design-tokens.css`.
+- La entrada global es `src/styles.css`; Tailwind se configura en
+  `tailwind.config.cjs`.
+- Reutilizar tokens/clases `sst-*`; no duplicar paleta, radios o sombras en
+  features.
+- Documentar tokens nuevos en `src/styles/README.md`.
+- Se permiten templates inline únicamente en componentes host creados dentro
+  de tests y no desplegados en producción.

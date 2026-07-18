@@ -1,0 +1,168 @@
+<section aria-labelledby="titulo-resumen" class="space-y-8">
+  <div>
+    <h2 id="titulo-resumen" class="sr-only">Resumen del sistema</h2>
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <app-tarjeta-resumen
+        titulo="Puntaje 0312"
+        valor="—"
+        subtitulo="Disponible al completar el diagnóstico"
+        color="indigo"
+      >
+        <svg
+          class="h-5 w-5 text-indigo-600"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M3 3v18h18" />
+          <path d="m7 16 4-5 4 3 5-7" />
+        </svg>
+      </app-tarjeta-resumen>
+
+      <app-tarjeta-resumen
+        titulo="Autoevaluaciones"
+        valor="—"
+        subtitulo="Histórico de evaluaciones de la empresa"
+        color="emerald"
+      >
+        <svg
+          class="h-5 w-5 text-emerald-600"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M9 11l3 3L22 4" />
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+        </svg>
+      </app-tarjeta-resumen>
+
+      <app-tarjeta-resumen
+        titulo="Planes de mejora"
+        valor="—"
+        subtitulo="Acciones derivadas de los resultados"
+        color="amber"
+      >
+        <svg
+          class="h-5 w-5 text-amber-600"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M12 2v20" />
+          <path d="m17 5-5-3-5 3" />
+          <path d="m17 19-5 3-5-3" />
+        </svg>
+      </app-tarjeta-resumen>
+
+      <app-tarjeta-resumen
+        titulo="Sesión actual"
+        [valor]="autenticacion.usuarioActual()?.rol ?? '—'"
+        [subtitulo]="autenticacion.usuarioActual()?.correo ?? 'Perfil autenticado'"
+        color="sky"
+      >
+        <svg
+          class="h-5 w-5 text-sky-600"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="12" cy="8" r="4" />
+          <path d="M4 22a8 8 0 0 1 16 0" />
+        </svg>
+      </app-tarjeta-resumen>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-[1.4fr_1fr]">
+    <article class="sst-superficie p-6 md:p-8">
+      <div class="mb-6 flex items-center gap-3">
+        <span class="rounded-xl bg-indigo-50 p-2.5 text-indigo-600" aria-hidden="true">
+          <svg
+            class="h-5 w-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z" />
+          </svg>
+        </span>
+        <div>
+          <h2 class="text-sm font-black uppercase tracking-widest text-slate-800">
+            Accesos rápidos
+          </h2>
+          <p class="mt-1 text-xs text-slate-500">Módulos del sistema SG-SST</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div
+          class="rounded-control border border-slate-100 bg-fondo p-5 text-slate-500"
+          aria-disabled="true"
+        >
+          <div class="mb-3 flex items-center justify-between">
+            <span class="sst-etiqueta text-xs text-slate-600">
+              Diagnóstico
+            </span>
+            <span
+              class="rounded-full bg-white px-2 py-1 text-[8px] font-black uppercase tracking-widest"
+            >
+              Próximamente
+            </span>
+          </div>
+          <p class="text-xs leading-relaxed">
+            Autoevaluación de estándares mínimos de la Resolución 0312.
+          </p>
+        </div>
+
+        <a
+          *appSiTieneRol="['ADMINISTRADOR', 'AUDITOR_SST']"
+          routerLink="/ejemplo-sensible"
+          class="group rounded-control border border-indigo-100 bg-indigo-50 p-5 transition hover:border-indigo-200 hover:bg-indigo-100"
+        >
+          <div class="mb-3 flex items-center justify-between">
+            <span class="sst-etiqueta text-xs text-indigo-700">
+              Área de auditoría
+            </span>
+            <span class="text-indigo-500 transition group-hover:translate-x-1" aria-hidden="true">
+              →
+            </span>
+          </div>
+          <p class="text-xs leading-relaxed text-indigo-600">
+            Acceso restringido para gestión especializada.
+          </p>
+        </a>
+      </div>
+    </article>
+
+    <aside
+      class="relative overflow-hidden rounded-panel bg-slate-900 p-7 text-white shadow-xl md:p-8"
+    >
+      <div class="relative z-10">
+        <p class="sst-etiqueta mb-3 tracking-[0.25em] text-indigo-300">
+          Ciclo PHVA
+        </p>
+        <h2 class="text-2xl font-black tracking-tight">Mejora continua del SG-SST</h2>
+        <p class="mt-4 text-sm leading-relaxed text-slate-400">
+          Centraliza el diagnóstico, seguimiento y mejora del sistema de gestión de tu
+          organización.
+        </p>
+        <div class="mt-7 flex gap-2" aria-label="Fases PHVA">
+          <span class="h-2 flex-1 rounded-full bg-indigo-500" title="Planear"></span>
+          <span class="h-2 flex-1 rounded-full bg-emerald-500" title="Hacer"></span>
+          <span class="h-2 flex-1 rounded-full bg-amber-500" title="Verificar"></span>
+          <span class="h-2 flex-1 rounded-full bg-sky-500" title="Actuar"></span>
+        </div>
+      </div>
+      <div
+        class="absolute -bottom-12 -right-12 h-40 w-40 rounded-full bg-indigo-600/20 blur-2xl"
+        aria-hidden="true"
+      ></div>
+    </aside>
+  </div>
+</section>

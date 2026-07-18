@@ -1,22 +1,30 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
+import { map } from 'rxjs';
 
 import { ServicioAutenticacion } from './servicio-autenticacion';
 
 /**
  * Guard de autenticación (UX / navegación).
  * La autorización real la impone el backend con `requerir_roles`.
+ *
+ * Espera la hidratación de sesión (F5 con token persistido) antes de decidir,
+ * para no expulsar a `/login` mientras `/auth/yo` sigue en curso.
  */
 export const guardAutenticacion: CanActivateFn = (_route, state) => {
   const autenticacion = inject(ServicioAutenticacion);
   const router = inject(Router);
 
-  // Requiere token y perfil hidratado; token solo no basta (hidratación fallida → login).
-  if (autenticacion.estaAutenticado() && autenticacion.usuarioActual() !== null) {
-    return true;
+  const irALogin = () =>
+    router.createUrlTree(['/login'], {
+      queryParams: { returnUrl: state.url },
+    });
+
+  if (!autenticacion.estaAutenticado()) {
+    return irALogin();
   }
 
-  return router.createUrlTree(['/login'], {
-    queryParams: { returnUrl: state.url },
-  });
+  return autenticacion.esperarHidratacion().pipe(
+    map((usuario) => (usuario !== null ? true : irALogin())),
+  );
 };

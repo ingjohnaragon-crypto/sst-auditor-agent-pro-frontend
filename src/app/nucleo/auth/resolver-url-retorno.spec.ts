@@ -1,9 +1,9 @@
 import { resolverUrlRetorno } from './resolver-url-retorno';
 
 describe('resolverUrlRetorno', () => {
-  it('should devolver / si es null o vacio', () => {
-    expect(resolverUrlRetorno(null)).toBe('/');
-    expect(resolverUrlRetorno('')).toBe('/');
+  it('should devolver /dashboard si es null o vacio', () => {
+    expect(resolverUrlRetorno(null)).toBe('/dashboard');
+    expect(resolverUrlRetorno('')).toBe('/dashboard');
   });
 
   it('should aceptar rutas relativas internas', () => {
@@ -11,7 +11,7 @@ describe('resolverUrlRetorno', () => {
   });
 
   it('should rechazar open redirects', () => {
-    expect(resolverUrlRetorno('//evil.com')).toBe('/');
-    expect(resolverUrlRetorno('https://evil.com')).toBe('/');
+    expect(resolverUrlRetorno('//evil.com')).toBe('/dashboard');
+    expect(resolverUrlRetorno('https://evil.com')).toBe('/dashboard');
   });
 });

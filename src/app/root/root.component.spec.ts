@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { RootComponent } from './root.component';
-import { ServicioSalud } from './nucleo/servicios/servicio-salud';
+import { ServicioSalud } from '../nucleo/servicios/servicio-salud';
 
 describe('RootComponent', () => {
   let fixture: ComponentFixture<RootComponent>;

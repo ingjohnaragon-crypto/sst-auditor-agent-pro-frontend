@@ -1,0 +1,89 @@
+# Ticket enriquecido: SP-238 — Crear pantalla y dashboard generico de inicio de sesion
+
+## Descripción original
+<!-- jira-skip -->
+Mockup de referencia
+<!-- /jira-skip -->
+
+## Descripción mejorada
+
+Construir en el frontend Angular dos superficies de UI conectadas al flujo de autenticación ya existente (SP-176/SP-177):
+
+1. **Pantalla de inicio de sesión (`/login`)**: rediseñar la pantalla actual (`PaginaLoginComponent`, hoy minimalista) para alinearla al lenguaje visual del mockup de referencia [`sst-audit-pro-mckp`](https://github.com/ingjohnaragon-crypto/sst-audit-pro-mckp): fondo `bg-slate-50`, tarjeta central `bg-white rounded-[2.5rem] shadow`, logo con ícono escudo sobre `bg-indigo-600`, tipografía Inter, acento indigo. Mantener la lógica existente (formulario tipado, `ServicioAutenticacion.iniciarSesion`, manejo de `returnUrl`).
+
+2. **Dashboard genérico (`/dashboard` o `/inicio`)**: crear el layout de aplicación autenticada (shell) que sirve de landing tras el login. Incluye barra lateral de navegación (`bg-slate-900`), cabecera con datos del usuario autenticado (`nombre_completo`, `rol`) y botón de cierre de sesión, y una zona de contenido con tarjetas de resumen (StatCards) y accesos rápidos a los módulos disponibles (p. ej. Diagnóstico — SP-189). Es un dashboard **genérico/placeholder**: la data de negocio real se conecta en tickets posteriores; aquí se entrega la estructura, el estilo y los enlaces.
+
+El objetivo es dejar el «cascarón» visual y navegable de la app (login → dashboard con shell), reutilizando el mockup como fuente de diseño, sin portar su código React ni sus módulos de negocio (GTC 45, PDF, IA, plan de mejora).
+
+**Contexto técnico ya disponible (no reimplementar):**
+- Auth JWT completo: `ServicioAutenticacion` (`iniciarSesion`, `obtenerYo`, `cerrarSesion`, signal `usuarioActual`), interceptor Bearer + refresh, `AlmacenTokens`.
+- Guards: `guardAutenticacion`, `guardRoles`; directiva `*appSiTieneRol`.
+- Modelo `UsuarioAutenticado` = `{ id, nombre_completo, correo, rol }`; `RolUsuario` = `ADMINISTRADOR | AUDITOR_SST | CONSULTA`.
+- Tailwind configurado; sin Angular Material en uso.
+
+## Criterios de aceptación
+
+- [ ] La pantalla `/login` conserva el formulario reactivo tipado (correo + contraseña) y su validación, y adopta el diseño del mockup (tarjeta central, logo escudo, paleta slate/indigo, fuente Inter).
+- [ ] Login exitoso redirige a la URL de retorno (`returnUrl`) o, por defecto, al dashboard (`/dashboard`).
+- [ ] Error de credenciales muestra mensaje accesible (`role="alert"`) sin exponer detalles sensibles; el botón se deshabilita mientras `enviando`.
+- [ ] Existe una ruta protegida `/dashboard` (`canActivate: [guardAutenticacion]`) que renderiza el shell: barra lateral de navegación, cabecera con `nombre_completo` y `rol`, y botón «Cerrar sesión».
+- [ ] «Cerrar sesión» invoca `ServicioAutenticacion.cerrarSesion()` (limpia tokens y redirige a `/login`).
+- [ ] El dashboard muestra al menos una fila de StatCards (placeholder) y accesos rápidos a los módulos existentes (mínimo: enlace a Diagnóstico cuando aplique).
+- [ ] Los controles/enlaces de módulos restringidos se ocultan según rol con `*appSiTieneRol` (RBAC solo UX; el backend sigue siendo la autoridad).
+- [ ] Responsive: usable en móvil (≥ 360 px); la barra lateral colapsa (solo íconos) en pantallas pequeñas, como el mockup (`w-20 md:w-64`).
+- [ ] La raíz `/` autenticada redirige al dashboard; sin sesión redirige a `/login`.
+- [ ] Tests unitarios de componentes nuevos/modificados con cobertura ≥ 90%; los tests existentes de auth siguen verdes.
+
+## Campos y endpoints
+
+No se agregan endpoints nuevos. Se consumen los ya integrados por `ServicioAutenticacion`:
+
+- `POST /api/v1/auth/login` — body `{ correo, contrasena }` → `{ token_acceso, token_refresco, tipo_token, expira_en_segundos }`.
+- `GET /api/v1/auth/yo` — Bearer → `{ id, nombre_completo, correo, rol }`.
+- `POST /api/v1/auth/refresh` — lo gestiona el interceptor (single-flight).
+
+Datos que consume la UI del dashboard (desde `usuarioActual()`):
+- `nombre_completo: string`
+- `correo: string`
+- `rol: 'ADMINISTRADOR' | 'AUDITOR_SST' | 'CONSULTA'`
+
+Contrato de error (para banners): `{ exito, codigo, mensaje, detalle }` (`RespuestaErrorApi` en `nucleo/auth/modelos`).
+
+## Archivos a crear o modificar
+
+- `src/app/features/auth/paginas/pagina-login.component.ts` — Presentation — Modificar (rediseño visual, misma lógica)
+- `src/app/layout/shell/shell.component.ts` — Presentation — Crear (contenedor con sidebar + header + `<router-outlet>` o `<ng-content>`)
+- `src/app/layout/shell/barra-lateral.component.ts` — Presentation — Crear (nav con ítems y estado activo)
+- `src/app/layout/shell/cabecera.component.ts` — Presentation — Crear (usuario + rol + cerrar sesión)
+- `src/app/features/dashboard/paginas/pagina-dashboard.component.ts` — Presentation — Crear (landing genérica)
+- `src/app/features/dashboard/componentes/tarjeta-resumen.component.ts` — Presentation — Crear (StatCard: ícono, título, valor, subtítulo)
+- `src/app/app.routes.ts` — Presentation — Modificar (ruta `/dashboard` protegida; `/` → dashboard; enlazar shell)
+- `src/app/app.routes.spec.ts` — Test — Modificar
+- `src/styles.css` — Presentation — Modificar (fuente Inter, tokens base del mockup)
+- `src/app/features/dashboard/README.md` — Doc — Crear (referencia al mockup y alcance genérico)
+- `*.spec.ts` de cada componente nuevo — Test — Crear
+
+## Casos de prueba unitarios
+
+- **Login (happy path)**: credenciales válidas → llama `iniciarSesion` y navega a `returnUrl`/`/dashboard`.
+- **Login (error)**: credenciales inválidas → muestra mensaje `role="alert"`, reactiva el botón.
+- **Login (validación)**: formulario inválido (correo mal formado / contraseña corta) → botón deshabilitado, no envía.
+- **Dashboard**: renderiza `nombre_completo` y `rol` desde `usuarioActual()`.
+- **Cerrar sesión**: click invoca `cerrarSesion()` (spy) → limpieza + navegación a `/login`.
+- **RBAC UI**: usuario `CONSULTA` no ve accesos de escritura; `ADMINISTRADOR`/`AUDITOR_SST` sí.
+- **Shell responsive**: aplica clases de colapso (`w-20 md:w-64`) — verificación de plantilla.
+- **Rutas**: `/dashboard` exige `guardAutenticacion`; `/` autenticado redirige a dashboard.
+
+## Requisitos no funcionales
+
+- **Seguridad**: nunca loguear tokens ni credenciales; el RBAC de UI es solo UX (el backend valida con `requerir_roles`). No persistir datos sensibles fuera de `AlmacenTokens`.
+- **Accesibilidad**: labels asociados a inputs, `autocomplete` correcto (`username`/`current-password`), foco visible, contraste AA, mensajes de error con `role="alert"`.
+- **Rendimiento**: componentes standalone con `ChangeDetectionStrategy.OnPush`; shell/dashboard con `loadComponent` lazy.
+- **Consistencia**: Tailwind (sin Angular Material); sin nuevas dependencias (evitar portar `lucide-react`, `recharts`, `motion` del mockup — usar SVG/íconos locales).
+- **Arquitectura**: formularios tipados (`FormGroup<T>`), llamadas HTTP solo vía servicios, smart vs dumb components.
+- **i18n/idioma**: textos e identificadores en español.
+
+## Puntos de historia
+<!-- STORY_POINTS:3 -->
+**3** — rediseño de login (lógica ya existe) + shell de navegación + dashboard genérico con StatCards placeholder y RBAC de UI; sin endpoints nuevos ni lógica de negocio. Complejidad principal en layout responsive y tests.
+<!-- /STORY_POINTS -->

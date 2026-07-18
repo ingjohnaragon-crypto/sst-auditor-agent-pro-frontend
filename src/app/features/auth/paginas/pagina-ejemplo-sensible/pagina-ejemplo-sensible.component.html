@@ -1,0 +1,7 @@
+<main class="p-6">
+  <h1 class="mb-2 text-2xl">Área sensible (ejemplo)</h1>
+  <p>Ruta restringida a ADMINISTRADOR y AUDITOR_SST.</p>
+  <p *appSiTieneRol="['ADMINISTRADOR']" class="mt-2 text-sm">
+    Visible solo para ADMINISTRADOR.
+  </p>
+</main>

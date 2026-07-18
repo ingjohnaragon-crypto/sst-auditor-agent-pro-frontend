@@ -1,9 +1,3 @@
-/**
- * Barrel file - Layout layer
- * Exporta componentes del shell (header, nav, footer)
- * 
- * Uso:
- * import { HeaderComponent, NavComponent } from '@app/layout';
- */
-
-export * from './components';
+export { BarraLateralComponent } from './componentes/barra-lateral/barra-lateral.component';
+export { CabeceraComponent } from './componentes/cabecera/cabecera.component';
+export { ShellComponent } from './shell/shell.component';

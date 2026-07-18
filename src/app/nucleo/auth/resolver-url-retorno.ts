@@ -4,11 +4,11 @@
  */
 export function resolverUrlRetorno(returnUrl: string | null | undefined): string {
   if (!returnUrl) {
-    return '/';
+    return '/dashboard';
   }
   const url = returnUrl.trim();
   if (!url.startsWith('/') || url.startsWith('//')) {
-    return '/';
+    return '/dashboard';
   }
   return url;
 }

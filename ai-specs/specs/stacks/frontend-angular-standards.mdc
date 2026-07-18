@@ -27,6 +27,13 @@ layout/     Shell, navigation, header components
 ## Key Rules
 - `ChangeDetectionStrategy.OnPush` on every component — no exceptions
 - Standalone components preferred over NgModules (Angular 17+)
+- Every production component must live in its own folder with four colocated
+  files: `.component.ts`, `.component.html`, `.component.css`, and
+  `.component.spec.ts` (never mix multiple components in the same directory)
+- Use `templateUrl` and `styleUrls`; inline `template` / `styles` are forbidden
+  outside test-only host components
+- Group by role under `paginas/` (smart) and `componentes/` (presentational),
+  then one subfolder per component
 - Typed `FormGroup<T>` always — never untyped `FormGroup`
 - All API calls go through feature services — never directly inside components
 - Smart (container) components connect to state; dumb (presentational) components use `@Input`/`@Output` only
@@ -40,6 +47,15 @@ layout/     Shell, navigation, header components
 | Components | PascalCase + suffix | `CandidateListComponent` |
 | Services | PascalCase + suffix | `CandidateService` |
 | Files | kebab-case | `candidate-list.component.ts` |
+| Component folder | one folder per component | `componentes/tarjeta-resumen/` |
+
+## Styling
+- Global tokens and semantic classes live in `src/styles/design-tokens.css`
+- `src/styles.css` is the global entry point; Tailwind theme lives in
+  `tailwind.config.cjs`
+- Component CSS contains only component-specific styles
+- Reuse `--sst-*` tokens and `sst-*` classes before adding duplicated values
+- Document new global tokens in `src/styles/README.md`
 
 ## Testing
 - `TestBed` + Angular Testing Library

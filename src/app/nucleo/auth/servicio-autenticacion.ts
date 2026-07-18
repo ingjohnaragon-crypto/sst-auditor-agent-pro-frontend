@@ -1,7 +1,17 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, finalize, map, shareReplay, switchMap, tap, throwError } from 'rxjs';
+import {
+  Observable,
+  catchError,
+  finalize,
+  map,
+  of,
+  shareReplay,
+  switchMap,
+  tap,
+  throwError,
+} from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { AlmacenTokens } from './almacen-tokens';
@@ -21,13 +31,34 @@ export class ServicioAutenticacion {
   readonly usuarioActual = this.usuario.asReadonly();
 
   private refreshEnCurso$: Observable<string> | null = null;
+  private hidratacionEnCurso$: Observable<UsuarioAutenticado | null> | null = null;
 
   constructor() {
     if (this.almacen.obtenerTokenAcceso()) {
-      this.obtenerYo().subscribe({
-        error: () => this.limpiarSesionLocal(),
-      });
+      // Al recargar (F5) hay token pero aún no hay perfil: hidratamos una sola vez
+      // y compartimos el resultado para que el guard pueda esperarlo.
+      this.hidratacionEnCurso$ = this.obtenerYo().pipe(
+        map((usuario): UsuarioAutenticado | null => usuario),
+        catchError(() => {
+          this.limpiarSesionLocal();
+          return of(null);
+        }),
+        finalize(() => {
+          this.hidratacionEnCurso$ = null;
+        }),
+        shareReplay(1),
+      );
+      this.hidratacionEnCurso$.subscribe();
     }
+  }
+
+  /**
+   * Emite el usuario autenticado una vez terminada la hidratación de sesión,
+   * o `null` si no hay sesión válida. Si no hay hidratación en curso, emite
+   * el estado actual de inmediato.
+   */
+  esperarHidratacion(): Observable<UsuarioAutenticado | null> {
+    return this.hidratacionEnCurso$ ?? of(this.usuario());
   }
 
   estaAutenticado(): boolean {
