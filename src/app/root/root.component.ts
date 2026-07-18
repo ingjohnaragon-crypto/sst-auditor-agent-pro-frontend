@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable, of } from 'rxjs';
 import { catchError, map, startWith } from 'rxjs/operators';
-import { ServicioSalud, PingRespuesta } from './nucleo/servicios/servicio-salud';
+import { ServicioSalud, PingRespuesta } from '../nucleo/servicios/servicio-salud';
 
 export type VistaPing =
   | { estado: 'cargando'; ping: null; error: null }

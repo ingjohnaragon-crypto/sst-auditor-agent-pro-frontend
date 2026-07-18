@@ -8,15 +8,18 @@ navegación y la información de sesión visibles.
 ```text
 layout/
 ├── componentes/
-│   ├── barra-lateral.component.{ts,html,css,spec.ts}
-│   └── cabecera.component.{ts,html,css,spec.ts}
-├── shell.component.{ts,html,css,spec.ts}
+│   ├── barra-lateral/
+│   │   └── barra-lateral.component.{ts,html,css,spec.ts}
+│   └── cabecera/
+│       └── cabecera.component.{ts,html,css,spec.ts}
+├── shell/
+│   └── shell.component.{ts,html,css,spec.ts}
 ├── components/index.ts
 └── index.ts
 ```
 
-Todos los componentes de producción usan `templateUrl` y `styleUrls`. Los
-templates y estilos inline no están permitidos.
+Cada subcomponente vive en su propia carpeta. Todos usan `templateUrl` y
+`styleUrls`; templates/estilos inline no están permitidos.
 
 ## Responsabilidades
 

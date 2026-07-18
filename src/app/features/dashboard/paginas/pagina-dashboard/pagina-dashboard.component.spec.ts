@@ -2,11 +2,11 @@ import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
-import { ServicioAutenticacion } from '../../../nucleo/auth/servicio-autenticacion';
+import { ServicioAutenticacion } from '../../../../nucleo/auth/servicio-autenticacion';
 import type {
   RolUsuario,
   UsuarioAutenticado,
-} from '../../../nucleo/auth/modelos/usuario-autenticado';
+} from '../../../../nucleo/auth/modelos/usuario-autenticado';
 import { PaginaDashboardComponent } from './pagina-dashboard.component';
 
 describe('PaginaDashboardComponent', () => {

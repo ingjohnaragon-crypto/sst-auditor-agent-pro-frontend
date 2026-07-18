@@ -1,8 +1,8 @@
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ServicioAutenticacion } from '../../nucleo/auth/servicio-autenticacion';
-import type { UsuarioAutenticado } from '../../nucleo/auth/modelos/usuario-autenticado';
+import { ServicioAutenticacion } from '../../../nucleo/auth/servicio-autenticacion';
+import type { UsuarioAutenticado } from '../../../nucleo/auth/modelos/usuario-autenticado';
 import { CabeceraComponent } from './cabecera.component';
 
 describe('CabeceraComponent', () => {

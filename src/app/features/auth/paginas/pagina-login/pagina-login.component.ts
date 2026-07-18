@@ -3,8 +3,8 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { resolverUrlRetorno } from '../../../nucleo/auth/resolver-url-retorno';
-import { ServicioAutenticacion } from '../../../nucleo/auth/servicio-autenticacion';
+import { resolverUrlRetorno } from '../../../../nucleo/auth/resolver-url-retorno';
+import { ServicioAutenticacion } from '../../../../nucleo/auth/servicio-autenticacion';
 
 @Component({
   selector: 'app-pagina-login',

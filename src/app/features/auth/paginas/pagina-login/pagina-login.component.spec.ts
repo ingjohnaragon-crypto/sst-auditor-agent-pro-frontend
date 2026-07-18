@@ -5,9 +5,9 @@ import { provideHttpClientTesting, HttpTestingController } from '@angular/common
 import { ActivatedRoute } from '@angular/router';
 
 import { PaginaLoginComponent } from './pagina-login.component';
-import { ServicioAutenticacion } from '../../../nucleo/auth/servicio-autenticacion';
-import { environment } from '../../../../environments/environment';
-import type { UsuarioAutenticado } from '../../../nucleo/auth/modelos/usuario-autenticado';
+import { ServicioAutenticacion } from '../../../../nucleo/auth/servicio-autenticacion';
+import { environment } from '../../../../../environments/environment';
+import type { UsuarioAutenticado } from '../../../../nucleo/auth/modelos/usuario-autenticado';
 
 describe('PaginaLoginComponent', () => {
   let fixture: ComponentFixture<PaginaLoginComponent>;

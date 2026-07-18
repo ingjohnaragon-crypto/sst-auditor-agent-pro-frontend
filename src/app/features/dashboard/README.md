@@ -3,6 +3,22 @@
 Landing autenticada de SST-Audit Pro. La ruta `/dashboard` se renderiza dentro
 del `ShellComponent` y está protegida por `guardAutenticacion`.
 
+## Estructura
+
+```text
+features/dashboard/
+├── paginas/
+│   └── pagina-dashboard/
+│       └── pagina-dashboard.component.{ts,html,css,spec.ts}
+├── componentes/
+│   └── tarjeta-resumen/
+│       └── tarjeta-resumen.component.{ts,html,css,spec.ts}
+└── README.md
+```
+
+Cada página y subcomponente tiene su propia carpeta. No mezclar varios
+componentes en el mismo directorio.
+
 ## Alcance
 
 - Resumen genérico con tarjetas placeholder.

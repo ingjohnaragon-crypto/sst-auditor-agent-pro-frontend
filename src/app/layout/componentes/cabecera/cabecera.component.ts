@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
-import { ServicioAutenticacion } from '../../nucleo/auth/servicio-autenticacion';
+import { ServicioAutenticacion } from '../../../nucleo/auth/servicio-autenticacion';
 
 @Component({
   selector: 'app-cabecera',

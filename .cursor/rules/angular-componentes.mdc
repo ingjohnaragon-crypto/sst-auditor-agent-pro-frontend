@@ -6,13 +6,24 @@ alwaysApply: false
 
 # Componentes Angular
 
-Todo componente de producción debe tener archivos colocados juntos:
+Cada componente de producción vive en su propia carpeta (misma carpeta =
+mismo componente). Nunca mezclar varios componentes en un mismo directorio.
 
 ```text
-nombre.component.ts
-nombre.component.html
-nombre.component.css
-nombre.component.spec.ts
+nombre-componente/
+├── nombre-componente.component.ts
+├── nombre-componente.component.html
+├── nombre-componente.component.css
+└── nombre-componente.component.spec.ts
+```
+
+Ejemplos:
+
+```text
+layout/componentes/barra-lateral/
+features/dashboard/componentes/tarjeta-resumen/
+features/auth/paginas/pagina-login/
+layout/shell/
 ```
 
 - Usar `templateUrl` y `styleUrls`; no usar `template` ni `styles` inline.
@@ -21,6 +32,8 @@ nombre.component.spec.ts
 - El `.css` contiene solo estilos específicos del componente.
 - El `.spec.ts` cubre comportamiento, estados y accesibilidad.
 - Mantener `standalone: true` y `ChangeDetectionStrategy.OnPush`.
+- Agrupar por rol: `paginas/` (smart) y `componentes/` (presentacionales);
+  dentro de cada una, una carpeta por componente.
 
 ## Estilos compartidos
 

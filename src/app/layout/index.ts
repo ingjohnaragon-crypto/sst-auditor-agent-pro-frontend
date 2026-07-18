@@ -1,2 +1,2 @@
 export * from './components';
-export { ShellComponent } from './shell.component';
+export { ShellComponent } from './shell/shell.component';
