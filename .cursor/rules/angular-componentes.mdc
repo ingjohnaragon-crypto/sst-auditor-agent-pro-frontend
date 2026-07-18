@@ -1,0 +1,34 @@
+---
+description: Estructura y estilos obligatorios para componentes Angular
+globs: src/app/**/*.{ts,html,css}
+alwaysApply: false
+---
+
+# Componentes Angular
+
+Todo componente de producción debe tener archivos colocados juntos:
+
+```text
+nombre.component.ts
+nombre.component.html
+nombre.component.css
+nombre.component.spec.ts
+```
+
+- Usar `templateUrl` y `styleUrls`; no usar `template` ni `styles` inline.
+- El `.ts` contiene estado, inyección y comportamiento; no markup ni CSS.
+- El `.html` contiene presentación y bindings.
+- El `.css` contiene solo estilos específicos del componente.
+- El `.spec.ts` cubre comportamiento, estados y accesibilidad.
+- Mantener `standalone: true` y `ChangeDetectionStrategy.OnPush`.
+
+## Estilos compartidos
+
+- Tokens y clases genéricas viven en `src/styles/design-tokens.css`.
+- La entrada global es `src/styles.css`; Tailwind se configura en
+  `tailwind.config.cjs`.
+- Reutilizar tokens/clases `sst-*`; no duplicar paleta, radios o sombras en
+  features.
+- Documentar tokens nuevos en `src/styles/README.md`.
+- Se permiten templates inline únicamente en componentes host creados dentro
+  de tests y no desplegados en producción.

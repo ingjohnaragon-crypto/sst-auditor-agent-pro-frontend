@@ -1,0 +1,57 @@
+:root {
+  --sst-color-fondo: #f8fafc;
+  --sst-color-superficie: #ffffff;
+  --sst-color-texto: #1e293b;
+  --sst-color-texto-suave: #94a3b8;
+  --sst-color-borde: #f1f5f9;
+  --sst-color-marca: #4f46e5;
+  --sst-color-marca-hover: #4338ca;
+  --sst-color-exito: #10b981;
+  --sst-color-advertencia: #f59e0b;
+  --sst-color-error: #ef4444;
+  --sst-radio-control: 1rem;
+  --sst-radio-panel: 2rem;
+  --sst-sombra-panel: 0 10px 30px rgb(15 23 42 / 8%);
+  --sst-fuente-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --sst-fuente-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+.sst-superficie {
+  border: 1px solid var(--sst-color-borde);
+  border-radius: var(--sst-radio-panel);
+  background: var(--sst-color-superficie);
+  box-shadow: var(--sst-sombra-panel);
+}
+
+.sst-etiqueta {
+  color: var(--sst-color-texto-suave);
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sst-campo {
+  border: 1px solid #e2e8f0;
+  border-radius: var(--sst-radio-control);
+  background: var(--sst-color-fondo);
+}
+
+.sst-campo:focus {
+  border-color: var(--sst-color-marca);
+  outline: 2px solid rgb(79 70 229 / 20%);
+  outline-offset: 2px;
+}
+
+.sst-boton-primario {
+  border-radius: var(--sst-radio-control);
+  background: #0f172a;
+  color: #fff;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sst-boton-primario:hover:not(:disabled) {
+  background: var(--sst-color-marca);
+}

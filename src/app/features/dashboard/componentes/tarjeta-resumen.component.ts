@@ -5,28 +5,8 @@ export type ColorTarjetaResumen = 'indigo' | 'emerald' | 'amber' | 'sky';
 @Component({
   selector: 'app-tarjeta-resumen',
   standalone: true,
-  template: `
-    <article
-      class="h-full rounded-[2rem] border border-slate-100 border-l-4 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
-      [class.border-l-indigo-600]="color === 'indigo'"
-      [class.border-l-emerald-500]="color === 'emerald'"
-      [class.border-l-amber-500]="color === 'amber'"
-      [class.border-l-sky-500]="color === 'sky'"
-    >
-      <div class="mb-5 flex items-start justify-between gap-4">
-        <div>
-          <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-            {{ titulo }}
-          </p>
-          <p class="mt-2 text-3xl font-black tracking-tight text-slate-900">{{ valor }}</p>
-        </div>
-        <div class="rounded-xl bg-slate-50 p-2.5 text-slate-500" aria-hidden="true">
-          <ng-content />
-        </div>
-      </div>
-      <p class="text-xs font-medium leading-relaxed text-slate-400">{{ subtitulo }}</p>
-    </article>
-  `,
+  templateUrl: './tarjeta-resumen.component.html',
+  styleUrls: ['./tarjeta-resumen.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TarjetaResumenComponent {
