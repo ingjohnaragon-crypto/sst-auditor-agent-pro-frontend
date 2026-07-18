@@ -2,13 +2,13 @@
   class="mb-8 flex flex-col gap-5 border-b border-slate-200 pb-6 sm:flex-row sm:items-end sm:justify-between md:mb-12 md:pb-8"
 >
   <div>
-    <p class="mb-2 text-[10px] font-black uppercase tracking-[0.3em] text-indigo-600">
+    <p class="sst-etiqueta mb-2 tracking-[0.3em] text-marca">
       SST Digital
     </p>
     <h1 class="text-3xl font-black uppercase tracking-tight text-slate-900 md:text-5xl">
       Control Central
     </h1>
-    <p class="mt-2 text-sm font-medium text-slate-400 md:text-base">
+    <p class="mt-2 text-sm font-medium text-slate-500 md:text-base">
       Bienvenido, {{ autenticacion.usuarioActual()?.nombre_completo ?? 'Usuario' }}
     </p>
   </div>
@@ -18,13 +18,13 @@
       <p class="truncate text-sm font-bold text-slate-700">
         {{ autenticacion.usuarioActual()?.nombre_completo ?? 'Cargando perfil…' }}
       </p>
-      <p class="text-[9px] font-black uppercase tracking-widest text-indigo-600">
-        {{ nombreRol }}
+      <p class="sst-etiqueta text-[9px] text-marca">
+        {{ nombreRol() }}
       </p>
     </div>
     <button
       type="button"
-      class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-red-100 hover:bg-red-50 hover:text-red-600"
+      class="flex h-11 w-11 shrink-0 items-center justify-center rounded-control border border-slate-200 bg-superficie text-slate-500 shadow-sm transition hover:border-red-100 hover:bg-red-50 hover:text-red-600"
       aria-label="Cerrar sesión"
       title="Cerrar sesión"
       (click)="cerrarSesion()"

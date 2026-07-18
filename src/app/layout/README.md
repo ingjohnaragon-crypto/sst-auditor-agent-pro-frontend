@@ -14,7 +14,6 @@ layout/
 │       └── cabecera.component.{ts,html,css,spec.ts}
 ├── shell/
 │   └── shell.component.{ts,html,css,spec.ts}
-├── components/index.ts
 └── index.ts
 ```
 

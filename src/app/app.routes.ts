@@ -30,7 +30,9 @@ export const rutasApp: Routes = [
         canActivate: [guardRoles],
         data: { rolesPermitidos: [...ROLES_AUDITORIA_SENSIBLE] },
       },
+      // Wildcard dentro del shell: el guard evalúa la URL original, por lo que
+      // un anónimo conserva returnUrl con la ruta que pidió.
+      { path: '**', redirectTo: 'dashboard' },
     ],
   },
-  { path: '**', redirectTo: 'dashboard' },
 ];

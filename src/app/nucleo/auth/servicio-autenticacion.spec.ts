@@ -166,6 +166,42 @@ describe('ServicioAutenticacion', () => {
     httpHidratado.verify();
   });
 
+  it('should esperarHidratacion emitir el estado actual si no hay hidratacion en curso', (done) => {
+    servicio.esperarHidratacion().subscribe((u) => {
+      expect(u).toBeNull();
+      done();
+    });
+  });
+
+  it('should esperarHidratacion emitir el usuario cuando /yo responde tras F5', (done) => {
+    sessionStorage.setItem('sst.token_acceso', 'acc-persistido');
+    sessionStorage.setItem('sst.token_refresco', 'ref-persistido');
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([{ path: 'login', children: [] }]),
+        AlmacenTokens,
+        ServicioAutenticacion,
+      ],
+    });
+
+    const hidratado = TestBed.inject(ServicioAutenticacion);
+    const httpHidratado = TestBed.inject(HttpTestingController);
+
+    // Suscripción antes de que /yo responda: simula el guard durante un F5.
+    hidratado.esperarHidratacion().subscribe((u) => {
+      expect(u).toEqual(usuarioMock);
+      done();
+    });
+
+    const yoReq = httpHidratado.expectOne(`${environment.apiBaseUrl}/auth/yo`);
+    yoReq.flush(usuarioMock);
+    httpHidratado.verify();
+  });
+
   it('should limpiar sesion si la hidratacion de /yo falla', () => {
     sessionStorage.setItem('sst.token_acceso', 'acc-persistido');
     sessionStorage.setItem('sst.token_refresco', 'ref-persistido');

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 
 import { ServicioAutenticacion } from '../../../nucleo/auth/servicio-autenticacion';
 
@@ -12,13 +12,10 @@ import { ServicioAutenticacion } from '../../../nucleo/auth/servicio-autenticaci
 export class CabeceraComponent {
   readonly autenticacion = inject(ServicioAutenticacion);
 
-  get nombreRol(): string {
+  readonly nombreRol = computed(() => {
     const rol = this.autenticacion.usuarioActual()?.rol;
-    if (!rol) {
-      return 'Sin rol';
-    }
-    return rol.replace('_', ' ');
-  }
+    return rol ? rol.replace('_', ' ') : 'Sin rol';
+  });
 
   cerrarSesion(): void {
     this.autenticacion.cerrarSesion();

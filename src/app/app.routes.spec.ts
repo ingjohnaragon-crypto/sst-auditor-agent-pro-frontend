@@ -24,4 +24,12 @@ describe('rutasApp', () => {
     expect(sensible?.data?.['rolesPermitidos']).toEqual([...ROLES_AUDITORIA_SENSIBLE]);
     expect(sensible?.canActivate?.length).toBe(1);
   });
+
+  it('should manejar el wildcard dentro del shell para preservar returnUrl', () => {
+    const shell = rutasApp.find((r) => r.path === '');
+    const wildcard = shell?.children?.find((r) => r.path === '**');
+
+    expect(wildcard?.redirectTo).toBe('dashboard');
+    expect(rutasApp.find((r) => r.path === '**')).toBeUndefined();
+  });
 });
