@@ -18,6 +18,9 @@ export * from './formulario/campo-selector-multiple/campo-selector-multiple.comp
 export * from './formulario/campo-texto/campo-texto.component';
 export * from './formulario/formulario-dinamico/formulario-dinamico.component';
 export * from './formulario/mensaje-error-campo/mensaje-error-campo.component';
+export * from './loader/paso-ejecucion.model';
+export * from './loader/loader-interactivo.component';
+export * from './loader/servicio-loader';
 export * from './modal/datos-modal';
 export * from './modal/modal.component';
 export * from './modal/servicio-modal';

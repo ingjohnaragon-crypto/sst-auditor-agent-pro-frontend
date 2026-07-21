@@ -7,3 +7,16 @@
     </div>
   </main>
 </div>
+
+<app-loader-interactivo
+  *ngIf="estadoBloqueante$ | async as cfg"
+  [visible]="cfg.visible"
+  [titulo]="cfg.titulo"
+  [mensaje]="cfg.mensaje"
+  [pasos]="cfg.pasos"
+  [progreso]="cfg.progreso"
+  [modo]="cfg.modo"
+  [cancelable]="cfg.cancelable"
+  [etiquetaCancelar]="cfg.etiquetaCancelar"
+  (alCancelar)="onCancelarLoader()"
+/>
