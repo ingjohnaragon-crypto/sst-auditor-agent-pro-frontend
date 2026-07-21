@@ -37,6 +37,14 @@ layout/     Shell, navigation, header components
 - Typed `FormGroup<T>` always — never untyped `FormGroup`
 - All API calls go through feature services — never directly inside components
 - Smart (container) components connect to state; dumb (presentational) components use `@Input`/`@Output` only
+- **Signal-based `input()`/`output()`/`model()` are BLOCKED, not just discouraged**: confirmed
+  2026-07-21 that Angular 17.3.12 + jest-preset-angular 13.1.6 in this repo throw `NG0950`/`NG0303`
+  ("Input is required but no value is available yet" / "isn't a known property") for signal inputs
+  under TestBed, on **both** `@Component()` and plain `@Directive()` — reproduced with a minimal
+  isolated repro with cache cleared (`npx jest --clearCache`), not a fluke. Matches
+  [angular/angular#54013](https://github.com/angular/angular/issues/54013). Keep using
+  decorator-based `@Input()`/`@Output()` until the toolchain is upgraded and this is re-verified —
+  do not let an enrichment/plan mandate Signal-based component APIs
 - HTTP interceptor centralizes error mapping — services never catch HTTP errors individually
 - JWT: functional `HttpInterceptorFn` with Bearer injection and single-flight refresh on 401 (`nucleo/auth`)
 - Route auth: functional `CanActivateFn` guards (`guardAutenticacion`, `guardRoles`) + `*appSiTieneRol` — UX only; backend enforces `requerir_roles`

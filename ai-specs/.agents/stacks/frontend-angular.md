@@ -16,6 +16,11 @@ reactive patterns, and clean code principles.
 - **Language**: TypeScript 5.x (strict mode)
 - **Framework**: Angular 17+ (standalone components)
 - **State**: NgRx or Angular Signals
+- **Component API**: decorator-based `@Input()`/`@Output()`. Signal-based `input()`/`output()`/`model()`
+  are BLOCKED in this repo — confirmed 2026-07-21 that Angular 17.3.12 + jest-preset-angular 13.1.6
+  throw `NG0950`/`NG0303` for signal inputs under TestBed on both Components and Directives
+  ([angular/angular#54013](https://github.com/angular/angular/issues/54013)). Do not use them until
+  the toolchain is upgraded and re-verified
 - **Styling**: SCSS + Angular Material or Tailwind CSS
 - **HTTP**: Angular `HttpClient` with typed interceptors
 - **Testing**: Jest + Angular Testing Library (90% coverage threshold)
