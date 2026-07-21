@@ -21,6 +21,12 @@ describe('LoaderInteractivoComponent', () => {
 
     fixture = TestBed.createComponent(LoaderInteractivoComponent);
     componente = fixture.componentInstance;
+    document.body.style.overflow = '';
+  });
+
+  afterEach(() => {
+    fixture.destroy();
+    document.body.style.overflow = '';
   });
 
   it('should no mostrar panel si visible es false', () => {
@@ -74,9 +80,10 @@ describe('LoaderInteractivoComponent', () => {
     expect(spy).toHaveBeenCalled();
   });
 
-  it('should emitir alCancelar con Esc solo si cancelable', () => {
+  it('should emitir alCancelar con Esc solo si cancelable y bloqueante', () => {
     const spy = jest.fn();
     componente.visible = true;
+    componente.modo = 'bloqueante';
     componente.cancelable = false;
     componente.alCancelar.subscribe(spy);
     fixture.detectChanges();
@@ -85,6 +92,10 @@ describe('LoaderInteractivoComponent', () => {
     expect(spy).not.toHaveBeenCalled();
 
     componente.cancelable = true;
+    componente.alPulsarEscape();
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    componente.modo = 'inline';
     componente.alPulsarEscape();
     expect(spy).toHaveBeenCalledTimes(1);
   });
@@ -131,5 +142,36 @@ describe('LoaderInteractivoComponent', () => {
     ];
     fixture.detectChanges();
     expect(componente.textoAnuncio).toBe('Analizar. Archivos SG-SST');
+  });
+
+  it('should bloquear scroll del body en modo bloqueante y restaurarlo', () => {
+    componente.visible = true;
+    componente.modo = 'bloqueante';
+    fixture.detectChanges();
+    expect(document.body.style.overflow).toBe('hidden');
+
+    componente.visible = false;
+    fixture.detectChanges();
+    expect(document.body.style.overflow).not.toBe('hidden');
+  });
+
+  it('should exponer tabindex=-1 en el dialog bloqueante sin boton cancelar', () => {
+    componente.visible = true;
+    componente.modo = 'bloqueante';
+    componente.cancelable = false;
+    fixture.detectChanges();
+
+    const dialog = (fixture.nativeElement as HTMLElement).querySelector(
+      '[data-testid="loader-dialog"]'
+    );
+    expect(dialog?.getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('should clampear progreso fuera de rango en la barra', () => {
+    componente.visible = true;
+    componente.progreso = 150;
+    fixture.detectChanges();
+    const barra = (fixture.nativeElement as HTMLElement).querySelector('[role="progressbar"]');
+    expect(barra?.getAttribute('aria-valuenow')).toBe('100');
   });
 });

@@ -6,6 +6,8 @@
     aria-modal="true"
     [attr.aria-labelledby]="idTitulo"
     aria-busy="true"
+    tabindex="-1"
+    data-testid="loader-dialog"
     cdkTrapFocus
     [cdkTrapFocusAutoCapture]="true"
   >
@@ -48,10 +50,10 @@
       </div>
 
       <div
-        *ngIf="progreso !== null"
+        *ngIf="progresoEfectivo !== null"
         class="mt-5"
         role="progressbar"
-        [attr.aria-valuenow]="progreso"
+        [attr.aria-valuenow]="progresoEfectivo"
         aria-valuemin="0"
         aria-valuemax="100"
         [attr.aria-label]="titulo"
@@ -59,11 +61,11 @@
         <div class="h-2 overflow-hidden rounded-full bg-slate-100">
           <div
             class="h-full rounded-full bg-marca transition-[width] duration-300"
-            [style.width.%]="progreso"
+            [style.width.%]="progresoEfectivo"
             data-testid="loader-barra"
           ></div>
         </div>
-        <p class="mt-1 text-right text-xs font-semibold text-slate-500">{{ progreso }}%</p>
+        <p class="mt-1 text-right text-xs font-semibold text-slate-500">{{ progresoEfectivo }}%</p>
       </div>
 
       <ul *ngIf="pasos.length > 0" class="mt-5 space-y-2" role="list">

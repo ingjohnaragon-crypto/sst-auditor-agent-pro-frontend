@@ -90,4 +90,12 @@ describe('ServicioLoader', () => {
       detalle: 'previo',
     });
   });
+
+  it('should clampear progreso a 0-100 al mostrar y actualizar', async () => {
+    servicio.mostrar({ progreso: 200 });
+    expect((await firstValueFrom(servicio.estado$.pipe(take(1))))?.progreso).toBe(100);
+
+    servicio.actualizar({ progreso: -10 });
+    expect((await firstValueFrom(servicio.estado$.pipe(take(1))))?.progreso).toBe(0);
+  });
 });

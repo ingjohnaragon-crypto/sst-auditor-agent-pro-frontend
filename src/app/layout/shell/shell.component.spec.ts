@@ -47,4 +47,11 @@ describe('ShellComponent', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('app-loader-interactivo')).toBeNull();
   });
+
+  it('should no montar loader inline en el Shell', () => {
+    const loader = TestBed.inject(ServicioLoader);
+    loader.mostrar({ titulo: 'Inline feature', modo: 'inline' });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-loader-interactivo')).toBeNull();
+  });
 });

@@ -9,7 +9,7 @@
 </div>
 
 <app-loader-interactivo
-  *ngIf="loader.estado$ | async as cfg"
+  *ngIf="estadoBloqueante$ | async as cfg"
   [visible]="cfg.visible"
   [titulo]="cfg.titulo"
   [mensaje]="cfg.mensaje"
