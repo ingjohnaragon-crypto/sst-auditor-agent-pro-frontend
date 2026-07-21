@@ -1,0 +1,17 @@
+<select
+  class="sst-campo min-h-28 w-full px-3 py-2 text-sm text-slate-900"
+  multiple
+  [id]="idControl"
+  [attr.aria-describedby]="idDescripcion || null"
+  [disabled]="deshabilitado"
+  (change)="alCambiar($event)"
+  (blur)="alBlur()"
+>
+  <option
+    *ngFor="let opcion of opciones"
+    [value]="opcion.valor"
+    [selected]="estaSeleccionado(opcion.valor)"
+  >
+    {{ opcion.etiqueta }}
+  </option>
+</select>

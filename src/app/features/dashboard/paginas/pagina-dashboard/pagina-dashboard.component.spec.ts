@@ -69,9 +69,20 @@ describe('PaginaDashboardComponent', () => {
   });
 
   it('should mostrar respuesta al usar la accion rapida compartida', () => {
-    const boton = (fixture.nativeElement as HTMLElement).querySelector('app-boton button') as HTMLButtonElement;
+    const boton = (fixture.nativeElement as HTMLElement).querySelector(
+      'app-boton button'
+    ) as HTMLButtonElement;
     boton.click();
     fixture.detectChanges();
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Las acciones rápidas estarán disponibles próximamente.');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      'Las acciones rápidas estarán disponibles próximamente.'
+    );
+  });
+
+  it('should mostrar la demo del formulario dinamico', () => {
+    const texto = (fixture.nativeElement as HTMLElement).textContent;
+    expect(texto).toContain('Demo formulario dinámico');
+    expect(texto).toContain('Correo de contacto');
+    expect(fixture.nativeElement.querySelector('app-formulario-dinamico')).toBeTruthy();
   });
 });

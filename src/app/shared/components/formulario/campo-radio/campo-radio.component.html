@@ -1,0 +1,26 @@
+<fieldset
+  class="flex flex-col gap-2"
+  [attr.aria-describedby]="idDescripcion || null"
+  [attr.aria-labelledby]="idControl + '-leyenda'"
+>
+  <legend [id]="idControl + '-leyenda'" class="sr-only">
+    {{ etiqueta || 'Opciones' }}
+  </legend>
+  <label
+    *ngFor="let opcion of opciones"
+    class="inline-flex items-center gap-2 text-sm text-slate-700"
+    [attr.for]="idControl + '-' + opcion.valor"
+  >
+    <input
+      type="radio"
+      class="h-4 w-4 accent-marca"
+      [id]="idControl + '-' + opcion.valor"
+      [name]="nombreGrupo || idControl"
+      [value]="opcion.valor"
+      [checked]="valor === opcion.valor"
+      [disabled]="deshabilitado"
+      (change)="alCambiar(opcion.valor)"
+    />
+    {{ opcion.etiqueta }}
+  </label>
+</fieldset>

@@ -1,0 +1,11 @@
+<input
+  class="sst-campo w-full px-3 py-2 text-sm text-slate-900"
+  type="text"
+  [id]="idControl"
+  [attr.aria-describedby]="idDescripcion || null"
+  [placeholder]="placeholder"
+  [disabled]="deshabilitado"
+  [value]="valor"
+  (input)="alCambiar(($any($event.target)).value)"
+  (blur)="alBlur()"
+/>

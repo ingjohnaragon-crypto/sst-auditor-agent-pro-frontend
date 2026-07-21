@@ -1,0 +1,114 @@
+<form class="flex flex-col gap-5" [formGroup]="formulario" (ngSubmit)="enviar()">
+  <div *ngFor="let campo of campos" class="flex flex-col gap-1.5">
+    <label
+      *ngIf="!esCheckboxSimple(campo) && !usaLeyendaInterna(campo)"
+      class="sst-etiqueta text-slate-600"
+      [attr.for]="idCampo(campo.nombre)"
+    >
+      {{ campo.etiqueta }}
+      <span *ngIf="campo.requerido" class="text-red-600" aria-hidden="true">*</span>
+    </label>
+    <div
+      *ngIf="usaLeyendaInterna(campo)"
+      class="sst-etiqueta text-slate-600"
+      [id]="idCampo(campo.nombre) + '-titulo'"
+    >
+      {{ campo.etiqueta }}
+      <span *ngIf="campo.requerido" class="text-red-600" aria-hidden="true">*</span>
+    </div>
+
+    <ng-container [ngSwitch]="campo.tipo">
+      <app-campo-texto
+        *ngSwitchCase="'texto'"
+        [idControl]="idCampo(campo.nombre)"
+        [idDescripcion]="idError(campo.nombre)"
+        [placeholder]="campo.placeholder || ''"
+        [formControlName]="campo.nombre"
+      />
+
+      <app-campo-area-texto
+        *ngSwitchCase="'area-texto'"
+        [idControl]="idCampo(campo.nombre)"
+        [idDescripcion]="idError(campo.nombre)"
+        [placeholder]="campo.placeholder || ''"
+        [filas]="campo.filas || 3"
+        [formControlName]="campo.nombre"
+      />
+
+      <app-campo-numero
+        *ngSwitchCase="'numero'"
+        [idControl]="idCampo(campo.nombre)"
+        [idDescripcion]="idError(campo.nombre)"
+        [placeholder]="campo.placeholder || ''"
+        [min]="campo.min"
+        [max]="campo.max"
+        [step]="campo.step"
+        [formControlName]="campo.nombre"
+      />
+
+      <app-campo-selector
+        *ngSwitchCase="'selector'"
+        [idControl]="idCampo(campo.nombre)"
+        [idDescripcion]="idError(campo.nombre)"
+        [placeholder]="campo.placeholder || ''"
+        [opciones]="campo.opciones || []"
+        [formControlName]="campo.nombre"
+      />
+
+      <app-campo-radio
+        *ngSwitchCase="'radio'"
+        [idControl]="idCampo(campo.nombre)"
+        [idDescripcion]="idError(campo.nombre)"
+        [nombreGrupo]="campo.nombre"
+        [etiqueta]="campo.etiqueta"
+        [opciones]="campo.opciones || []"
+        [formControlName]="campo.nombre"
+      />
+
+      <app-campo-checkbox
+        *ngSwitchCase="'checkbox'"
+        [idControl]="idCampo(campo.nombre)"
+        [idDescripcion]="idError(campo.nombre)"
+        [etiqueta]="campo.etiqueta"
+        [opciones]="campo.opciones || []"
+        [formControlName]="campo.nombre"
+      />
+
+      <app-campo-chips
+        *ngSwitchCase="'chips'"
+        [idControl]="idCampo(campo.nombre)"
+        [idDescripcion]="idError(campo.nombre)"
+        [placeholder]="campo.placeholder || ''"
+        [formControlName]="campo.nombre"
+      />
+
+      <app-campo-selector-multiple
+        *ngSwitchCase="'selector-multiple'"
+        [idControl]="idCampo(campo.nombre)"
+        [idDescripcion]="idError(campo.nombre)"
+        [opciones]="campo.opciones || []"
+        [formControlName]="campo.nombre"
+      />
+
+      <app-campo-carga-archivo
+        *ngSwitchCase="'carga-archivo'"
+        [idControl]="idCampo(campo.nombre)"
+        [idDescripcion]="idError(campo.nombre)"
+        [aceptar]="campo.aceptar || ''"
+        [multiple]="!!campo.multiple"
+        [formControlName]="campo.nombre"
+      />
+    </ng-container>
+
+    <p *ngIf="campo.ayuda" class="text-xs text-slate-500">{{ campo.ayuda }}</p>
+
+    <app-mensaje-error-campo
+      [control]="controlDe(campo.nombre)"
+      [idDescripcion]="idError(campo.nombre)"
+    />
+  </div>
+
+  <div *ngIf="mostrarBotonEnviar" class="pt-2">
+    <app-boton tipo="submit">{{ etiquetaEnviar }}</app-boton>
+  </div>
+</form>
