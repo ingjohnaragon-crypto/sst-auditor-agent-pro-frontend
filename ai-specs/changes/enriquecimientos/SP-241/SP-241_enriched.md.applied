@@ -1,0 +1,210 @@
+# Ticket enriquecido: SP-241 — Creación de loader interactivo en ejecuciones del sistema
+
+## Descripción original
+<!-- jira-skip -->
+Subtarea: SP-241 — Creación de loader interactivo en ejecuciones del sistema
+
+Padre: SP-239 — Creacion componentes estandar y compartidos para frontend
+Tipo: Subtask | Estado: Por hacer | Assignee: John Aragon
+Descripción en Jira: (vacía — solo título).
+<!-- /jira-skip -->
+
+## Descripción mejorada
+
+Implementar en `sst-auditor-agent-pro-frontend` un **loader interactivo**
+reutilizable para las **ejecuciones largas del sistema** (diagnósticos del
+agente, autoevaluaciones, generación de planes, cargas masivas, etc.), bajo
+`shared/components/loader/`.
+
+No es el spinner del botón (`BotonComponent.cargando`) ni el skeleton de
+tabla: es un overlay/panel que comunica **qué está pasando**, con pasos
+actualizables y progreso opcional, mientras el usuario espera.
+
+**Repositorio**: código en `sst-auditor-agent-pro-frontend` (Angular 17,
+standalone). El ticket vive bajo SP-239 en Jira.
+
+### Dependencias
+
+- **SP-239** (mergeado en `develop`): convenciones standalone, `OnPush`,
+  carpeta por componente, `templateUrl`/`styleUrls`, tokens `--sst-*`,
+  barrel `@app/shared`. Reutilizar `BotonComponent` para cancelar/cerrar.
+- **Opcional CDK**: si el modo bloqueante usa overlay/focus-trap, apoyarse
+  en `@angular/cdk/overlay` y `@angular/cdk/a11y` (ya usados por Modal/
+  Tooltip). Alternativa válida: overlay propio con `position: fixed` +
+  `inert`/`aria-modal` sin CDK — documentar la decisión en el plan.
+- **No** hace HTTP: el padre o un servicio de feature alimenta el estado
+  (`pasos`, `progreso`, `mensaje`).
+
+### Arquitectura
+
+1. **Modelo** — `PasoEjecucion`, `EstadoPasoEjecucion`,
+   `ConfiguracionLoader`.
+2. **Presentación** — `LoaderInteractivoComponent` (`app-loader-interactivo`):
+   UI del loader (spinner, título, pasos, barra, acciones).
+3. **Servicio global** — `ServicioLoader` (`providedIn: 'root'`): API
+   programática para abrir/actualizar/cerrar desde cualquier feature o
+   interceptor de ejecución, sin acoplar el componente a un template
+   concreto. Un solo loader activo a la vez (como `ServicioModal`).
+4. **API pública** — exportar modelo, componente y servicio desde
+   `shared/components/index.ts` → `import { ... } from '@app/shared'`.
+
+### Contrato del componente
+
+```ts
+type EstadoPasoEjecucion = 'pendiente' | 'activo' | 'completado' | 'error';
+
+interface PasoEjecucion {
+  id: string;
+  etiqueta: string;
+  detalle?: string;
+  estado: EstadoPasoEjecucion;
+}
+
+// Presentación (también usable embebido sin el servicio)
+@Input() visible = false;
+@Input() titulo = 'Procesando…';
+@Input() mensaje?: string;
+@Input() pasos: PasoEjecucion[] = [];
+/** 0–100; null = indeterminado (solo spinner) */
+@Input() progreso: number | null = null;
+@Input() modo: 'bloqueante' | 'inline' = 'bloqueante';
+@Input() cancelable = false;
+@Input() etiquetaCancelar = 'Cancelar';
+@Output() alCancelar = new EventEmitter<void>();
+```
+
+### Contrato del servicio
+
+```ts
+// ServicioLoader
+mostrar(config: Partial<ConfiguracionLoader>): void;
+actualizar(parcial: Partial<ConfiguracionLoader>): void;
+actualizarPaso(id: string, estado: EstadoPasoEjecucion, detalle?: string): void;
+ocultar(): void;
+readonly estado$: Observable<ConfiguracionLoader | null>; // o signal/getter OnPush-friendly
+```
+
+- `mostrar` con `modo: 'bloqueante'` monta overlay a pantalla completa
+  (backdrop semitransparente, scroll lock, focus trap).
+- `mostrar` con `modo: 'inline'` solo emite estado; la feature enlaza
+  `<app-loader-interactivo>` en su plantilla.
+- Cerrar con `Esc` solo si `cancelable === true`; si no, `disableClose`.
+
+### UX / interacción
+
+- Lista de pasos visible cuando `pasos.length > 0`; el paso `activo`
+  resaltado; `completado` con check; `error` con marca de error.
+- Barra de progreso solo si `progreso !== null`.
+- Botón cancelar (via `app-boton` variante `secundario` o `peligro`) solo
+  si `cancelable`.
+- Tokens `--sst-*` / clases `sst-*`; Tailwind; **sin** theming Material.
+- Animación de spinner existente del botón puede reutilizarse (anillo
+  `animate-spin`); el loader añade jerarquía de pasos.
+
+### Integración de prueba
+
+Actualizar una feature existente (p. ej. dashboard) con un CTA de demo
+“Simular ejecución” que:
+
+1. Llama `ServicioLoader.mostrar` con 3–4 pasos.
+2. Avanza pasos con `setTimeout`/`timer` (o `fakeAsync` en tests).
+3. Termina con `ocultar()`.
+
+No requiere backend ni WebSocket en este ticket.
+
+## Criterios de aceptación
+
+- [ ] Existen `LoaderInteractivoComponent`, `ServicioLoader` y el modelo
+      `PasoEjecucion` bajo `shared/components/loader/`, standalone +
+      `OnPush`, importables vía `import { ... } from '@app/shared'`.
+- [ ] Modo `bloqueante`: overlay a pantalla completa, backdrop, scroll
+      bloqueado y foco atrapado mientras `visible`.
+- [ ] Modo `inline`: el componente se renderiza en el host sin overlay
+      global.
+- [ ] Los pasos reflejan `pendiente` / `activo` / `completado` / `error`
+      al actualizar vía Inputs o `ServicioLoader.actualizarPaso`.
+- [ ] Progreso indeterminado (`progreso === null`) vs determinado (0–100)
+      funciona y es anunciable a lectores de pantalla.
+- [ ] Si `cancelable`, el usuario puede cancelar (botón y, en bloqueante,
+      `Esc`); se emite `alCancelar` / el servicio propaga el evento.
+- [ ] Si no es `cancelable`, no se cierra con `Esc` ni clic en backdrop.
+- [ ] Specs cubren los escenarios de [Casos de prueba unitarios](#casos-de-prueba-unitarios);
+      `npm test` en verde; cobertura de `loader/**` ≥ 90 % líneas.
+- [ ] Dashboard (u otra feature) demuestra el flujo “Simular ejecución”
+      con el servicio.
+- [ ] Sin llamadas HTTP en el componente/servicio del loader; sin theming
+      Material visible en el DOM.
+
+## Campos y endpoints
+
+Ticket exclusivamente frontend (UI compartida). Sin endpoints nuevos.
+
+Contrato equivalente = Inputs/Outputs del componente + API de
+`ServicioLoader` (sección Descripción mejorada).
+
+- Ningún cambio en OpenAPI / backend.
+- Las ejecuciones reales del agente (streaming, jobs, SSE) se conectarán
+  en tickets de feature posteriores alimentando este contrato.
+
+## Archivos a crear o modificar
+
+Rutas relativas a `sst-auditor-agent-pro-frontend/src/app/`:
+
+- `shared/components/loader/paso-ejecucion.model.ts` — Crear
+- `shared/components/loader/loader-interactivo.component.ts` — Crear
+- `shared/components/loader/loader-interactivo.component.html` — Crear
+- `shared/components/loader/loader-interactivo.component.css` — Crear
+- `shared/components/loader/loader-interactivo.component.spec.ts` — Crear
+- `shared/components/loader/servicio-loader.ts` — Crear
+- `shared/components/loader/servicio-loader.spec.ts` — Crear
+- `shared/components/index.ts` — Modificar (exportar loader + servicio +
+  modelo)
+- Feature de demo (p. ej.
+  `features/dashboard/paginas/pagina-dashboard/pagina-dashboard.component.{ts,html,spec.ts}`)
+  — Modificar (CTA “Simular ejecución”)
+
+## Casos de prueba unitarios
+
+- Componente: no renderiza contenido relevante si `visible === false`.
+- Componente: muestra título, mensaje y spinner en modo indeterminado.
+- Componente: barra de progreso con `progreso = 40` (ancho/atributo
+  `aria-valuenow`).
+- Componente: lista de pasos con estados `pendiente`/`activo`/`completado`/`error`.
+- Componente: emite `alCancelar` al clic del botón y (modo bloqueante) con
+  `Esc` solo si `cancelable`.
+- Componente: no cierra con `Esc`/backdrop si `!cancelable`.
+- Servicio: `mostrar` → estado activo; segundo `mostrar` reemplaza el
+  anterior (un solo loader).
+- Servicio: `actualizarPaso` muta solo el paso indicado.
+- Servicio: `ocultar` limpia el estado.
+- Integración dashboard: CTA dispara mostrar → avances → ocultar (puede
+  usar `fakeAsync`/`tick`).
+
+## Requisitos no funcionales
+
+- **Accesibilidad**: modo bloqueante como diálogo modal
+  (`role="dialog"` o `aria-modal="true"`), `aria-labelledby` al título,
+  `aria-busy="true"` en el contenedor; pasos con `role="list"` /
+  `listitem` o status live region (`aria-live="polite"`) al cambiar el
+  paso activo; foco atrapado y restauración al cerrar.
+- **Rendimiento**: OnPush; actualizaciones frecuentes de progreso no
+  deben recrear el DOM completo de pasos (trackBy por `id`).
+- **Seguridad**: el loader no interpreta HTML libre en `etiqueta`/
+  `mensaje` (texto plano); sin `innerHTML`.
+- **API Inputs**: decorators `@Input`/`@Output` (signal inputs bloqueados
+  en este repo — NG0950).
+- **Estilos**: Tailwind + tokens `--sst-*`; carpeta `loader/` (inglés,
+  como el resto de `shared/components/`); nombres de clase/selector en
+  español.
+
+## Puntos de historia
+
+<!-- STORY_POINTS:5 -->
+**5** — Componente + servicio global + modelo de pasos + a11y bloqueante +
+specs + demo en dashboard; sin HTTP ni integración real con el agente.
+<!-- /STORY_POINTS -->
+
+## Subtareas
+
+Sin subtareas en Jira para SP-241 (es subtarea de SP-239). No se inventan
+subtareas.

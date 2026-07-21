@@ -170,6 +170,23 @@
     </aside>
   </div>
 
+  <article class="sst-superficie mt-8 p-6 md:p-8" aria-labelledby="titulo-demo-loader">
+    <h2 id="titulo-demo-loader" class="text-sm font-black uppercase tracking-widest text-slate-800">
+      Demo loader interactivo
+    </h2>
+    <p class="mt-2 text-xs text-slate-500">
+      Prueba de integración de <code>ServicioLoader</code> (SP-241).
+    </p>
+    <div class="mt-5 flex flex-wrap items-center gap-3">
+      <app-boton variante="primario" (alHacerClic)="simularEjecucion()">
+        Simular ejecución
+      </app-boton>
+      <p *ngIf="mensajeLoaderDemo" class="text-sm text-slate-600" role="status">
+        {{ mensajeLoaderDemo }}
+      </p>
+    </div>
+  </article>
+
   <article class="sst-superficie mt-8 p-6 md:p-8" aria-labelledby="titulo-demo-formulario">
     <h2 id="titulo-demo-formulario" class="text-sm font-black uppercase tracking-widest text-slate-800">
       Demo formulario dinámico

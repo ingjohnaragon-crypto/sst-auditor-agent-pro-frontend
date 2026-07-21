@@ -1,6 +1,8 @@
 import { signal } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+
+import { ServicioLoader } from '@app/shared';
 
 import { ServicioAutenticacion } from '../../../../nucleo/auth/servicio-autenticacion';
 import type {
@@ -11,6 +13,7 @@ import { PaginaDashboardComponent } from './pagina-dashboard.component';
 
 describe('PaginaDashboardComponent', () => {
   let fixture: ComponentFixture<PaginaDashboardComponent>;
+  let loader: ServicioLoader;
   const usuario = signal<UsuarioAutenticado | null>(null);
 
   function establecerUsuario(rol: RolUsuario): void {
@@ -39,7 +42,13 @@ describe('PaginaDashboardComponent', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(PaginaDashboardComponent);
+    loader = TestBed.inject(ServicioLoader);
     fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    fixture.componentInstance.ngOnDestroy();
+    loader.ocultar();
   });
 
   it('should mostrar resumen y datos de la sesion', () => {
@@ -85,4 +94,20 @@ describe('PaginaDashboardComponent', () => {
     expect(texto).toContain('Correo de contacto');
     expect(fixture.nativeElement.querySelector('app-formulario-dinamico')).toBeTruthy();
   });
+
+  it('should mostrar CTA de simular ejecucion del loader', () => {
+    const texto = (fixture.nativeElement as HTMLElement).textContent;
+    expect(texto).toContain('Demo loader interactivo');
+    expect(texto).toContain('Simular ejecución');
+  });
+
+  it('should completar la simulacion de ejecucion y ocultar el loader', fakeAsync(() => {
+    const ocultar = jest.spyOn(loader, 'ocultar');
+    fixture.componentInstance.simularEjecucion();
+    tick(2500);
+    expect(ocultar).toHaveBeenCalled();
+    expect(fixture.componentInstance.mensajeLoaderDemo).toBe(
+      'Ejecución simulada completada.'
+    );
+  }));
 });
