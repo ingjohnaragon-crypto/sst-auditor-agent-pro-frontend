@@ -2,7 +2,7 @@
   [type]="tipo"
   [class]="clases"
   [disabled]="deshabilitado || cargando"
-  [attr.aria-busy]="cargando"
+  [attr.aria-busy]="cargando ? true : null"
   (click)="manejarClic($event)"
 >
   <span

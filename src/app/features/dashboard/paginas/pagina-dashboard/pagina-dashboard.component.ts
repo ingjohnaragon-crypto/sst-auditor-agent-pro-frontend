@@ -2,8 +2,9 @@ import { NgIf } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import { BotonComponent } from '@app/shared';
+
 import { ServicioAutenticacion } from '../../../../nucleo/auth/servicio-autenticacion';
-import { BotonComponent } from '../../../../shared/components/boton/boton.component';
 import { SiTieneRolDirective } from '../../../../shared/directivas/si-tiene-rol.directive';
 import { TarjetaResumenComponent } from '../../componentes/tarjeta-resumen/tarjeta-resumen.component';
 

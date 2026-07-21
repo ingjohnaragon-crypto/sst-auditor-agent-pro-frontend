@@ -1,10 +1,72 @@
 <div class="overflow-x-auto rounded-control border border-slate-200">
   <table class="w-full text-left text-sm text-slate-700">
-    <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-600"><tr><th *ngFor="let columna of columnas" scope="col" class="px-4 py-3 font-bold"><button *ngIf="columna.ordenable; else encabezado" type="button" class="inline-flex items-center gap-1 hover:text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500" (click)="ordenar(columna)">{{ columna.encabezado }} <span aria-hidden="true">{{ columnaOrdenada === columna.clave && direccionOrden === 'asc' ? '↑' : '↕' }}</span></button><ng-template #encabezado>{{ columna.encabezado }}</ng-template></th></tr></thead>
+    <thead class="bg-fondo text-xs uppercase tracking-wide text-slate-600">
+      <tr>
+        <th
+          *ngFor="let columna of columnas"
+          scope="col"
+          class="px-4 py-3 font-bold"
+          [attr.aria-sort]="ariaSort(columna.clave)"
+        >
+          <button
+            *ngIf="columna.ordenable; else encabezado"
+            type="button"
+            class="inline-flex items-center gap-1 hover:text-marca focus:outline-none focus:ring-2 focus:ring-marca"
+            (click)="ordenar(columna)"
+          >
+            {{ columna.encabezado }}
+            <span aria-hidden="true">{{ indicadorOrden(columna.clave) }}</span>
+          </button>
+          <ng-template #encabezado>{{ columna.encabezado }}</ng-template>
+        </th>
+      </tr>
+    </thead>
     <tbody>
-      <ng-container *ngIf="cargando; else contenido"><tr *ngFor="let fila of [1, 2, 3]"><td *ngFor="let columna of columnas" class="px-4 py-3"><span class="block h-4 animate-pulse rounded bg-slate-200"></span></td></tr></ng-container>
-      <ng-template #contenido><tr *ngFor="let item of filasVisibles; trackBy: trackearFila" class="border-t border-slate-100"><td *ngFor="let columna of columnas" class="px-4 py-3">{{ valor(item, columna) }}</td></tr><tr *ngIf="datos.length === 0"><td [attr.colspan]="columnas.length" class="px-4 py-8 text-center text-slate-500">{{ mensajeVacio }}</td></tr></ng-template>
+      <ng-container *ngIf="cargando; else contenido">
+        <tr *ngFor="let fila of [1, 2, 3]">
+          <td *ngFor="let columna of columnas" class="px-4 py-3">
+            <span class="block h-4 animate-pulse rounded bg-slate-200"></span>
+          </td>
+        </tr>
+      </ng-container>
+      <ng-template #contenido>
+        <tr
+          *ngFor="let item of filasVisibles; trackBy: trackearFila"
+          class="border-t border-slate-100"
+        >
+          <td *ngFor="let columna of columnas" class="px-4 py-3">
+            {{ valor(item, columna) }}
+          </td>
+        </tr>
+        <tr *ngIf="datos.length === 0">
+          <td [attr.colspan]="columnas.length" class="px-4 py-8 text-center text-slate-500">
+            {{ mensajeVacio }}
+          </td>
+        </tr>
+      </ng-template>
     </tbody>
   </table>
-  <nav *ngIf="paginacion && datos.length > 0" class="flex items-center justify-end gap-3 border-t border-slate-100 px-4 py-3" aria-label="Paginación"><button type="button" class="text-indigo-700 disabled:text-slate-400" [disabled]="paginaActual === 0" (click)="cambiarPagina(paginaActual - 1)">Anterior</button><span>Página {{ paginaActual + 1 }} de {{ totalPaginas }}</span><button type="button" class="text-indigo-700 disabled:text-slate-400" [disabled]="paginaActual + 1 === totalPaginas" (click)="cambiarPagina(paginaActual + 1)">Siguiente</button></nav>
+  <nav
+    *ngIf="paginacion && datos.length > 0"
+    class="flex items-center justify-end gap-3 border-t border-slate-100 px-4 py-3"
+    aria-label="Paginación"
+  >
+    <button
+      type="button"
+      class="text-marca disabled:text-slate-400"
+      [disabled]="paginaActual === 0"
+      (click)="cambiarPagina(paginaActual - 1)"
+    >
+      Anterior
+    </button>
+    <span>Página {{ paginaActual + 1 }} de {{ totalPaginas }}</span>
+    <button
+      type="button"
+      class="text-marca disabled:text-slate-400"
+      [disabled]="paginaActual + 1 === totalPaginas"
+      (click)="cambiarPagina(paginaActual + 1)"
+    >
+      Siguiente
+    </button>
+  </nav>
 </div>

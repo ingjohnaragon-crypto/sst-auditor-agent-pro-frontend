@@ -22,10 +22,11 @@ export class BotonComponent {
   @Output() alHacerClic = new EventEmitter<MouseEvent>();
 
   private readonly clasesPorVariante: Record<VarianteBoton, string> = {
-    primario: 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500',
-    secundario: 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus:ring-slate-400',
+    primario: 'bg-marca text-white hover:bg-indigo-700 focus:ring-marca',
+    secundario:
+      'border border-slate-300 bg-superficie text-slate-700 hover:bg-fondo focus:ring-slate-400',
     peligro: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
-    texto: 'bg-transparent text-indigo-700 hover:bg-indigo-50 focus:ring-indigo-500',
+    texto: 'bg-transparent text-marca hover:bg-indigo-50 focus:ring-marca',
   };
 
   private readonly clasesPorTamano: Record<TamanoBoton, string> = {

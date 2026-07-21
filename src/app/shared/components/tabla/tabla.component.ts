@@ -31,13 +31,29 @@ export class TablaComponent<T> {
   trackearFila = (indice: number, item: T): unknown => this.trackearPor(item) ?? indice;
   ordenar(columna: ColumnaTabla<T>): void {
     if (!columna.ordenable) return;
-    this.direccionOrden = this.columnaOrdenada === columna.clave && this.direccionOrden === 'asc' ? 'desc' : 'asc';
+    this.direccionOrden =
+      this.columnaOrdenada === columna.clave && this.direccionOrden === 'asc' ? 'desc' : 'asc';
     this.columnaOrdenada = columna.clave;
     this.alOrdenar.emit({ columna: columna.clave, direccion: this.direccionOrden });
   }
+
   cambiarPagina(pagina: number): void {
     if (pagina < 0 || pagina >= this.totalPaginas) return;
     this.paginaActual = pagina;
     this.alCambiarPagina.emit(pagina);
+  }
+
+  indicadorOrden(clave: string): string {
+    if (this.columnaOrdenada !== clave) {
+      return '↕';
+    }
+    return this.direccionOrden === 'asc' ? '↑' : '↓';
+  }
+
+  ariaSort(clave: string): 'ascending' | 'descending' | 'none' | null {
+    if (this.columnaOrdenada !== clave) {
+      return null;
+    }
+    return this.direccionOrden === 'asc' ? 'ascending' : 'descending';
   }
 }
