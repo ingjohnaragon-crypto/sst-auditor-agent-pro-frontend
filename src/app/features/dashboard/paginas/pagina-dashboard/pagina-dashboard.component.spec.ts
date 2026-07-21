@@ -67,4 +67,11 @@ describe('PaginaDashboardComponent', () => {
     );
     expect(enlace).toBeNull();
   });
+
+  it('should mostrar respuesta al usar la accion rapida compartida', () => {
+    const boton = (fixture.nativeElement as HTMLElement).querySelector('app-boton button') as HTMLButtonElement;
+    boton.click();
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Las acciones rápidas estarán disponibles próximamente.');
+  });
 });

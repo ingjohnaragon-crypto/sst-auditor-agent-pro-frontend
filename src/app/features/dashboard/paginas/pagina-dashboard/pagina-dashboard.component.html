@@ -138,6 +138,10 @@
           </p>
         </a>
       </div>
+      <div class="mt-5">
+        <app-boton variante="secundario" (alHacerClic)="mostrarAccionRapida()">Ver próximas acciones</app-boton>
+        <p *ngIf="mensajeAccionRapida" class="mt-3 text-sm text-slate-600" role="status">{{ mensajeAccionRapida }}</p>
+      </div>
     </article>
 
     <aside
