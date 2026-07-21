@@ -1,0 +1,33 @@
+<label
+  *ngIf="!esGrupo"
+  class="inline-flex items-center gap-2 text-sm text-slate-700"
+  [attr.for]="idControl"
+>
+  <input
+    type="checkbox"
+    class="h-4 w-4 accent-marca"
+    [id]="idControl"
+    [checked]="valorBooleano"
+    [disabled]="deshabilitado"
+    (change)="alCambiarBooleano(($any($event.target)).checked)"
+  />
+  {{ etiqueta }}
+</label>
+
+<fieldset *ngIf="esGrupo" class="flex flex-col gap-2">
+  <label
+    *ngFor="let opcion of opciones"
+    class="inline-flex items-center gap-2 text-sm text-slate-700"
+    [attr.for]="idControl + '-' + opcion.valor"
+  >
+    <input
+      type="checkbox"
+      class="h-4 w-4 accent-marca"
+      [id]="idControl + '-' + opcion.valor"
+      [checked]="estaMarcado(opcion.valor)"
+      [disabled]="deshabilitado"
+      (change)="alCambiarGrupo(opcion.valor, ($any($event.target)).checked)"
+    />
+    {{ opcion.etiqueta }}
+  </label>
+</fieldset>

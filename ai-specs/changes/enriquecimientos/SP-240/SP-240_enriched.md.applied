@@ -1,0 +1,259 @@
+# Ticket enriquecido: SP-240 — Creación formulario estandar
+
+## Descripción original
+<!-- jira-skip -->
+Subtarea: SP-240 — Creación formulario estandar
+
+Construir un formulario dinámico configurable en
+`sst-auditor-agent-pro-frontend` que renderice campos a partir de un arreglo
+de configuración (`CampoFormulario[]`), en vez de definir un formulario
+distinto por cada pantalla. Depende de SP-239 solo en convenciones compartidas
+(standalone, OnPush, Tailwind, carpeta `shared/components/`); no depende de que
+los cinco componentes de SP-239 estén terminados para empezar.
+
+Tipos: texto, area-texto, numero, selector, radio, checkbox, chips,
+selector-multiple, carga-archivo. Cada uno como `ControlValueAccessor`.
+`FormularioDinamicoComponent` construye un `FormGroup` y emite `alEnviar`.
+Puntos estimados previos: 8.
+<!-- /jira-skip -->
+
+## Descripción mejorada
+
+Implementar en `sst-auditor-agent-pro-frontend` un **formulario dinámico
+configurable** bajo `shared/components/formulario/`, que renderice campos a
+partir de `CampoFormulario[]` (Reactive Forms). Las features consumidoras
+proveen la config y reaccionan a `@Output() alEnviar`; el formulario **no**
+hace llamadas HTTP.
+
+### Dependencias
+
+- **SP-239** (ya en `develop` / mergeado): reutilizar convenciones
+  (standalone, `OnPush`, carpeta por componente, `templateUrl`/`styleUrls`,
+  tokens `sst-*`, barrel `@app/shared`). Opcional: `BotonComponent` como CTA
+  de envío.
+- **No** depende de Modal/Tabla/Tooltip/Alerta para empezar.
+
+### Arquitectura
+
+1. **Modelo** — `CampoFormulario`, `TipoCampoFormulario`, `OpcionCampo`.
+2. **Campos CVA** — un componente por tipo (9), cada uno con
+   `ControlValueAccessor` + `Validator` si aplica; **prohibido** un `switch`
+   monolítico en la plantilla del compositor.
+3. **Compositor** — `FormularioDinamicoComponent`: recibe `campos`, arma
+   `FormGroup` tipado, itera campos y proyecta el CVA correcto vía
+   `NgComponentOutlet` o un mapa `tipo → Type<unknown>` + binding de
+   `formControlName`.
+4. **Errores** — helper compartido (`mensaje-error-campo`) que muestra el
+   primer error cuando el control es `invalid && (touched || dirty)`.
+5. **API pública** — exportar todo desde `shared/components/index.ts` y
+   consumible vía `import { ... } from '@app/shared'`.
+
+### Tipos de campo (9)
+
+- `texto` — `<input type="text">`
+- `area-texto` — `<textarea>` (filas opcionales)
+- `numero` — `<input type="number">` + `min`/`max`/`step`
+- `selector` — `<select>` opción única + `opciones`
+- `radio` — grupo radio + `opciones` (mismo `name`)
+- `checkbox` — booleano individual **o** grupo múltiple (`string[]`) si hay
+  `opciones`
+- `chips` — valores múltiples; lista interna + teclado (`Enter`/`Backspace`);
+  CDK a11y si hace falta; **sin** `MatChipsModule`
+- `selector-multiple` — selección múltiple → `string[]`
+- `carga-archivo` — `<input type="file">` + `aceptar` + `multiple`; valor =
+  `File | File[] | null` (no subir; solo exponer al padre)
+
+### Interfaz de configuración
+
+```ts
+type TipoCampoFormulario =
+  | 'texto' | 'area-texto' | 'numero' | 'selector' | 'radio'
+  | 'checkbox' | 'chips' | 'selector-multiple' | 'carga-archivo';
+
+interface OpcionCampo { valor: string; etiqueta: string; }
+
+interface CampoFormulario {
+  nombre: string;
+  tipo: TipoCampoFormulario;
+  etiqueta: string;
+  requerido?: boolean;
+  opciones?: OpcionCampo[];
+  validadores?: ValidatorFn[];
+  placeholder?: string;
+  ayuda?: string;
+  deshabilitado?: boolean;
+  // numero
+  min?: number;
+  max?: number;
+  step?: number;
+  // area-texto
+  filas?: number;
+  // carga-archivo
+  aceptar?: string;
+  multiple?: boolean;
+  // valor inicial opcional
+  valorInicial?: unknown;
+}
+```
+
+### Contrato del compositor
+
+- `@Input({ required: true }) campos: CampoFormulario[]`
+- `@Input() etiquetaEnviar = 'Enviar'`
+- `@Input() mostrarBotonEnviar = true`
+- `@Output() alEnviar = new EventEmitter<Record<string, unknown>>()` —
+  solo si el `FormGroup` es válido
+- `@Output() alCambiar = new EventEmitter<Record<string, unknown>>()` —
+  opcional, valores en cada cambio (útil para borradores)
+- Método público `formulario: FormGroup` (readonly) para padres que
+  necesiten el grupo sin enviar
+- Al cambiar `campos` (nueva referencia), reconstruir el `FormGroup`
+
+### Estilos y a11y
+
+- Labels con `for`/`id` únicos (`campo-{nombre}`).
+- Errores con `role="alert"` o `aria-describedby` enlazado al texto de ayuda/
+  error.
+- Controles con clases `sst-campo` / tokens `--sst-*` / `rounded-control`.
+- Foco visible (`focus:ring-marca`).
+- Botón de envío: preferir `app-boton` (`tipo="submit"`).
+
+## Criterios de aceptación
+
+- [ ] `FormularioDinamicoComponent` renderiza los **9** tipos a partir de
+      `campos: CampoFormulario[]`.
+- [ ] Cada tipo es un componente independiente con `ControlValueAccessor`
+      (sin switch monolítico de markup en el compositor).
+- [ ] `requerido` y `validadores` se aplican al `FormControl`; errores visibles
+      cuando `invalid && touched`.
+- [ ] Cada campo tiene `<label>` asociado (`for`/`id`) con `etiqueta`.
+- [ ] `alEnviar` emite valores **solo** si el formulario es válido; no emite
+      (ni dispara HTTP) si es inválido — marca controles como touched.
+- [ ] Piezas bajo `shared/components/formulario/` (una carpeta por
+      componente) y exportadas en `shared/components/index.ts` / `@app/shared`.
+- [ ] Standalone + `OnPush` + `templateUrl`/`styleUrls` en todos.
+- [ ] API con `@Input()`/`@Output()` decorator-based (Signal inputs
+      bloqueados en este repo — NG0950).
+- [ ] Tests unitarios por tipo de campo (render, valor, validación) + test de
+      integración del compositor con ≥ 3 tipos combinados.
+- [ ] Sin dependencias npm nuevas; CDK solo si ya está materializado
+      (chips/a11y). Sin theming de Material.
+
+## Campos y endpoints
+
+No hay endpoints propios. El formulario es presentacional.
+
+Ejemplo de consumo en una feature:
+
+```ts
+campos: CampoFormulario[] = [
+  { nombre: 'correo', tipo: 'texto', etiqueta: 'Correo', requerido: true,
+    validadores: [Validators.email] },
+  { nombre: 'rol', tipo: 'selector', etiqueta: 'Rol', requerido: true,
+    opciones: [
+      { valor: 'AUDITOR_SST', etiqueta: 'Auditor' },
+      { valor: 'CONSULTA', etiqueta: 'Consulta' },
+    ] },
+  { nombre: 'activo', tipo: 'checkbox', etiqueta: 'Activo' },
+];
+
+onEnviar(valores: Record<string, unknown>): void {
+  // la feature llama a su servicio HTTP aquí
+}
+```
+
+Plantilla:
+
+```html
+<app-formulario-dinamico
+  [campos]="campos"
+  (alEnviar)="onEnviar($event)"
+/>
+```
+
+## Archivos a crear o modificar
+
+- `src/app/shared/components/formulario/campo-formulario.model.ts` —
+  Shared — Create (`TipoCampoFormulario`, `OpcionCampo`, `CampoFormulario`)
+- `src/app/shared/components/formulario/mensaje-error-campo/mensaje-error-campo.component.{ts,html,css,spec.ts}` —
+  Shared — Create (presenta errores de un `AbstractControl`)
+- `src/app/shared/components/formulario/campo-texto/campo-texto.component.{ts,html,css,spec.ts}` —
+  Shared — Create (CVA)
+- `src/app/shared/components/formulario/campo-area-texto/campo-area-texto.component.{ts,html,css,spec.ts}` —
+  Shared — Create (CVA)
+- `src/app/shared/components/formulario/campo-numero/campo-numero.component.{ts,html,css,spec.ts}` —
+  Shared — Create (CVA)
+- `src/app/shared/components/formulario/campo-selector/campo-selector.component.{ts,html,css,spec.ts}` —
+  Shared — Create (CVA)
+- `src/app/shared/components/formulario/campo-radio/campo-radio.component.{ts,html,css,spec.ts}` —
+  Shared — Create (CVA)
+- `src/app/shared/components/formulario/campo-checkbox/campo-checkbox.component.{ts,html,css,spec.ts}` —
+  Shared — Create (CVA booleano o grupo)
+- `src/app/shared/components/formulario/campo-chips/campo-chips.component.{ts,html,css,spec.ts}` —
+  Shared — Create (CVA `string[]`)
+- `src/app/shared/components/formulario/campo-selector-multiple/campo-selector-multiple.component.{ts,html,css,spec.ts}` —
+  Shared — Create (CVA `string[]`)
+- `src/app/shared/components/formulario/campo-carga-archivo/campo-carga-archivo.component.{ts,html,css,spec.ts}` —
+  Shared — Create (CVA `File | File[] | null`)
+- `src/app/shared/components/formulario/formulario-dinamico/formulario-dinamico.component.{ts,html,css,spec.ts}` —
+  Shared — Create (compositor + FormGroup)
+- `src/app/shared/components/index.ts` — Shared — Modify (exportar modelo +
+  campos + compositor)
+- `src/app/features/dashboard/paginas/pagina-dashboard/...` **o** host de
+  demo mínimo — Feature — Modify (opcional: demo con ≥ 3 tipos para prueba
+  de integración visual; si se omite, el spec de integración basta)
+- `src/styles/design-tokens.css` / `src/styles/README.md` — Shared — Modify
+  solo si se agregan tokens nuevos de campo
+
+## Casos de prueba unitarios
+
+Por cada CVA (`campo-*`):
+
+- Renderiza etiqueta y control con `id`/`for` correctos
+- Escribe y lee valor vía `formControlName` / `NgControl`
+- Respeta `disabled` del `FormControl`
+- Con validador/`requerido`: muestra error tras `markAsTouched`
+
+`mensaje-error-campo`:
+
+- No muestra nada si válido o pristine
+- Muestra mensaje genérico o por clave (`required`, `email`, `min`, etc.)
+
+`formulario-dinamico` (integración):
+
+- Construye controles para ≥ 3 tipos (p. ej. texto + selector + checkbox)
+- `alEnviar` no emite si inválido; marca touched
+- `alEnviar` emite el mapa de valores si válido
+- Reconstruir grupo al cambiar referencia de `campos`
+- Accesibilidad básica: labels presentes; botón submit deshabilitado o no
+  según política elegida (documentar: preferible habilitado + markAllAsTouched)
+
+## Requisitos no funcionales
+
+- **Seguridad**: no subir archivos; no ejecutar contenido de archivos; no
+  usar `innerHTML` con datos de usuario.
+- **A11y**: WCAG AA en contraste de labels/errores; navegación por teclado
+  en chips/radio/checkbox; `aria-invalid` / `aria-describedby` en controles
+  con error.
+- **Rendimiento**: `OnPush`; no recrear `FormGroup` en cada CD — solo al
+  cambiar `campos`.
+- **DX**: naming en español; import desde `@app/shared`; sin Signal
+  inputs/outputs.
+- **Calidad**: cobertura ≥ 90 % en `shared/components/formulario/**`;
+  `npm test` verde.
+- **Deps**: cero paquetes nuevos en `package.json`; chips sin Material.
+
+## Puntos de historia
+
+<!-- STORY_POINTS:8 -->
+**8** — Nueve CVA independientes + compositor dinámico + validaciones/
+errores + tests por campo e integración; sin HTTP ni pantallas de negocio
+complejas.
+<!-- /STORY_POINTS -->
+
+## Subtareas
+
+<!-- jira-skip -->
+Sin subtareas en Jira para SP-240 (es subtarea de SP-239). No se inventan
+subtareas nuevas.
+<!-- /jira-skip -->

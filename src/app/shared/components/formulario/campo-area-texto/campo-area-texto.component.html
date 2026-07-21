@@ -1,0 +1,10 @@
+<textarea
+  class="sst-campo w-full px-3 py-2 text-sm text-slate-900"
+  [id]="idControl"
+  [placeholder]="placeholder"
+  [rows]="filas || 3"
+  [disabled]="deshabilitado"
+  [value]="valor"
+  (input)="alCambiar(($any($event.target)).value)"
+  (blur)="alBlur()"
+></textarea>
