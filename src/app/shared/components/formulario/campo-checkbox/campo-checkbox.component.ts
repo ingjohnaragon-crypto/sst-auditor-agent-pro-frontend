@@ -28,6 +28,7 @@ import type { OpcionCampo } from '../campo-formulario.model';
 })
 export class CampoCheckboxComponent implements ControlValueAccessor {
   @Input() idControl = '';
+  @Input() idDescripcion = '';
   @Input() etiqueta = '';
   /** Si hay opciones, el valor es `string[]`; si no, `boolean`. */
   @Input() opciones: OpcionCampo[] = [];
@@ -74,7 +75,9 @@ export class CampoCheckboxComponent implements ControlValueAccessor {
 
   alCambiarGrupo(valorOpcion: string, marcado: boolean): void {
     if (marcado) {
-      this.valorGrupo = [...this.valorGrupo, valorOpcion];
+      if (!this.valorGrupo.includes(valorOpcion)) {
+        this.valorGrupo = [...this.valorGrupo, valorOpcion];
+      }
     } else {
       this.valorGrupo = this.valorGrupo.filter((v) => v !== valorOpcion);
     }

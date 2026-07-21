@@ -1,5 +1,6 @@
 import { NgFor, NgIf } from '@angular/common';
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -26,8 +27,9 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
     },
   ],
 })
-export class CampoCargaArchivoComponent implements ControlValueAccessor {
+export class CampoCargaArchivoComponent implements ControlValueAccessor, AfterViewInit {
   @Input() idControl = '';
+  @Input() idDescripcion = '';
   @Input() aceptar = '';
   @Input() multiple = false;
 
@@ -35,6 +37,7 @@ export class CampoCargaArchivoComponent implements ControlValueAccessor {
 
   archivos: File[] = [];
   deshabilitado = false;
+  private resetPendiente = false;
 
   private readonly cdr = inject(ChangeDetectorRef);
   private onChange: (valor: File | File[] | null) => void = () => undefined;
@@ -44,11 +47,20 @@ export class CampoCargaArchivoComponent implements ControlValueAccessor {
     return this.archivos.map((a) => a.name);
   }
 
+  ngAfterViewInit(): void {
+    if (this.resetPendiente) {
+      this.limpiarEntrada();
+      this.resetPendiente = false;
+    }
+  }
+
   writeValue(valor: File | File[] | null): void {
     if (!valor) {
       this.archivos = [];
       if (this.entradaArchivo) {
-        this.entradaArchivo.nativeElement.value = '';
+        this.limpiarEntrada();
+      } else {
+        this.resetPendiente = true;
       }
     } else if (Array.isArray(valor)) {
       this.archivos = [...valor];
@@ -84,5 +96,11 @@ export class CampoCargaArchivoComponent implements ControlValueAccessor {
     }
     this.onTouched();
     this.cdr.markForCheck();
+  }
+
+  private limpiarEntrada(): void {
+    if (this.entradaArchivo) {
+      this.entradaArchivo.nativeElement.value = '';
+    }
   }
 }

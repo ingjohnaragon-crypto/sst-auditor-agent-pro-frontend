@@ -1,6 +1,7 @@
 <div
   class="sst-campo flex min-h-11 flex-wrap items-center gap-2 px-3 py-2"
   [class.opacity-50]="deshabilitado"
+  [attr.aria-describedby]="idDescripcion || null"
 >
   <span
     *ngFor="let chip of valor; let i = index"

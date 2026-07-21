@@ -9,19 +9,28 @@ import { CampoCargaArchivoComponent } from './campo-carga-archivo.component';
   imports: [ReactiveFormsModule, CampoCargaArchivoComponent],
   template: `
     <form [formGroup]="grupo">
-      <app-campo-carga-archivo idControl="campo-archivo" formControlName="archivo"></app-campo-carga-archivo>
+      <app-campo-carga-archivo
+        idControl="campo-archivo"
+        [multiple]="multiple"
+        formControlName="archivo"
+      ></app-campo-carga-archivo>
     </form>
   `,
 })
 class AnfitrionCampoCargaArchivoComponent {
-  grupo = new FormGroup({ archivo: new FormControl<File | null>(null) });
+  multiple = false;
+  grupo = new FormGroup({
+    archivo: new FormControl<File | File[] | null>(null),
+  });
 }
 
 describe('CampoCargaArchivoComponent', () => {
   let fixture: ComponentFixture<AnfitrionCampoCargaArchivoComponent>;
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({ imports: [AnfitrionCampoCargaArchivoComponent] }).compileComponents();
+    await TestBed.configureTestingModule({
+      imports: [AnfitrionCampoCargaArchivoComponent],
+    }).compileComponents();
     fixture = TestBed.createComponent(AnfitrionCampoCargaArchivoComponent);
     fixture.detectChanges();
   });
@@ -32,5 +41,26 @@ describe('CampoCargaArchivoComponent', () => {
     Object.defineProperty(input, 'files', { value: [archivo] });
     input.dispatchEvent(new Event('change'));
     expect(fixture.componentInstance.grupo.value.archivo).toBe(archivo);
+  });
+
+  it('should asignar File[] cuando multiple es true', () => {
+    fixture.componentInstance.multiple = true;
+    fixture.detectChanges();
+    const input = (fixture.nativeElement as HTMLElement).querySelector('input') as HTMLInputElement;
+    const a = new File(['a'], 'a.pdf');
+    const b = new File(['b'], 'b.pdf');
+    Object.defineProperty(input, 'files', { value: [a, b] });
+    input.dispatchEvent(new Event('change'));
+    expect(fixture.componentInstance.grupo.value.archivo).toEqual([a, b]);
+  });
+
+  it('should limpiar el input al writeValue(null)', () => {
+    const input = (fixture.nativeElement as HTMLElement).querySelector('input') as HTMLInputElement;
+    const archivo = new File(['x'], 'x.pdf');
+    Object.defineProperty(input, 'files', { value: [archivo] });
+    input.dispatchEvent(new Event('change'));
+    fixture.componentInstance.grupo.get('archivo')?.setValue(null);
+    fixture.detectChanges();
+    expect(input.value).toBe('');
   });
 });

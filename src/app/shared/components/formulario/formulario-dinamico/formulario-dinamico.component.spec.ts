@@ -46,14 +46,18 @@ describe('FormularioDinamicoComponent', () => {
     expect(fixture.componentInstance.formulario.contains('rol')).toBe(true);
     expect(fixture.componentInstance.formulario.contains('activo')).toBe(true);
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Correo');
-    expect((fixture.nativeElement as HTMLElement).querySelector('label[for="campo-correo"]')).toBeTruthy();
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('label[for="campo-correo"]')
+    ).toBeTruthy();
   });
 
-  it('should no emitir alEnviar si es invalido y marcar touched', () => {
+  it('should no emitir alEnviar si es invalido, marcar touched y mostrar error', () => {
     const emitir = jest.spyOn(fixture.componentInstance.alEnviar, 'emit');
     fixture.componentInstance.enviar();
+    fixture.detectChanges();
     expect(emitir).not.toHaveBeenCalled();
     expect(fixture.componentInstance.formulario.get('correo')?.touched).toBe(true);
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('obligatorio');
   });
 
   it('should emitir valores cuando el formulario es valido', () => {
@@ -79,5 +83,31 @@ describe('FormularioDinamicoComponent', () => {
     fixture.detectChanges();
     expect(fixture.componentInstance.formulario.contains('nombre')).toBe(true);
     expect(fixture.componentInstance.formulario.contains('correo')).toBe(false);
+  });
+
+  it('should usar leyenda sin for para radio', () => {
+    fixture.componentRef.setInput('campos', [
+      {
+        nombre: 'nivel',
+        tipo: 'radio',
+        etiqueta: 'Nivel de riesgo',
+        opciones: [
+          { valor: 'alto', etiqueta: 'Alto' },
+          { valor: 'bajo', etiqueta: 'Bajo' },
+        ],
+      },
+    ] as CampoFormulario[]);
+    fixture.detectChanges();
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('label[for="campo-nivel"]')
+    ).toBeNull();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Nivel de riesgo');
+  });
+
+  it('should cablear aria-describedby en el control de texto', () => {
+    const input = (fixture.nativeElement as HTMLElement).querySelector(
+      '#campo-correo'
+    ) as HTMLInputElement;
+    expect(input.getAttribute('aria-describedby')).toBe('error-correo');
   });
 });

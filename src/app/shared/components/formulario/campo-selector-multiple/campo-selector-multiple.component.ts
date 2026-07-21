@@ -28,6 +28,7 @@ import type { OpcionCampo } from '../campo-formulario.model';
 })
 export class CampoSelectorMultipleComponent implements ControlValueAccessor {
   @Input() idControl = '';
+  @Input() idDescripcion = '';
   @Input() opciones: OpcionCampo[] = [];
 
   valor: string[] = [];

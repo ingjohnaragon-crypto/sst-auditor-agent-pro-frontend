@@ -24,6 +24,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 })
 export class CampoAreaTextoComponent implements ControlValueAccessor {
   @Input() idControl = '';
+  @Input() idDescripcion = '';
   @Input() placeholder = '';
   @Input() filas = 3;
 

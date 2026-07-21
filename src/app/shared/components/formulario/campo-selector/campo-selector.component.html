@@ -1,6 +1,7 @@
 <select
   class="sst-campo w-full px-3 py-2 text-sm text-slate-900"
   [id]="idControl"
+  [attr.aria-describedby]="idDescripcion || null"
   [disabled]="deshabilitado"
   [value]="valor ?? ''"
   (change)="alCambiar(($any($event.target)).value)"

@@ -28,7 +28,9 @@ import type { OpcionCampo } from '../campo-formulario.model';
 })
 export class CampoRadioComponent implements ControlValueAccessor {
   @Input() idControl = '';
+  @Input() idDescripcion = '';
   @Input() nombreGrupo = '';
+  @Input() etiqueta = '';
   @Input() opciones: OpcionCampo[] = [];
 
   valor: string | null = null;

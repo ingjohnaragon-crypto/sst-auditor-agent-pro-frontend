@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, Validators } from '@angular/forms';
 
 import { MensajeErrorCampoComponent } from './mensaje-error-campo.component';
 
@@ -21,6 +21,25 @@ describe('MensajeErrorCampoComponent', () => {
     const control = new FormControl('', Validators.required);
     control.markAsTouched();
     fixture.componentRef.setInput('control', control);
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('obligatorio');
+  });
+
+  it('should mostrar mensaje email', () => {
+    const control = new FormControl('x', Validators.email);
+    control.markAsTouched();
+    fixture.componentRef.setInput('control', control);
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('correo válido');
+  });
+
+  it('should refrescar tras markAsTouched sin cambiar la referencia', () => {
+    const control = new FormControl('', Validators.required);
+    fixture.componentRef.setInput('control', control);
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).textContent?.trim()).toBe('');
+    control.markAsTouched();
+    fixture.componentInstance.refrescar();
     fixture.detectChanges();
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('obligatorio');
   });

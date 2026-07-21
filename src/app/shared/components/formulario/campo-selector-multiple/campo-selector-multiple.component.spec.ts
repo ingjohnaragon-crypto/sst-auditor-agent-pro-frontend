@@ -39,4 +39,19 @@ describe('CampoSelectorMultipleComponent', () => {
     expect(select.multiple).toBe(true);
     expect(select.options.length).toBe(2);
   });
+
+  it('should actualizar el FormControl al cambiar seleccion', () => {
+    const select = (fixture.nativeElement as HTMLElement).querySelector('select') as HTMLSelectElement;
+    select.options[0].selected = true;
+    select.options[1].selected = true;
+    select.dispatchEvent(new Event('change'));
+    expect(fixture.componentInstance.grupo.value.areas).toEqual(['a', 'b']);
+  });
+
+  it('should respetar disabled', () => {
+    fixture.componentInstance.grupo.get('areas')?.disable();
+    fixture.detectChanges();
+    const select = (fixture.nativeElement as HTMLElement).querySelector('select') as HTMLSelectElement;
+    expect(select.disabled).toBe(true);
+  });
 });

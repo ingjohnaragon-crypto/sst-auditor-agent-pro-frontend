@@ -19,6 +19,8 @@ export interface OpcionCampo {
 /**
  * Configuración de un campo del formulario dinámico.
  * Si `checkbox` trae `opciones`, el valor es `string[]` (grupo); si no, `boolean`.
+ * Con `requerido` en checkbox booleano se aplica `Validators.requiredTrue`
+ * (debe marcarse), no `required` genérico.
  */
 export interface CampoFormulario {
   nombre: string;

@@ -8,7 +8,9 @@ import {
   OnChanges,
   OnDestroy,
   Output,
+  QueryList,
   SimpleChanges,
+  ViewChildren,
   inject,
 } from '@angular/core';
 import {
@@ -65,6 +67,9 @@ export class FormularioDinamicoComponent implements OnChanges, OnDestroy {
   @Output() alEnviar = new EventEmitter<Record<string, unknown>>();
   @Output() alCambiar = new EventEmitter<Record<string, unknown>>();
 
+  @ViewChildren(MensajeErrorCampoComponent)
+  mensajesError!: QueryList<MensajeErrorCampoComponent>;
+
   formulario = new FormGroup({});
   private readonly cdr = inject(ChangeDetectorRef);
   private suscripcionCambios: Subscription | null = null;
@@ -95,9 +100,19 @@ export class FormularioDinamicoComponent implements OnChanges, OnDestroy {
     return campo.tipo === 'checkbox' && !(campo.opciones && campo.opciones.length > 0);
   }
 
+  /** Radio y checkbox-grupo usan legend interno; no asociar label con `for`. */
+  usaLeyendaInterna(campo: CampoFormulario): boolean {
+    return (
+      campo.tipo === 'radio' ||
+      (campo.tipo === 'checkbox' && !!(campo.opciones && campo.opciones.length > 0))
+    );
+  }
+
   enviar(): void {
     if (this.formulario.invalid) {
       this.formulario.markAllAsTouched();
+      this.mensajesError?.forEach((m) => m.refrescar());
+      this.cdr.detectChanges();
       return;
     }
     this.alEnviar.emit(this.formulario.getRawValue() as Record<string, unknown>);
@@ -108,16 +123,12 @@ export class FormularioDinamicoComponent implements OnChanges, OnDestroy {
     const controles: Record<string, FormControl> = {};
 
     for (const campo of this.campos ?? []) {
-      const validadores = [
-        ...(campo.requerido ? [Validators.required] : []),
-        ...(campo.validadores ?? []),
-      ];
       controles[campo.nombre] = new FormControl(
         {
           value: campo.valorInicial ?? this.valorPorDefecto(campo),
           disabled: !!campo.deshabilitado,
         },
-        validadores
+        this.validadoresDe(campo)
       );
     }
 
@@ -126,6 +137,18 @@ export class FormularioDinamicoComponent implements OnChanges, OnDestroy {
       this.alCambiar.emit(this.formulario.getRawValue() as Record<string, unknown>);
     });
     this.cdr.markForCheck();
+  }
+
+  private validadoresDe(campo: CampoFormulario) {
+    const lista = [...(campo.validadores ?? [])];
+    if (campo.requerido) {
+      if (this.esCheckboxSimple(campo)) {
+        lista.unshift(Validators.requiredTrue);
+      } else {
+        lista.unshift(Validators.required);
+      }
+    }
+    return lista;
   }
 
   private valorPorDefecto(campo: CampoFormulario): unknown {
@@ -137,8 +160,9 @@ export class FormularioDinamicoComponent implements OnChanges, OnDestroy {
       case 'selector-multiple':
         return [];
       case 'numero':
-        return null;
       case 'carga-archivo':
+      case 'selector':
+      case 'radio':
         return null;
       default:
         return '';

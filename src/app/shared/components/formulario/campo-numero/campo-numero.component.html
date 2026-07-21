@@ -2,6 +2,7 @@
   class="sst-campo w-full px-3 py-2 text-sm text-slate-900"
   type="number"
   [id]="idControl"
+  [attr.aria-describedby]="idDescripcion || null"
   [placeholder]="placeholder"
   [min]="min ?? null"
   [max]="max ?? null"

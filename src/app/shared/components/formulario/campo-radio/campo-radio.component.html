@@ -1,5 +1,11 @@
-<fieldset class="flex flex-col gap-2" [attr.aria-labelledby]="idControl + '-leyenda'">
-  <legend [id]="idControl + '-leyenda'" class="sr-only">Opciones</legend>
+<fieldset
+  class="flex flex-col gap-2"
+  [attr.aria-describedby]="idDescripcion || null"
+  [attr.aria-labelledby]="idControl + '-leyenda'"
+>
+  <legend [id]="idControl + '-leyenda'" class="sr-only">
+    {{ etiqueta || 'Opciones' }}
+  </legend>
   <label
     *ngFor="let opcion of opciones"
     class="inline-flex items-center gap-2 text-sm text-slate-700"
