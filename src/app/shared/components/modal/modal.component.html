@@ -1,0 +1,31 @@
+<section
+  class="w-full max-w-lg rounded-panel bg-superficie p-6 shadow-2xl"
+  role="dialog"
+  aria-modal="true"
+  [attr.aria-labelledby]="tituloEfectivo ? idTitulo : null"
+  [attr.aria-label]="tituloEfectivo ? null : 'Ventana de diálogo'"
+>
+  <header class="mb-4 flex items-start justify-between gap-4">
+    <h2
+      *ngIf="tituloEfectivo"
+      [id]="idTitulo"
+      class="text-lg font-bold text-slate-900"
+    >
+      {{ tituloEfectivo }}
+    </h2>
+    <button
+      *ngIf="cerrableEfectivo"
+      type="button"
+      class="ml-auto rounded p-1 text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-marca"
+      aria-label="Cerrar ventana"
+      (click)="cerrar()"
+    >
+      ×
+    </button>
+  </header>
+  <div>
+    <p *ngIf="mensajeEfectivo" class="text-sm text-slate-700">{{ mensajeEfectivo }}</p>
+    <!-- Proyección para shells embebidos en componentes de contenido propios. -->
+    <ng-content></ng-content>
+  </div>
+</section>

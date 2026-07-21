@@ -1,0 +1,278 @@
+# Ticket enriquecido: SP-239 — Creación componentes estandar y compartidos para frontend
+
+## Descripción original
+<!-- jira-skip -->
+Yo: como equipo de desarrollo forntend
+Requiero los siguientes componentes estándar y/o compartidos para no tener que repetirlos.
+Modales
+Botones
+Alertas
+Tooltips
+Tablas
+<!-- /jira-skip -->
+
+## Descripción mejorada
+Como equipo de desarrollo frontend, necesitamos una librería mínima de
+componentes compartidos (Modal, Botón, Alerta, Tooltip y Tabla) en
+`sst-auditor-agent-pro-frontend` para dejar de reimplementar estos elementos
+en cada feature (`dashboard`, `auth`, futuras pantallas de autoevaluación,
+peligros, planes de mejoramiento, etc.).
+
+**Repositorio de implementación**: este ticket vive en Jira junto a los
+tickets de backend, pero el código se implementa en el repo hermano
+`sst-auditor-agent-pro-frontend` (Angular 17, standalone components), no en
+`sst-auditor-agent-pro-backend`.
+
+Todos los componentes deben:
+- Ser **standalone** (sin `NgModule`), `ChangeDetectionStrategy.OnPush`,
+  siguiendo el patrón ya usado en `TarjetaResumenComponent`
+  (`features/dashboard/componentes/tarjeta-resumen/`).
+- Usar **nombres de clase, selector y archivo en español**, con prefijo de
+  selector `app-` (p. ej. `app-boton`, selector Angular estándar del proyecto).
+- Usar **solo utilidades de Tailwind** para estilos — el proyecto ya trae
+  `@angular/material` (`^17.3.0`) y `@angular/cdk` como dependencia transitiva,
+  pero es exclusivamente para aprovechar primitivas de comportamiento sin
+  estilo propio (`@angular/cdk/overlay`, `@angular/cdk/a11y` FocusTrap), **no**
+  para heredar el theming visual de Material.
+- Vivir bajo `shared/components/<nombre-componente>/` (carpeta padre en
+  inglés, ya existente y vacía) — **no** crear una carpeta paralela
+  `shared/componentes/`. El repo ya tiene una inconsistencia sin resolver
+  entre `shared/directivas/` (español, con contenido real) y
+  `shared/directives/` (inglés, barrel vacío que es el que se re-exporta
+  desde `shared/index.ts`); no repetir ese patrón para `components` — usar
+  únicamente la carpeta `components/` existente para todo (nombre de carpeta
+  en inglés, nombres de clase/selector en español dentro de ella).
+- Registrarse en `shared/components/index.ts` (hoy `export {}`) y quedar
+  accesibles vía `import { ... } from '@app/shared'`.
+- Cumplir accesibilidad básica (roles ARIA, foco gestionado, operables por
+  teclado) — ver [Requisitos no funcionales](#requisitos-no-funcionales).
+
+### Componentes a construir
+
+**1. `BotonComponent` (`app-boton`)**
+- Botón de acción reutilizable con variantes visuales y estado de carga.
+- `@Input({required:true}) etiqueta: string` — o usar `<ng-content>` para el
+  texto/ícono en vez de un input de texto plano (decisión de implementación
+  libre, documentar la elegida).
+- `@Input() variante: 'primario' | 'secundario' | 'peligro' | 'texto' = 'primario'`
+- `@Input() tamano: 'sm' | 'md' | 'lg' = 'md'`
+- `@Input() tipo: 'button' | 'submit' | 'reset' = 'button'`
+- `@Input() deshabilitado = false`
+- `@Input() cargando = false` — muestra spinner y fuerza `disabled` + `aria-busy="true"`
+- `@Output() alHacerClic = new EventEmitter<MouseEvent>()`
+
+**2. `ModalComponent` (`app-modal`) + `ServicioModal`**
+- Overlay modal construido sobre `@angular/cdk/dialog` (`Dialog`,
+  `DialogModule`) para focus trap, scroll lock y cierre con `Esc` — con
+  plantilla y estilos propios en Tailwind (no usar `MatDialog` directamente,
+  para no arrastrar el theming de Material).
+- `ServicioModal` con API programática: `abrir<T>(componente, config?)` /
+  `cerrar(resultado?)`, envolviendo `Dialog.open()`.
+- Inputs del componente de contenido: `titulo`, `cerrable = true`.
+- `@Output() alCerrar = new EventEmitter<void>()`.
+- Debe devolver el foco al elemento que abrió el modal al cerrarse.
+
+**3. `AlertaComponent` (`app-alerta`)**
+- Mensaje de estado en línea (no flotante/toast).
+- `@Input({required:true}) tipo: 'exito' | 'error' | 'advertencia' | 'informativa'`
+- `@Input() titulo?: string`
+- `@Input() mensaje!: string`
+- `@Input() cerrable = false`
+- `@Output() alCerrar = new EventEmitter<void>()`
+- `role="alert"` + `aria-live="assertive"` para `error`/`advertencia`;
+  `role="status"` + `aria-live="polite"` para `exito`/`informativa`.
+
+**4. `TooltipDirective` (`appTooltip`)**
+- Directiva de atributo (no componente) sobre `@angular/cdk/overlay`.
+- `@Input('appTooltip') texto = ''`
+- `@Input() posicionTooltip: 'arriba' | 'abajo' | 'izquierda' | 'derecha' = 'arriba'`
+- Se muestra en `mouseenter`/`focus`, se oculta en `mouseleave`/`blur`/`Esc`.
+- El elemento anfitrión recibe `aria-describedby` apuntando al `id` del
+  tooltip renderizado.
+
+**5. `TablaComponent<T>` (`app-tabla`)**
+- Tabla genérica con columnas configurables, orden y paginación client-side.
+- `@Input({required:true}) columnas: ColumnaTabla<T>[]`
+- `@Input({required:true}) datos: T[] = []`
+- `@Input() cargando = false` — muestra skeleton/placeholder de filas.
+- `@Input() paginacion: { tamanoPagina: number } | null = null`
+- `@Input() trackearPor: (item: T) => unknown = (item) => item`
+- `@Output() alOrdenar = new EventEmitter<{ columna: string; direccion: 'asc' | 'desc' }>()`
+- `@Output() alCambiarPagina = new EventEmitter<number>()`
+- Estado vacío (`datos.length === 0` y `!cargando`) con mensaje configurable
+  (`@Input() mensajeVacio = 'No hay datos para mostrar'`).
+
+## Criterios de aceptación
+- [ ] `BotonComponent`, `ModalComponent`, `AlertaComponent`, `TooltipDirective`
+      y `TablaComponent` existen bajo `shared/components/`, son standalone y
+      `OnPush`, y se importan sin error vía `import { ... } from '@app/shared'`.
+- [ ] Cada componente tiene su propio `.spec.ts` con cobertura de los
+      escenarios listados en [Casos de prueba unitarios](#casos-de-prueba-unitarios).
+- [ ] `shared/components/index.ts` exporta los cinco elementos; `ng build`
+      del proyecto frontend compila sin errores de tipos ni de plantilla.
+- [ ] El modal atrapa el foco, se cierra con `Esc` y devuelve el foco al
+      disparador al cerrarse (verificado manual o con test de a11y).
+- [ ] `AlertaComponent` expone el `role`/`aria-live` correcto según `tipo`.
+- [ ] `TooltipDirective` no requiere módulos adicionales fuera de
+      `@angular/cdk/overlay`/`@angular/cdk/a11y` (ya son dependencias
+      existentes del proyecto).
+- [ ] `TablaComponent` maneja correctamente los tres estados: con datos,
+      vacío y cargando.
+- [ ] Ningún componente introduce clases o theming de `@angular/material`
+      visibles en el DOM final (solo Tailwind).
+- [ ] Al menos una feature existente (p. ej. `dashboard`) se actualiza para
+      consumir `BotonComponent` o `AlertaComponent` como prueba de integración
+      real (no solo unit tests aislados).
+
+## Campos y endpoints
+Este ticket es exclusivamente frontend (librería de componentes UI); no
+agrega ni modifica endpoints REST del backend. El "contrato" equivalente es
+la API pública (Inputs/Outputs/selectores) de cada componente, detallada en
+la sección [Descripción mejorada](#descripción-mejorada).
+
+- Ningún nuevo endpoint HTTP.
+- Ningún cambio en `openapi.yaml` del backend.
+- Los componentes no hacen llamadas HTTP propias (son de presentación pura).
+
+## Archivos a crear o modificar
+Todas las rutas son relativas a `sst-auditor-agent-pro-frontend/src/app/`:
+
+- `shared/components/boton/boton.component.{ts,html,css,spec.ts}` — Crear
+- `shared/components/modal/modal.component.{ts,html,css,spec.ts}` — Crear
+- `shared/components/modal/servicio-modal.ts` + `servicio-modal.spec.ts` — Crear
+- `shared/components/alerta/alerta.component.{ts,html,css,spec.ts}` — Crear
+- `shared/components/tooltip/tooltip.directive.ts` + `.spec.ts` — Crear
+- `shared/components/tabla/tabla.component.{ts,html,css,spec.ts}` — Crear
+- `shared/components/tabla/columna-tabla.model.ts` (interfaz `ColumnaTabla<T>`) — Crear
+- `shared/components/index.ts` — Modificar (reemplazar `export {}` por los
+  `export *` de los seis módulos nuevos)
+- `shared/index.ts` — Sin cambios (ya re-exporta `./components`)
+- Una feature existente (p. ej.
+  `features/dashboard/paginas/pagina-dashboard/`) — Modificar, para consumir
+  al menos un componente nuevo como prueba de integración
+
+## Casos de prueba unitarios
+- **BotonComponent**: emite `alHacerClic` en clic; no emite cuando
+  `deshabilitado` o `cargando` es `true`; aplica clases Tailwind correctas
+  por `variante`/`tamano`; `aria-busy` refleja `cargando`.
+- **ModalComponent / ServicioModal**: `abrir()` monta el componente y
+  devuelve una referencia con `cerrar()`; `Esc` cierra el modal; el foco
+  regresa al disparador; `cerrable = false` oculta el botón de cierre.
+- **AlertaComponent**: renderiza `role`/`aria-live` correctos por `tipo`;
+  emite `alCerrar` al hacer clic en cerrar; no muestra botón de cierre si
+  `cerrable = false`.
+- **TooltipDirective**: muestra el overlay en `mouseenter`/`focus` y lo
+  destruye en `mouseleave`/`blur`; asigna `aria-describedby` al host;
+  respeta `posicionTooltip`.
+- **TablaComponent**: renderiza filas desde `datos`; muestra estado vacío
+  cuando `datos.length === 0`; muestra skeleton cuando `cargando = true`;
+  emite `alOrdenar` al hacer clic en un encabezado ordenable; emite
+  `alCambiarPagina` al paginar.
+- Caso de integración: la feature modificada renderiza el componente
+  compartido sin errores de consola y reacciona a sus `Output()`.
+
+## Requisitos no funcionales
+- **Accesibilidad**: todos los componentes deben ser operables por teclado
+  (Tab/Enter/Esc según corresponda); usar roles ARIA correctos (`alert`,
+  `status`, `dialog`); el modal debe implementar focus trap y devolución de
+  foco; el tooltip debe ser accesible también por foco de teclado, no solo
+  hover.
+- **Consistencia visual**: exclusivamente clases utilitarias de Tailwind; no
+  se permite theming de `@angular/material` visible (solo se usa
+  `@angular/cdk` como motor de comportamiento sin estilos).
+- **Rendimiento**: `ChangeDetectionStrategy.OnPush` obligatorio en los cinco
+  componentes; `TablaComponent` debe usar `trackBy` para evitar re-renders
+  innecesarios en listas grandes.
+- **Cero dependencias nuevas**: no agregar paquetes npm — `@angular/cdk` y
+  `tailwindcss` ya están instalados y son suficientes para overlay, focus
+  trap y estilos.
+- **No introducir la duplicidad `directivas`/`directives`**: todo el código
+  nuevo de esta librería vive únicamente en `shared/components/`.
+
+## Puntos de historia
+<!-- STORY_POINTS:8 -->
+**8** — cinco piezas de UI reutilizables (boton, modal+servicio, alerta,
+tooltip, tabla genérica) con CDK Overlay/Dialog, a11y, tests por componente y
+una integración real en una feature existente; sin llamadas HTTP ni cambios
+de backend.
+<!-- /STORY_POINTS -->
+
+## Subtareas
+
+<!-- SUBTASK:SP-240 -->
+### Subtarea: SP-240 — Creación formulario estandar
+
+#### Descripción original
+<!-- jira-skip -->
+Formularios: Configuracion de campos inputs text, textarea, números, selectores con opciones, radio buttons, checkbox buttons, chips, multiple select, inputs file. Al momento de ingresar los campos se pueda con el tipo de input, validaciones en cada uno de los campos y label con el nombre del campo.
+<!-- /jira-skip -->
+
+#### Descripción mejorada
+Construir un **formulario dinámico configurable** en
+`sst-auditor-agent-pro-frontend` que renderice campos a partir de un arreglo
+de configuración (`CampoFormulario[]`), en vez de definir un formulario
+distinto por cada pantalla. Depende de [SP-239](#ticket-enriquecido-sp-239--creación-componentes-estandar-y-compartidos-para-frontend)
+solo en convenciones compartidas (standalone, OnPush, Tailwind, carpeta
+`shared/components/`); no depende de que los cinco componentes de SP-239
+estén terminados para empezar.
+
+Tipos de campo soportados (todos vía Angular **Reactive Forms**, cada uno
+implementando `ControlValueAccessor` para integrarse con `[formControlName]`):
+- `texto` — `<input type="text">`
+- `area-texto` — `<textarea>`
+- `numero` — `<input type="number">`, con `min`/`max`/`step` opcionales
+- `selector` — `<select>` de opción única, con lista `opciones: { valor, etiqueta }[]`
+- `radio` — grupo de radio buttons, misma forma de `opciones`
+- `checkbox` — checkbox individual booleano o grupo de checkboxes múltiples
+- `chips` — entrada de valores múltiples tipo "chip" (usar `@angular/cdk/a11y`
+  + lista interna, sin depender de `MatChipsModule` para no arrastrar
+  theming de Material)
+- `selector-multiple` — `<select multiple>` o equivalente con `opciones`
+- `carga-archivo` — `<input type="file">`, con `aceptar` (mime types) y
+  `multiple` opcionales
+
+Cada campo se define con esta forma (interfaz de configuración):
+```ts
+interface CampoFormulario {
+  nombre: string;                 // clave del FormControl
+  tipo: TipoCampoFormulario;      // 'texto' | 'area-texto' | 'numero' | ...
+  etiqueta: string;               // texto del <label>
+  requerido?: boolean;
+  opciones?: { valor: string; etiqueta: string }[]; // selector/radio/checkbox-grupo/chips/selector-multiple
+  validadores?: ValidatorFn[];    // Validators.* de Angular
+  placeholder?: string;
+  ayuda?: string;                 // texto de ayuda bajo el campo
+}
+```
+
+`FormularioDinamicoComponent` recibe `campos: CampoFormulario[]` y construye
+internamente un `FormGroup`; expone el `FormGroup` resultante (o los valores
+al enviar) al padre vía `@Output()`, para que cada feature decida qué hacer
+con los datos (ninguna llamada HTTP propia del formulario).
+
+#### Criterios de aceptación
+- [ ] `FormularioDinamicoComponent` renderiza los 9 tipos de campo listados
+      a partir de un arreglo `campos: CampoFormulario[]`.
+- [ ] Cada tipo de campo es un componente/directiva independiente que
+      implementa `ControlValueAccessor` (no un único `switch` gigante en la
+      plantilla del formulario).
+- [ ] Las validaciones declaradas en `validadores`/`requerido` se aplican al
+      `FormControl` correspondiente y los mensajes de error se muestran bajo
+      cada campo cuando este es inválido y ha sido tocado (`touched`).
+- [ ] Cada campo renderiza un `<label>` asociado (`for`/`id`) con el texto de
+      `etiqueta`.
+- [ ] `FormularioDinamicoComponent` expone `@Output() alEnviar` con los
+      valores del formulario solo cuando este es válido.
+- [ ] Los componentes de campo viven bajo `shared/components/formulario/` y
+      se registran en `shared/components/index.ts`.
+- [ ] Existen tests unitarios por tipo de campo (render, binding de valor,
+      validación) y un test de integración del `FormularioDinamicoComponent`
+      completo con al menos 3 tipos de campo combinados.
+
+#### Puntos de historia
+<!-- STORY_POINTS:8 -->
+**8** — 9 tipos de campo como `ControlValueAccessor` independientes +
+compositor dinámico basado en config + validaciones + tests por campo; sin
+llamadas HTTP propias.
+<!-- /STORY_POINTS -->
+<!-- /SUBTASK:SP-240 -->

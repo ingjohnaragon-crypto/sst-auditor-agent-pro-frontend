@@ -1,0 +1,14 @@
+<button
+  [type]="tipo"
+  [class]="clases"
+  [disabled]="deshabilitado || cargando"
+  [attr.aria-busy]="cargando ? true : null"
+  (click)="manejarClic($event)"
+>
+  <span
+    *ngIf="cargando"
+    class="h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent"
+    aria-hidden="true"
+  ></span>
+  <ng-content></ng-content>
+</button>

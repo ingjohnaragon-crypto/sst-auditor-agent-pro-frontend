@@ -1,0 +1,7 @@
+<div [class]="clases" [attr.role]="rol" [attr.aria-live]="ariaLive">
+  <div class="min-w-0 flex-1">
+    <p *ngIf="titulo" class="font-bold">{{ titulo }}</p>
+    <p [class.mt-1]="titulo">{{ mensaje }}</p>
+  </div>
+  <button *ngIf="cerrable" type="button" class="rounded p-1 hover:bg-black/5 focus:outline-none focus:ring-2 focus:ring-current" aria-label="Cerrar alerta" (click)="alCerrar.emit()">×</button>
+</div>
