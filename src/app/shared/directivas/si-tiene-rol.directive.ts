@@ -15,6 +15,11 @@ import type { RolUsuario } from '../../nucleo/auth/modelos/usuario-autenticado';
  * Control de UX — la autorización real la impone el backend con `requerir_roles`.
  *
  * Uso: `*appSiTieneRol="['AUDITOR_SST', 'ADMINISTRADOR']"`
+ *
+ * Usa `@Input()` decorator, no Signal input: Angular 17.3 no registra `input()`/
+ * `input.required()` como input reconocido en directivas de atributo puras bajo
+ * el TestBed/JIT de este proyecto (NG0303) — ver angular/angular#54013. Los
+ * Signal inputs sí funcionan en `@Component()` (ver TarjetaResumenComponent).
  */
 @Directive({
   selector: '[appSiTieneRol]',
