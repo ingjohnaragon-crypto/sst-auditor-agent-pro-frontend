@@ -1,7 +1,9 @@
-# Dashboard
+# Dashboard (Inicio)
 
-Landing autenticada de SST-Audit Pro. La ruta `/dashboard` se renderiza dentro
-del `ShellComponent` y está protegida por `guardAutenticacion`.
+Landing autenticada de SST-Audit Pro. La ruta `/dashboard` es la **pantalla
+principal del usuario** (home de producto), se renderiza dentro del
+`ShellComponent` y está protegida por `guardAutenticacion`. En la barra
+lateral el ítem se etiqueta como **Inicio**.
 
 ## Estructura
 
@@ -12,30 +14,41 @@ features/dashboard/
 │       └── pagina-dashboard.component.{ts,html,css,spec.ts}
 ├── componentes/
 │   └── tarjeta-resumen/
-│       └── tarjeta-resumen.component.{ts,html,css,spec.ts}
+├── modelos/
+│   └── fila-actividad-home.model.ts
+├── servicios/
+│   └── servicio-resumen-home.ts
 └── README.md
 ```
 
-Cada página y subcomponente tiene su propia carpeta. No mezclar varios
-componentes en el mismo directorio.
+## Alcance (SP-242)
 
-## Alcance
+- Saludo con `nombre_completo` / `rol` desde `ServicioAutenticacion`.
+- CTAs de producto: modal onboarding (`ServicioModal`), actualizar resumen
+  (`ServicioLoader`), autoevaluación (RBAC, placeholder).
+- `Alerta` informativa + éxito tras refrescar.
+- Resumen con `TarjetaResumen` (métricas placeholder).
+- Actividad reciente con `TablaComponent` y datos mock (`ServicioResumenHome`).
+- Accesos rápidos + panel PHVA.
+- Demos técnicas SP-240/SP-241 en accordion **Herramientas de componentes
+  (QA)**, cerrado por defecto (fuera del primer viewport).
 
-- Resumen genérico con tarjetas placeholder.
-- Accesos rápidos condicionados por rol mediante `*appSiTieneRol`.
-- Datos de sesión obtenidos de `ServicioAutenticacion.usuarioActual`.
-- Sin llamadas HTTP de negocio: las métricas reales se conectarán en tickets
-  posteriores.
+Sin llamadas HTTP de negocio: las métricas reales se conectarán en tickets
+posteriores (p. ej. SP-189).
+
+## Componentes shared usados
+
+`Boton`, `Alerta`, `Tabla`, `Modal`/`ServicioModal`, `Tooltip`,
+`FormularioDinamico` (solo QA), `ServicioLoader`.
 
 ## Diseño
 
-El lenguaje visual toma como referencia el shell y `DashboardView` del mockup
-[sst-audit-pro-mckp](https://github.com/ingjohnaragon-crypto/sst-audit-pro-mckp):
-paleta slate/indigo, tarjetas redondeadas, tipografía Inter y navegación lateral
-responsive. No se porta código React ni dependencias del mockup.
+Referencia visual: mockup
+[sst-audit-pro-mckp](https://github.com/ingjohnaragon-crypto/sst-audit-pro-mckp)
+(shell + DashboardView). Tokens `--sst-*`, Tailwind, Inter.
 
 ## Roles
 
-Todos los usuarios autenticados pueden ver el dashboard. Los accesos de
-escritura solo se muestran a `ADMINISTRADOR` y `AUDITOR_SST`; esta restricción
-es de experiencia de usuario y no sustituye la autorización del backend.
+Todos los autenticados ven Inicio. CTAs de escritura
+(`Nueva autoevaluación`, área auditoría) solo `ADMINISTRADOR` /
+`AUDITOR_SST` vía `*appSiTieneRol`.

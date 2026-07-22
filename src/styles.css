@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
 @import './styles/design-tokens.css';
+/* z-index / backdrop del Dialog y Overlay de CDK (modal, tooltip). */
+@import '@angular/cdk/overlay-prebuilt.css';
 
 @tailwind base;
 @tailwind components;
@@ -19,6 +21,11 @@
   input {
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2;
   }
+}
+
+/* Por encima de la barra lateral (z-50) y del loader (z-[100]). */
+.cdk-overlay-container {
+  z-index: 1100;
 }
 
 /* Estilo de verificación visual de Tailwind */

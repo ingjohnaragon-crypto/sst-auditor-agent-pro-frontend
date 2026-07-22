@@ -16,12 +16,13 @@ describe('BarraLateralComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should mostrar el acceso al dashboard', () => {
-    const dashboard = (fixture.nativeElement as HTMLElement).querySelector(
-      'a[aria-label="Dashboard"]'
+  it('should mostrar el acceso a Inicio', () => {
+    const inicio = (fixture.nativeElement as HTMLElement).querySelector(
+      'a[aria-label="Inicio"]'
     );
 
-    expect(dashboard?.getAttribute('href')).toBe('/dashboard');
+    expect(inicio?.getAttribute('href')).toBe('/dashboard');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Inicio');
   });
 
   it('should resaltar el enlace activo al navegar al dashboard', async () => {
@@ -30,12 +31,12 @@ describe('BarraLateralComponent', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const dashboard = (fixture.nativeElement as HTMLElement).querySelector(
-      'a[aria-label="Dashboard"]'
+    const inicio = (fixture.nativeElement as HTMLElement).querySelector(
+      'a[aria-label="Inicio"]'
     );
 
-    expect(dashboard?.classList.contains('bg-indigo-600')).toBe(true);
-    expect(dashboard?.classList.contains('text-white')).toBe(true);
+    expect(inicio?.classList.contains('bg-indigo-600')).toBe(true);
+    expect(inicio?.classList.contains('text-white')).toBe(true);
   });
 
   it('should marcar diagnostico como proximamente', () => {
