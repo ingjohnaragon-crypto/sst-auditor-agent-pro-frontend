@@ -16,6 +16,8 @@ export class ServicioModal {
 
     const referencia = this.dialogo.open<R, D, C>(componente, {
       disableClose: false,
+      hasBackdrop: true,
+      // Por encima de la barra lateral (z-50); el CSS global refuerza el container.
       ...configuracion,
     });
     this.referenciaActiva = referencia as DialogRef<unknown, unknown>;

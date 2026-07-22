@@ -1,0 +1,183 @@
+# Ticket enriquecido: SP-242 — Creación pantalla principal usuario
+
+## Descripción original
+<!-- jira-skip -->
+Subtarea: SP-242 — Creación pantalla principal usuario
+
+Padre: SP-239 — Creacion componentes estandar y compartidos para frontend
+Tipo: Subtask | Estado: Por hacer | Assignee: John Aragon
+Descripción en Jira: (vacía — solo título).
+<!-- /jira-skip -->
+
+## Descripción mejorada
+
+Convertir `/dashboard` en la **pantalla principal del usuario autenticado**
+(home de producto) en `sst-auditor-agent-pro-frontend`, consumiendo de forma
+real la librería compartida entregada en SP-239 / SP-240 / SP-241 — no como
+demos técnicas sueltas, sino como UI de producto.
+
+SP-238 ya dejó el cascarón (shell + dashboard genérico con StatCards
+placeholder). Este ticket **eleva** esa landing a home de usuario:
+
+1. Saludo / contexto de sesión (nombre, rol, empresa placeholder).
+2. Resumen operativo con `TarjetaResumen` + CTAs con `BotonComponent`.
+3. Bloque de actividad reciente / próximos pasos con `TablaComponent`
+   (datos mock locales; sin API nueva).
+4. Feedback con `AlertaComponent` (p. ej. “módulos en construcción”).
+5. Acciones que demuestren `ServicioModal` y `ServicioLoader` en flujos
+   de producto (no secciones “Demo SP-240/241” como contenido principal).
+6. Las demos técnicas actuales se **reubican o eliminan** del primer
+   viewport (ver alcance).
+
+**Repositorio**: frontend Angular 17 standalone. Ticket bajo SP-239 en Jira.
+
+### Dependencias
+
+- **SP-238** (mergeado): shell, `/dashboard`, `TarjetaResumen`, auth/RBAC.
+- **SP-239** (mergeado): `Boton`, `Alerta`, `Modal`+`ServicioModal`,
+  `Tooltip`, `Tabla`.
+- **SP-240** (mergeado): `FormularioDinamico` — uso opcional en un panel
+  secundario (p. ej. “solicitud rápida de soporte”) o fuera del primer
+  viewport; **no** bloquea si se deja solo en un accordion “Herramientas”.
+- **SP-241** (en PR / develop): `ServicioLoader` + `LoaderInteractivo` —
+  usar en al menos un CTA de la home (“Iniciar recorrido” / “Actualizar
+  resumen”) con pasos simulados.
+
+### Arquitectura (home)
+
+Feature: `features/dashboard/` (mantener ruta `/dashboard` como home;
+alias de nav “Inicio” o “Principal” en barra lateral).
+
+Estructura de UI (orden del viewport):
+
+1. **Hero de bienvenida** — `Hola, {nombre_completo}` + rol + subtítulo
+   SG-SST; CTA primario (`app-boton`) según rol.
+2. **Fila de resumen** — 4 `app-tarjeta-resumen` (pueden seguir con `—`
+   hasta que exista API; al menos una refleja sesión real).
+3. **Grid principal**
+   - Columna izq.: accesos a módulos (Diagnóstico próximamente,
+     área auditoría con `*appSiTieneRol`, etc.) + alerta informativa.
+   - Columna der.: panel PHVA / ciclo (ya existe) o “Próximos pasos”.
+4. **Actividad reciente** — `app-tabla` con filas mock
+   (`fecha`, `evento`, `estado`) + empty/skeleton si `cargando`.
+5. **Sección secundaria (opcional, colapsable)** — demos de formulario/
+   loader solo si se conservan para QA; preferible mover a ruta
+   `/laboratorio-ui` **o** accordion al final. Objetivo: el primer
+   viewport no debe leerse como “tablero de demos de componentes”.
+
+### Contrato de datos locales (sin HTTP nuevo)
+
+```ts
+interface FilaActividadHome {
+  id: string;
+  fecha: string;      // ISO o texto corto
+  evento: string;
+  estado: 'completado' | 'pendiente' | 'en_curso';
+}
+
+// Fuente: constante en el contenedor o servicio feature ligero
+// ServicioResumenHome (sin HttpClient) que expone signal/getter mock.
+```
+
+CTA “Actualizar resumen” → `ServicioLoader.mostrar(...)` (pasos simulados)
+→ al terminar, refresca filas mock / muestra `Alerta` de éxito.
+
+CTA “¿Cómo empezar?” → `ServicioModal.abrir` con `DatosModal`
+(mensaje de onboarding).
+
+### Barra lateral
+
+- Renombrar label visible de “Dashboard” a **“Inicio”** (ruta sigue
+  `/dashboard` para no romper auth/returnUrl).
+- Mantener Diagnóstico como “Próximo” hasta SP-189.
+- No inventar módulos de negocio del mockup (GTC 45, IA, PDF).
+
+### Estilos / a11y
+
+- Tokens `--sst-*`, tipografía Inter, superficies `sst-superficie`.
+- Primer viewport: bienvenida + resumen + un CTA group (sin demos).
+- `OnPush`; `@Input`/`@Output` decorators (no signal inputs).
+- Tooltips en ítems deshabilitados de nav/accesos (`appTooltip`).
+
+## Criterios de aceptación
+
+- [ ] `/dashboard` es la pantalla principal post-login y muestra saludo
+      con `nombre_completo` / `rol` desde `usuarioActual()`.
+- [ ] Primer viewport usa componentes compartidos (`Boton`, al menos una
+      `Alerta`, `TarjetaResumen`) y **no** prioriza demos técnicas de
+      formulario/loader.
+- [ ] Existe bloque de actividad reciente con `TablaComponent` (datos
+      mock; estados vacío y/o cargando cubiertos en test o UI).
+- [ ] Al menos un CTA usa `ServicioLoader` (flujo simulado con pasos).
+- [ ] Al menos un CTA usa `ServicioModal` (onboarding / ayuda).
+- [ ] RBAC UI: CTAs de escritura solo para `ADMINISTRADOR` |
+      `AUDITOR_SST` vía `*appSiTieneRol`.
+- [ ] Nav lateral muestra “Inicio” (o equivalente) apuntando a
+      `/dashboard`; Diagnóstico sigue “próximo” si no hay ruta.
+- [ ] Demos SP-240/241 fuera del primer viewport (accordion final,
+      eliminadas, o ruta secundaria documentada).
+- [ ] Specs actualizados; `npm test` verde; cobertura de archivos
+      tocados de dashboard ≥ 90 % líneas donde aplique.
+- [ ] Sin endpoints nuevos; sin theming Material; sin signal inputs.
+
+## Campos y endpoints
+
+Exclusivamente frontend. Sin cambios OpenAPI.
+
+Consume solo auth existente:
+
+- `GET /api/v1/auth/yo` vía `ServicioAutenticacion.usuarioActual()`
+
+Datos de tablas/resumen: **mock local** en este ticket.
+
+## Archivos a crear o modificar
+
+Rutas relativas a `sst-auditor-agent-pro-frontend/src/app/`:
+
+- `features/dashboard/paginas/pagina-dashboard/pagina-dashboard.component.{ts,html,css,spec.ts}` — Modificar (home de producto)
+- `features/dashboard/componentes/` — Crear componentes presentacionales
+  si hace falta (p. ej. `saludo-home/`, `panel-actividad/`) — opcional;
+  puede vivir todo en la página si se mantiene legible
+- `features/dashboard/modelos/fila-actividad-home.model.ts` — Crear
+- `features/dashboard/servicios/servicio-resumen-home.ts` (+ spec) —
+  Crear (mock, sin HTTP) — opcional pero recomendado
+- `layout/componentes/barra-lateral/barra-lateral.component.html` —
+  Modificar (label “Inicio”)
+- `features/dashboard/README.md` — Modificar (alcance home vs demos)
+
+No tocar contratos de auth ni rutas base salvo alias de redirect si se
+decide `/inicio` → `/dashboard` (opcional; no requerido).
+
+## Casos de prueba unitarios
+
+- Home renderiza saludo con nombre/rol del usuario mock.
+- Tabla de actividad muestra filas mock; estado vacío si lista vacía.
+- CTA loader: spy de `ServicioLoader.mostrar` / `ocultar` (fakeAsync).
+- CTA modal: spy de `ServicioModal.abrir`.
+- `CONSULTA` no ve CTA de escritura; auditor sí.
+- Nav: texto “Inicio” presente; link a `/dashboard`.
+- Demos técnicas ausentes del texto del primer bloque (o accordion
+  colapsado por defecto).
+
+## Requisitos no funcionales
+
+- **UX**: un solo job por sección; primer viewport = marca + saludo +
+  resumen + CTAs (sin clutter de demos).
+- **a11y**: headings jerárquicos, `aria-labelledby` en secciones,
+  tooltips en deshabilitados, contraste AA.
+- **Rendimiento**: OnPush; lazy `loadComponent` del dashboard ya existe.
+- **Seguridad**: sin `innerHTML`; RBAC UI no sustituye backend.
+- **API componentes**: decorators `@Input`/`@Output` (NG0950).
+
+## Puntos de historia
+
+<!-- STORY_POINTS:5 -->
+**5** — Evolución de dashboard existente a home de producto + integración
+real de Boton/Alerta/Tabla/Modal/Loader + limpieza de demos + specs;
+sin API nueva ni módulos de negocio (Diagnóstico sigue placeholder).
+<!-- /STORY_POINTS -->
+
+## Subtareas
+
+Sin subtareas en Jira para SP-242 (es subtarea de SP-239). No se inventan
+subtareas.
