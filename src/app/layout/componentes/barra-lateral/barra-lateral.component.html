@@ -53,6 +53,30 @@
       <span class="hidden text-xs font-black uppercase tracking-widest md:block">Inicio</span>
     </a>
 
+    <a
+      routerLink="/matriz-riesgos"
+      routerLinkActive="bg-indigo-600 text-white shadow-xl shadow-indigo-950/30"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="group flex items-center justify-center gap-4 rounded-2xl p-4 text-slate-500 transition hover:bg-slate-800/80 hover:text-white md:justify-start"
+      aria-label="Matriz de riesgos"
+    >
+      <svg
+        class="h-5 w-5 shrink-0"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <path d="M4 4h16v16H4z" />
+        <path d="M4 10h16M10 4v16" />
+        <path d="m13 15 2 2 4-4" />
+      </svg>
+      <span class="hidden text-xs font-black uppercase tracking-widest md:block">
+        Matriz de riesgos
+      </span>
+    </a>
+
     <span
       class="flex cursor-not-allowed items-center justify-center gap-4 rounded-2xl p-4 text-slate-600 md:justify-start"
       aria-label="Diagnóstico, próximamente"
@@ -80,7 +104,5 @@
     </span>
   </div>
 
-  <p class="sst-etiqueta hidden px-4 text-[9px] md:block">
-    Gestión integral SG-SST
-  </p>
+  <p class="sst-etiqueta hidden px-4 text-[9px] md:block">Gestión integral SG-SST</p>
 </nav>

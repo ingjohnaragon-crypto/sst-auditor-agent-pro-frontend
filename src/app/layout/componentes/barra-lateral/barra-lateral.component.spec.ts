@@ -1,49 +1,73 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter, Router } from '@angular/router';
+import { NgZone } from "@angular/core";
+import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { provideRouter, Router } from "@angular/router";
 
-import { BarraLateralComponent } from './barra-lateral.component';
+import { BarraLateralComponent } from "./barra-lateral.component";
 
-describe('BarraLateralComponent', () => {
+describe("BarraLateralComponent", () => {
   let fixture: ComponentFixture<BarraLateralComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [BarraLateralComponent],
-      providers: [provideRouter([{ path: 'dashboard', children: [] }])],
+      providers: [
+        provideRouter([
+          { path: "dashboard", children: [] },
+          { path: "matriz-riesgos", children: [] },
+        ]),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(BarraLateralComponent);
     fixture.detectChanges();
   });
 
-  it('should mostrar el acceso a Inicio', () => {
-    const inicio = (fixture.nativeElement as HTMLElement).querySelector(
-      'a[aria-label="Inicio"]'
-    );
+  it("should mostrar el acceso a Inicio", () => {
+    const inicio = (fixture.nativeElement as HTMLElement).querySelector('a[aria-label="Inicio"]');
 
-    expect(inicio?.getAttribute('href')).toBe('/dashboard');
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Inicio');
+    expect(inicio?.getAttribute("href")).toBe("/dashboard");
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain("Inicio");
   });
 
-  it('should resaltar el enlace activo al navegar al dashboard', async () => {
-    await TestBed.inject(Router).navigate(['/dashboard']);
+  it("should resaltar el enlace activo al navegar al dashboard", async () => {
+    await TestBed.inject(NgZone).run(() => TestBed.inject(Router).navigate(["/dashboard"]));
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const inicio = (fixture.nativeElement as HTMLElement).querySelector(
-      'a[aria-label="Inicio"]'
-    );
+    const inicio = (fixture.nativeElement as HTMLElement).querySelector('a[aria-label="Inicio"]');
 
-    expect(inicio?.classList.contains('bg-indigo-600')).toBe(true);
-    expect(inicio?.classList.contains('text-white')).toBe(true);
+    expect(inicio?.classList.contains("bg-indigo-600")).toBe(true);
+    expect(inicio?.classList.contains("text-white")).toBe(true);
   });
 
-  it('should marcar diagnostico como proximamente', () => {
+  it("should marcar diagnostico como proximamente", () => {
     const diagnostico = (fixture.nativeElement as HTMLElement).querySelector(
       '[aria-label="Diagnóstico, próximamente"]'
     );
 
-    expect(diagnostico?.getAttribute('aria-disabled')).toBe('true');
+    expect(diagnostico?.getAttribute("aria-disabled")).toBe("true");
+  });
+
+  it("should mostrar el acceso a la matriz de riesgos", () => {
+    const matriz = (fixture.nativeElement as HTMLElement).querySelector(
+      'a[aria-label="Matriz de riesgos"]'
+    );
+
+    expect(matriz?.getAttribute("href")).toBe("/matriz-riesgos");
+    expect(matriz?.textContent).toContain("Matriz de riesgos");
+  });
+
+  it("should resaltar la matriz al navegar a su ruta", async () => {
+    await TestBed.inject(NgZone).run(() => TestBed.inject(Router).navigate(["/matriz-riesgos"]));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const matriz = (fixture.nativeElement as HTMLElement).querySelector(
+      'a[aria-label="Matriz de riesgos"]'
+    );
+    expect(matriz?.classList.contains("bg-indigo-600")).toBe(true);
+    expect(matriz?.classList.contains("text-white")).toBe(true);
   });
 });
