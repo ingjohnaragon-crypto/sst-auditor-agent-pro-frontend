@@ -1,0 +1,160 @@
+<section
+  class="w-[min(92vw,38rem)] rounded-panel bg-white p-6 shadow-2xl"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="titulo-formulario-matriz"
+>
+  <header class="mb-6 flex items-start justify-between gap-4">
+    <div>
+      <p class="sst-etiqueta">Matriz GTC 45</p>
+      <h2 id="titulo-formulario-matriz" class="mt-1 text-xl font-black text-slate-900">
+        {{ datos.titulo }}
+      </h2>
+    </div>
+    <button
+      type="button"
+      class="rounded-control p-2 text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-marca"
+      aria-label="Cerrar formulario"
+      (click)="cancelar()"
+    >
+      ×
+    </button>
+  </header>
+
+  <form [formGroup]="formulario" class="space-y-4" (ngSubmit)="guardar()">
+    <ng-container *ngIf="datos.tipo === 'proceso'">
+      <label class="block text-sm font-semibold text-slate-700">
+        Nombre
+        <input
+          formControlName="nombre"
+          class="mt-1 w-full rounded-control border border-slate-300 px-3 py-2 focus:border-marca focus:outline-none focus:ring-2 focus:ring-indigo-100"
+          maxlength="150"
+        />
+      </label>
+      <label class="block text-sm font-semibold text-slate-700">
+        Zona o lugar
+        <input
+          formControlName="zona_lugar"
+          class="mt-1 w-full rounded-control border border-slate-300 px-3 py-2 focus:border-marca focus:outline-none focus:ring-2 focus:ring-indigo-100"
+          maxlength="150"
+        />
+      </label>
+      <label class="flex items-center gap-3 text-sm font-semibold text-slate-700">
+        <input
+          type="checkbox"
+          formControlName="es_rutinaria"
+          class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+        />
+        Actividad rutinaria
+      </label>
+    </ng-container>
+
+    <ng-container *ngIf="datos.tipo === 'peligro'">
+      <label class="block text-sm font-semibold text-slate-700">
+        Clasificación
+        <select
+          formControlName="clasificacion"
+          class="mt-1 w-full rounded-control border border-slate-300 bg-white px-3 py-2"
+        >
+          <option *ngFor="let opcion of clasificaciones" [value]="opcion.valor">
+            {{ opcion.etiqueta }}
+          </option>
+        </select>
+      </label>
+      <label class="block text-sm font-semibold text-slate-700">
+        Descripción
+        <textarea
+          formControlName="descripcion"
+          rows="3"
+          class="mt-1 w-full rounded-control border border-slate-300 px-3 py-2"
+        ></textarea>
+      </label>
+      <label class="block text-sm font-semibold text-slate-700">
+        Efectos posibles
+        <textarea
+          formControlName="efectos_posibles"
+          rows="2"
+          class="mt-1 w-full rounded-control border border-slate-300 px-3 py-2"
+        ></textarea>
+      </label>
+    </ng-container>
+
+    <ng-container *ngIf="datos.tipo === 'evaluacion'">
+      <app-alerta
+        tipo="informativa"
+        mensaje="NP, NR, interpretación y aceptabilidad son calculados por el backend."
+      />
+      <div class="grid gap-4 sm:grid-cols-3">
+        <label class="block text-sm font-semibold text-slate-700">
+          Deficiencia (ND)
+          <select
+            formControlName="nivel_deficiencia"
+            class="mt-1 w-full rounded-control border border-slate-300 bg-white px-3 py-2"
+          >
+            <option *ngFor="let valor of ndValidos" [ngValue]="valor">{{ valor }}</option>
+          </select>
+        </label>
+        <label class="block text-sm font-semibold text-slate-700">
+          Exposición (NE)
+          <select
+            formControlName="nivel_exposicion"
+            class="mt-1 w-full rounded-control border border-slate-300 bg-white px-3 py-2"
+          >
+            <option *ngFor="let valor of neValidos" [ngValue]="valor">{{ valor }}</option>
+          </select>
+        </label>
+        <label class="block text-sm font-semibold text-slate-700">
+          Consecuencia (NC)
+          <select
+            formControlName="nivel_consecuencia"
+            class="mt-1 w-full rounded-control border border-slate-300 bg-white px-3 py-2"
+          >
+            <option *ngFor="let valor of ncValidos" [ngValue]="valor">{{ valor }}</option>
+          </select>
+        </label>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="datos.tipo === 'control'">
+      <label class="block text-sm font-semibold text-slate-700">
+        Tipo de control
+        <select
+          formControlName="tipo_control"
+          class="mt-1 w-full rounded-control border border-slate-300 bg-white px-3 py-2"
+        >
+          <option *ngFor="let opcion of tiposControl" [value]="opcion.valor">
+            {{ opcion.etiqueta }}
+          </option>
+        </select>
+      </label>
+      <label class="block text-sm font-semibold text-slate-700">
+        Descripción
+        <textarea
+          formControlName="descripcion"
+          rows="3"
+          class="mt-1 w-full rounded-control border border-slate-300 px-3 py-2"
+        ></textarea>
+      </label>
+      <app-alerta
+        *ngIf="advertirEppUnico"
+        tipo="advertencia"
+        mensaje="El EPP no debe ser la única medida. Prioriza controles en la fuente y el medio."
+      />
+    </ng-container>
+
+    <p
+      *ngIf="formulario.invalid && formulario.touched"
+      class="text-sm font-semibold text-red-700"
+      role="alert"
+    >
+      Completa los campos requeridos.
+    </p>
+
+    <footer class="flex flex-wrap justify-end gap-3 pt-4">
+      <app-boton tipo="button" variante="secundario" (alHacerClic)="cancelar()">
+        Cancelar
+      </app-boton>
+      <app-boton tipo="submit">Guardar</app-boton>
+    </footer>
+  </form>
+</section>

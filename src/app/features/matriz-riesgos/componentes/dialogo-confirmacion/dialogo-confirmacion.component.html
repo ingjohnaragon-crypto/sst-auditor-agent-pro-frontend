@@ -1,0 +1,17 @@
+<section
+  class="w-[min(92vw,32rem)] rounded-panel bg-white p-6 shadow-2xl"
+  role="alertdialog"
+  aria-modal="true"
+  aria-labelledby="titulo-confirmacion"
+>
+  <h2 id="titulo-confirmacion" class="text-xl font-black text-slate-900">
+    {{ datos.titulo }}
+  </h2>
+  <div class="mt-4">
+    <app-alerta tipo="advertencia" [mensaje]="datos.mensaje" />
+  </div>
+  <footer class="mt-6 flex justify-end gap-3">
+    <app-boton variante="secundario" (alHacerClic)="responder(false)">Cancelar</app-boton>
+    <app-boton variante="peligro" (alHacerClic)="responder(true)">Eliminar</app-boton>
+  </footer>
+</section>
