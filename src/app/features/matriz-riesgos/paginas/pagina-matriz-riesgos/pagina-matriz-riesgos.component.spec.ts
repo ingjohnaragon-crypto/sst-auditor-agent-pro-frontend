@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from "@angular/common/http";
 import { signal } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { of, throwError } from "rxjs";
+import { Subject, of, throwError } from "rxjs";
 
 import { ServicioModal } from "@app/shared";
 
@@ -190,6 +190,25 @@ describe("PaginaMatrizRiesgosComponent", () => {
     fixture.detectChanges();
 
     expect((fixture.nativeElement as HTMLElement).textContent).toContain("Sin permiso");
+  });
+
+  it("should ignorar una respuesta obsoleta al cambiar de empresa", async () => {
+    await crearComponente();
+    const respuestaEmpresaA = new Subject<RespuestaMatrizRiesgos>();
+    const respuestaEmpresaB = new Subject<RespuestaMatrizRiesgos>();
+    matrizApi.obtenerMatriz.mockImplementation((empresaId: string) =>
+      empresaId === "empresa-a" ? respuestaEmpresaA : respuestaEmpresaB
+    );
+
+    fixture.componentInstance.empresaSeleccionadaId = "empresa-a";
+    fixture.componentInstance.cargarMatriz();
+    fixture.componentInstance.empresaSeleccionadaId = "empresa-b";
+    fixture.componentInstance.cargarMatriz();
+
+    respuestaEmpresaB.next({ empresa_id: "empresa-b", procesos: [] });
+    respuestaEmpresaA.next({ empresa_id: "empresa-a", procesos: matriz.procesos });
+
+    expect(fixture.componentInstance.matriz?.empresa_id).toBe("empresa-b");
   });
 
   it("should reconocer los roles de escritura", async () => {

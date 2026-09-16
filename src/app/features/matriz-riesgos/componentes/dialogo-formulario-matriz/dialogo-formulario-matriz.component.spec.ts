@@ -69,6 +69,23 @@ describe("DialogoFormularioMatrizComponent", () => {
     expect(fixture.componentInstance.formulario.invalid).toBe(true);
   });
 
+  it.each(["proceso", "peligro", "control"] as const)(
+    "should impedir guardar texto obligatorio con solo espacios para %s",
+    async (tipo) => {
+      await crear({
+        tipo,
+        titulo: "Formulario",
+        valores:
+          tipo === "proceso" ? { nombre: "   " } : { descripcion: "   ", tipo: "INGENIERIA" },
+      });
+
+      fixture.componentInstance.guardar();
+
+      expect(cerrar).not.toHaveBeenCalled();
+      expect(fixture.componentInstance.formulario.invalid).toBe(true);
+    }
+  );
+
   it("should cerrar sin resultado al cancelar", async () => {
     await crear({ tipo: "peligro", titulo: "Peligro" });
 

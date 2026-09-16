@@ -17,6 +17,8 @@ import type {
   TipoControl,
 } from "../../modelos";
 
+const TEXTO_CON_CONTENIDO = Validators.pattern(/\S/);
+
 export type TipoFormularioMatriz = "proceso" | "peligro" | "evaluacion" | "control";
 
 export interface DatosFormularioMatriz {
@@ -68,7 +70,7 @@ export class DialogoFormularioMatrizComponent {
   readonly formulario = new FormGroup({
     nombre: new FormControl(this.texto("nombre"), {
       nonNullable: true,
-      validators: [Validators.required, Validators.maxLength(150)],
+      validators: [Validators.required, TEXTO_CON_CONTENIDO, Validators.maxLength(150)],
     }),
     es_rutinaria: new FormControl(this.booleano("es_rutinaria"), { nonNullable: true }),
     zona_lugar: new FormControl(this.texto("zona_lugar"), {
@@ -81,7 +83,7 @@ export class DialogoFormularioMatrizComponent {
     ),
     descripcion: new FormControl(this.texto("descripcion"), {
       nonNullable: true,
-      validators: [Validators.required],
+      validators: [Validators.required, TEXTO_CON_CONTENIDO],
     }),
     efectos_posibles: new FormControl(this.texto("efectos_posibles"), {
       nonNullable: true,
@@ -164,11 +166,15 @@ export class DialogoFormularioMatrizComponent {
     if (this.datos.tipo === "proceso") {
       this.formulario.controls.nombre.setValidators([
         Validators.required,
+        TEXTO_CON_CONTENIDO,
         Validators.maxLength(150),
       ]);
     }
     if (this.datos.tipo === "peligro" || this.datos.tipo === "control") {
-      this.formulario.controls.descripcion.setValidators([Validators.required]);
+      this.formulario.controls.descripcion.setValidators([
+        Validators.required,
+        TEXTO_CON_CONTENIDO,
+      ]);
     }
     this.formulario.controls.nombre.updateValueAndValidity();
     this.formulario.controls.descripcion.updateValueAndValidity();

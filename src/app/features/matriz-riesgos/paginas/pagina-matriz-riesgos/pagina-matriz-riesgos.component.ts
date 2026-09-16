@@ -57,6 +57,7 @@ export class PaginaMatrizRiesgosComponent implements OnInit, OnDestroy {
   private readonly loader = inject(ServicioLoader);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly suscripciones = new Subscription();
+  private secuenciaCargaMatriz = 0;
 
   empresas: EmpresaMatriz[] = [];
   empresaSeleccionadaId = "";
@@ -112,11 +113,15 @@ export class PaginaMatrizRiesgosComponent implements OnInit, OnDestroy {
   }
 
   seleccionarEmpresa(): void {
+    this.secuenciaCargaMatriz += 1;
     this.matriz = null;
     this.mensajeError = "";
     this.mensajeExito = "";
     if (this.empresaSeleccionadaId) {
       this.cargarMatriz();
+    } else {
+      this.cargandoMatriz = false;
+      this.loader.ocultar();
     }
   }
 
@@ -124,6 +129,8 @@ export class PaginaMatrizRiesgosComponent implements OnInit, OnDestroy {
     if (!this.empresaSeleccionadaId) {
       return;
     }
+    const empresaId = this.empresaSeleccionadaId;
+    const secuencia = ++this.secuenciaCargaMatriz;
     this.cargandoMatriz = true;
     this.mensajeError = "";
     this.loader.mostrar({
@@ -135,9 +142,12 @@ export class PaginaMatrizRiesgosComponent implements OnInit, OnDestroy {
     });
     this.suscripciones.add(
       this.matrizApi
-        .obtenerMatriz(this.empresaSeleccionadaId)
+        .obtenerMatriz(empresaId)
         .pipe(
           finalize(() => {
+            if (secuencia !== this.secuenciaCargaMatriz) {
+              return;
+            }
             this.cargandoMatriz = false;
             this.loader.ocultar();
             this.cdr.markForCheck();
@@ -145,10 +155,17 @@ export class PaginaMatrizRiesgosComponent implements OnInit, OnDestroy {
         )
         .subscribe({
           next: (matriz) => {
+            if (secuencia !== this.secuenciaCargaMatriz) {
+              return;
+            }
             this.matriz = matriz;
             this.loader.actualizarPaso("matriz", "completado");
           },
-          error: (error: HttpErrorResponse) => this.mostrarError(error),
+          error: (error: HttpErrorResponse) => {
+            if (secuencia === this.secuenciaCargaMatriz) {
+              this.mostrarError(error);
+            }
+          },
         })
     );
   }
