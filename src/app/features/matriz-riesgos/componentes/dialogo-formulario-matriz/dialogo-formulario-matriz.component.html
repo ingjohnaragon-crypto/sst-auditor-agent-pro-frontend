@@ -82,7 +82,7 @@
     <ng-container *ngIf="datos.tipo === 'evaluacion'">
       <app-alerta
         tipo="informativa"
-        mensaje="NP, NR, interpretación y aceptabilidad son calculados por el backend."
+        mensaje="Vista previa local GTC 45. Al guardar, el backend confirma NP, NR, interpretación y aceptabilidad."
       />
       <div class="grid gap-4 sm:grid-cols-3">
         <label class="block text-sm font-semibold text-slate-700">
@@ -113,6 +113,40 @@
           </select>
         </label>
       </div>
+
+      <section
+        *ngIf="preview as resultado"
+        class="rounded-control border border-slate-200 bg-slate-50 p-4"
+        aria-live="polite"
+      >
+        <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h3 class="text-sm font-black text-slate-900">Vista previa del cálculo</h3>
+          <app-semaforo-riesgo
+            [interpretacion]="resultado.interpretacion_nr"
+            [aceptabilidad]="resultado.aceptabilidad"
+          />
+        </div>
+        <dl class="grid grid-cols-2 gap-3 text-center sm:grid-cols-4">
+          <div>
+            <dt class="text-xs font-bold text-slate-600">NP</dt>
+            <dd class="text-lg font-black text-slate-900">{{ resultado.nivel_probabilidad }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs font-bold text-slate-600">NR</dt>
+            <dd class="text-lg font-black text-slate-900">{{ resultado.nivel_riesgo }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs font-bold text-slate-600">Nivel</dt>
+            <dd class="text-lg font-black text-slate-900">{{ resultado.interpretacion_nr }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs font-bold text-slate-600">Aceptabilidad</dt>
+            <dd class="text-sm font-black uppercase text-slate-900">
+              {{ resultado.aceptabilidad.replaceAll('_', ' ') }}
+            </dd>
+          </div>
+        </dl>
+      </section>
     </ng-container>
 
     <ng-container *ngIf="datos.tipo === 'control'">

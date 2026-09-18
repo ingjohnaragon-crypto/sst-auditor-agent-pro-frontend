@@ -180,8 +180,15 @@
                   : 'border-slate-200 bg-slate-50 text-slate-700'
               "
             >
-              <div class="flex items-start justify-between gap-3">
-                <h4 class="font-black">Evaluación del riesgo</h4>
+              <div class="flex flex-wrap items-start justify-between gap-3">
+                <div class="space-y-2">
+                  <h4 class="font-black">Evaluación del riesgo</h4>
+                  <app-semaforo-riesgo
+                    *ngIf="nodo.evaluacion as evaluacionSemaforo"
+                    [interpretacion]="evaluacionSemaforo.interpretacion_nr"
+                    [aceptabilidad]="evaluacionSemaforo.aceptabilidad"
+                  />
+                </div>
                 <app-boton
                   *ngIf="puedeEscribir"
                   tamano="sm"
