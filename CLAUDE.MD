@@ -61,9 +61,8 @@ open-spec-developer/
 ### Configuración
 ```bash
 os-stack --list                        # listar stacks disponibles
-os-stack python-fastapi                # activar stack
-os-agent --list                        # listar agentes
-os-agent claude-code                   # activar agente
+os-stack frontend-angular
+os-agent cursor
 ```
 
 ### Gestión de Jira
@@ -137,9 +136,9 @@ frontend-angular        # Angular
 
 | Agente | Entrega | Notas |
 |---|---|---|
+| `cursor` | Archivo (`.last-prompt.md`) | **Default** — Cursor Agent ejecuta el prompt sin clipboard |
 | `copilot` | Portapapeles | Pegar manualmente en VS Code Copilot Chat |
 | `claude-code` | CLI directo | Totalmente automático sin copy-paste |
-| `cursor` | Portapapeles | Pegar manualmente en Cursor |
 | `windsurf` | Portapapeles | Pegar manualmente en Windsurf |
 | `aider` | CLI directo | Automático via terminal |
 
