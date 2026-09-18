@@ -243,7 +243,7 @@ os-plan SP-136
 os-develop SP-136
 
 # 6. Tests
-ng test --watch=false
+npm test
 
 # 7. Commitear
 os-commit SP-136
@@ -442,8 +442,8 @@ describe('AuthService', () => {
 ### Coverage
 
 ```bash
-ng test --code-coverage --watch=false
-# Abrir: coverage/sst-auditor/index.html
+npm run test:coverage
+# Abrir: coverage/lcov-report/index.html
 ```
 
 **Meta**: 90% coverage
