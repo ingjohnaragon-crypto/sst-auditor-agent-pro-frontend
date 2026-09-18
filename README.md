@@ -202,8 +202,6 @@ npm run test:coverage    # Suite + cobertura (umbral global ≥ 90 %)
 ```
 
 Configuración: `jest.config.js`, `setup-jest.ts`, `tsconfig.spec.json`.
-ng test                        # En modo watch
-```
 
 ### Build para producción
 
