@@ -63,4 +63,24 @@ describe('TooltipDirective', () => {
     expect(document.querySelector('[role="tooltip"]')).toBeTruthy();
     boton().dispatchEvent(new Event('mouseleave'));
   });
+
+  it('should no mostrar tooltip si el texto esta vacio', () => {
+    fixture.componentInstance.texto = '';
+    fixture.detectChanges();
+    boton().dispatchEvent(new Event('mouseenter'));
+    fixture.detectChanges();
+    expect(document.querySelector('[role="tooltip"]')).toBeNull();
+  });
+
+  it.each(['izquierda', 'derecha'] as const)(
+    'should respetar posicionTooltip %s',
+    (posicion) => {
+      fixture.componentInstance.posicion = posicion;
+      fixture.detectChanges();
+      boton().dispatchEvent(new Event('mouseenter'));
+      fixture.detectChanges();
+      expect(document.querySelector('[role="tooltip"]')).toBeTruthy();
+      boton().dispatchEvent(new Event('mouseleave'));
+    },
+  );
 });

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { By } from '@angular/platform-browser';
 
 import { CampoCheckboxComponent } from './campo-checkbox.component';
 
@@ -61,5 +62,23 @@ describe('CampoCheckboxComponent', () => {
     input.checked = true;
     input.dispatchEvent(new Event('change'));
     expect(fixture.componentInstance.grupo.value.areas).toEqual(['a']);
+  });
+
+  it('should cubrir writeValue y setDisabledState en modo booleano y grupo', () => {
+    const campos = fixture.debugElement.queryAll(By.directive(CampoCheckboxComponent));
+    const simple = campos[0].componentInstance as CampoCheckboxComponent;
+    const grupo = campos[1].componentInstance as CampoCheckboxComponent;
+    simple.writeValue(null);
+    expect(simple.valorBooleano).toBe(false);
+    simple.writeValue(true);
+    expect(simple.valorBooleano).toBe(true);
+    simple.setDisabledState(true);
+    expect(simple.deshabilitado).toBe(true);
+    grupo.writeValue(null);
+    expect(grupo.valorGrupo).toEqual([]);
+    grupo.writeValue(['b']);
+    expect(grupo.valorGrupo).toEqual(['b']);
+    grupo.alCambiarGrupo('b', false);
+    expect(grupo.valorGrupo).toEqual([]);
   });
 });

@@ -194,11 +194,14 @@ ng serve
 
 ### Ejecutar tests
 
+El runner oficial es **Jest** (no Karma/Jasmine). No uses `ng test`.
+
 ```bash
-ng test --watch=false          # Tests una sola vez
-ng test --code-coverage        # Con coverage
-ng test                        # En modo watch
+npm test                 # Suite unitaria (jest --runInBand)
+npm run test:coverage    # Suite + cobertura (umbral global ≥ 90 %)
 ```
+
+Configuración: `jest.config.js`, `setup-jest.ts`, `tsconfig.spec.json`.
 
 ### Build para producción
 
@@ -240,7 +243,7 @@ os-plan SP-136
 os-develop SP-136
 
 # 6. Tests
-ng test --watch=false
+npm test
 
 # 7. Commitear
 os-commit SP-136
@@ -439,8 +442,8 @@ describe('AuthService', () => {
 ### Coverage
 
 ```bash
-ng test --code-coverage --watch=false
-# Abrir: coverage/sst-auditor/index.html
+npm run test:coverage
+# Abrir: coverage/lcov-report/index.html
 ```
 
 **Meta**: 90% coverage
@@ -491,7 +494,7 @@ export const environment = {
 2. **Enriquecer**: `os-enrich KAN-XX` → `os-enrich-apply KAN-XX`
 3. **Generar plan**: `os-plan KAN-XX`
 4. **Implementar**: `os-develop KAN-XX` (pegar prompt en Copilot)
-5. **Validar**: `ng test --watch=false`
+5. **Validar**: `npm test` / `npm run test:coverage`
 6. **Commitear**: `os-commit KAN-XX`
 7. **Review**: `os-review PR_NUMBER` → `os-review-apply PR_NUMBER`
 

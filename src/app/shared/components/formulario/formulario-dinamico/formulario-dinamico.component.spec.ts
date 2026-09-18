@@ -110,4 +110,57 @@ describe('FormularioDinamicoComponent', () => {
     ) as HTMLInputElement;
     expect(input.getAttribute('aria-describedby')).toBe('error-correo');
   });
+
+  it('should emitir alCambiar al editar y soportar chips/checkbox requerido', () => {
+    const cambios = jest.spyOn(fixture.componentInstance.alCambiar, 'emit');
+    fixture.componentInstance.formulario.patchValue({ correo: 'a@b.com' });
+    expect(cambios).toHaveBeenCalled();
+
+    fixture.componentRef.setInput('campos', [
+      {
+        nombre: 'tags',
+        tipo: 'chips',
+        etiqueta: 'Etiquetas',
+      },
+      {
+        nombre: 'acepto',
+        tipo: 'checkbox',
+        etiqueta: 'Acepto',
+        requerido: true,
+      },
+      {
+        nombre: 'notas',
+        tipo: 'area-texto',
+        etiqueta: 'Notas',
+      },
+      {
+        nombre: 'cantidad',
+        tipo: 'numero',
+        etiqueta: 'Cantidad',
+      },
+      {
+        nombre: 'roles',
+        tipo: 'selector-multiple',
+        etiqueta: 'Roles',
+        opciones: [{ valor: 'A', etiqueta: 'A' }],
+      },
+      {
+        nombre: 'archivo',
+        tipo: 'carga-archivo',
+        etiqueta: 'Archivo',
+      },
+    ] as CampoFormulario[]);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.formulario.value).toEqual({
+      tags: [],
+      acepto: false,
+      notas: '',
+      cantidad: null,
+      roles: [],
+      archivo: null,
+    });
+    fixture.componentInstance.enviar();
+    expect(fixture.componentInstance.formulario.get('acepto')?.touched).toBe(true);
+  });
 });

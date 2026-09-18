@@ -131,6 +131,19 @@ test types (unit/integration/controller-slice), and exact coverage tooling are
 stack-specific — see `ai-specs/specs/stacks/<stack>-standards.mdc` for the active
 stack's conventions before writing tests.
 
+### Frontend Angular (activo en este repo)
+
+Runner oficial: **Jest** (`jest-preset-angular`). No usar Karma/Jasmine ni
+`ng test` (el target Karma se eliminó de `angular.json`).
+
+```bash
+npm test                 # jest --runInBand
+npm run test:coverage    # coverage global ≥ 90 % (jest.config.js)
+```
+
+CI (`frontend-test` en `.github/workflows/ci.yml`) ejecuta `npm ci` +
+`npm run test:coverage` en PRs a `develop`/`main`.
+
 ```bash
 os-plan KAN-XX   # printed "Tooling Reference" section shows the resolved commands
 ```

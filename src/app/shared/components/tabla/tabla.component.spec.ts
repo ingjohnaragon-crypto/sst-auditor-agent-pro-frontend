@@ -71,4 +71,32 @@ describe('TablaComponent', () => {
     siguiente.click();
     expect(emitir).toHaveBeenCalledWith(1);
   });
+
+  it('should ignorar orden no ordenable y paginas fuera de rango', () => {
+    fixture.componentRef.setInput('columnas', [
+      { clave: 'nombre', encabezado: 'Nombre', ordenable: false },
+    ]);
+    fixture.componentRef.setInput('paginacion', { tamanoPagina: 1 });
+    fixture.componentRef.setInput('datos', [
+      { id: 1, nombre: 'Ana' },
+      { id: 2, nombre: 'Bea' },
+    ]);
+    fixture.detectChanges();
+    const emitirOrden = jest.spyOn(fixture.componentInstance.alOrdenar, 'emit');
+    fixture.componentInstance.ordenar({
+      clave: 'nombre',
+      encabezado: 'Nombre',
+      ordenable: false,
+    });
+    expect(emitirOrden).not.toHaveBeenCalled();
+    fixture.componentInstance.cambiarPagina(-1);
+    fixture.componentInstance.cambiarPagina(99);
+    expect(fixture.componentInstance.paginaActual).toBe(0);
+    expect(fixture.componentInstance.valor({ id: 1, nombre: 'Ana' }, {
+      clave: 'nombre',
+      encabezado: 'Nombre',
+      plantilla: (f) => `*${f.nombre}*`,
+    })).toBe('*Ana*');
+    expect(fixture.componentInstance.indicadorOrden('otra')).toBe('↕');
+  });
 });
