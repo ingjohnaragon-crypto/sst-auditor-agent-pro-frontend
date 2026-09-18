@@ -76,4 +76,30 @@ describe('guardRoles', () => {
     const router = TestBed.inject(Router);
     expect(ejecutar([])).toEqual(router.createUrlTree(['/acceso-denegado']));
   });
+
+  it('should tratar data sin clave rolesPermitidos como lista vacia', () => {
+    estaAutenticado.mockReturnValue(true);
+    usuarioSignal.set(auditor);
+    const router = TestBed.inject(Router);
+    const route = { data: {} } as unknown as ActivatedRouteSnapshot;
+    const state = { url: '/privado' } as RouterStateSnapshot;
+    const resultado = TestBed.runInInjectionContext(() => guardRoles(route, state));
+    expect(resultado).toEqual(router.createUrlTree(['/acceso-denegado']));
+  });
+
+  it('should denegar si hay sesion pero usuarioActual es null', () => {
+    estaAutenticado.mockReturnValue(true);
+    usuarioSignal.set(null);
+    const router = TestBed.inject(Router);
+    expect(ejecutar(['AUDITOR_SST'])).toEqual(router.createUrlTree(['/acceso-denegado']));
+  });
+
+  it('should redirigir a /login si no hay sesion', () => {
+    estaAutenticado.mockReturnValue(false);
+    usuarioSignal.set(null);
+    const router = TestBed.inject(Router);
+    expect(ejecutar(['AUDITOR_SST'], '/privado')).toEqual(
+      router.createUrlTree(['/login'], { queryParams: { returnUrl: '/privado' } }),
+    );
+  });
 });

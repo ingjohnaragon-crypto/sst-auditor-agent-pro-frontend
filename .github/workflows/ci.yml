@@ -7,7 +7,7 @@ on:
     branches: [main, develop]
 
 jobs:
-  validate:
+  validate-openspec:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,9 +16,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
-      - name: Install test dependencies
-        run: pip install pytest
 
       - name: Validate CLI commands are executable
         run: |
@@ -51,10 +48,21 @@ jobs:
           done
           exit $status
 
-      - name: Run placeholder tests
+  frontend-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests with coverage
         run: |
-          if [ -d tests ]; then
-            pytest tests/ -v
-          else
-            echo "No tests/ directory yet — skipping."
-          fi
+          echo "Coverage threshold: >= 90% (jest.config.js)"
+          npm run test:coverage

@@ -76,6 +76,24 @@ describe('ServicioAutenticacion', () => {
     expect(servicio.estaAutenticado()).toBe(true);
   });
 
+  it('should propagar HttpErrorResponse when login falla', (done) => {
+    servicio.iniciarSesion({ correo: 'ana@empresa.com', contrasena: 'mala' }).subscribe({
+      next: () => done.fail('no debia emitir usuario'),
+      error: (err) => {
+        expect(err.status).toBe(401);
+        expect(almacen.obtenerTokenAcceso()).toBeNull();
+        expect(servicio.estaAutenticado()).toBe(false);
+        done();
+      },
+    });
+
+    const loginReq = httpMock.expectOne(`${environment.apiBaseUrl}/auth/login`);
+    loginReq.flush(
+      { exito: false, codigo: 'CREDENCIALES_INVALIDAS', mensaje: 'Credenciales inválidas' },
+      { status: 401, statusText: 'Unauthorized' },
+    );
+  });
+
   it('should refrescarToken actualizar solo el token de acceso', () => {
     almacen.guardarPar('acc-viejo', 'ref-1');
 

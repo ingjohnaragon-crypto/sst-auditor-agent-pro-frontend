@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { By } from '@angular/platform-browser';
 
 import { CampoNumeroComponent } from './campo-numero.component';
 
@@ -31,5 +32,24 @@ describe('CampoNumeroComponent', () => {
     input.value = '25';
     input.dispatchEvent(new Event('input'));
     expect(fixture.componentInstance.grupo.value.edad).toBe(25);
+  });
+
+  it('should cubrir ControlValueAccessor y vacio/NaN', () => {
+    const campo = fixture.debugElement.query(By.directive(CampoNumeroComponent))
+      .componentInstance as CampoNumeroComponent;
+    const onChange = jest.fn();
+    const onTouched = jest.fn();
+    campo.registerOnChange(onChange);
+    campo.registerOnTouched(onTouched);
+    campo.writeValue(null);
+    expect(campo.valor).toBeNull();
+    campo.alCambiar('');
+    expect(onChange).toHaveBeenCalledWith(null);
+    campo.alCambiar('abc');
+    expect(onChange).toHaveBeenLastCalledWith(null);
+    campo.setDisabledState(true);
+    expect(campo.deshabilitado).toBe(true);
+    campo.alBlur();
+    expect(onTouched).toHaveBeenCalled();
   });
 });

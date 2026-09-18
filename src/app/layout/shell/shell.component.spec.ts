@@ -54,4 +54,11 @@ describe('ShellComponent', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('app-loader-interactivo')).toBeNull();
   });
+
+  it('should notificar cancelacion del loader bloqueante', () => {
+    const loader = TestBed.inject(ServicioLoader);
+    const spy = jest.spyOn(loader, 'notificarCancelacion');
+    fixture.componentInstance.onCancelarLoader();
+    expect(spy).toHaveBeenCalled();
+  });
 });

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { By } from '@angular/platform-browser';
 
 import { CampoRadioComponent } from './campo-radio.component';
 
@@ -39,5 +40,21 @@ describe('CampoRadioComponent', () => {
     const radios = (fixture.nativeElement as HTMLElement).querySelectorAll('input[type="radio"]');
     (radios[1] as HTMLInputElement).click();
     expect(fixture.componentInstance.grupo.value.nivel).toBe('bajo');
+  });
+
+  it('should cubrir ControlValueAccessor', () => {
+    const campo = fixture.debugElement.query(By.directive(CampoRadioComponent))
+      .componentInstance as CampoRadioComponent;
+    const onChange = jest.fn();
+    const onTouched = jest.fn();
+    campo.registerOnChange(onChange);
+    campo.registerOnTouched(onTouched);
+    campo.writeValue(null);
+    expect(campo.valor).toBeNull();
+    campo.setDisabledState(true);
+    expect(campo.deshabilitado).toBe(true);
+    campo.alCambiar('alto');
+    expect(onChange).toHaveBeenCalledWith('alto');
+    expect(onTouched).toHaveBeenCalled();
   });
 });

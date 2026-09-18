@@ -43,4 +43,37 @@ describe('MensajeErrorCampoComponent', () => {
     fixture.detectChanges();
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('obligatorio');
   });
+
+  it('should mostrar requiredTrue y mensaje generico para error desconocido', () => {
+    // Angular Validators.requiredTrue emite clave `required`; aquí forzamos
+    // la clave `requiredTrue` del mapa de mensajes del componente.
+    const requerido = new FormControl(false, () => ({ requiredTrue: true }));
+    requerido.markAsTouched();
+    fixture.componentRef.setInput('control', requerido);
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      'Debes marcar esta opción',
+    );
+
+    const custom = new FormControl('x', () => ({ customRule: true }));
+    custom.markAsTouched();
+    fixture.componentRef.setInput('control', custom);
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('no es válido');
+  });
+
+  it('should mostrar por dirty sin touched y mensaje vacio si no hay errores', () => {
+    const control = new FormControl('', Validators.required);
+    control.markAsDirty();
+    fixture.componentRef.setInput('control', control);
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('obligatorio');
+
+    const valido = new FormControl('ok');
+    valido.markAsTouched();
+    fixture.componentRef.setInput('control', valido);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.mensaje).toBe('');
+    expect((fixture.nativeElement as HTMLElement).textContent?.trim()).toBe('');
+  });
 });

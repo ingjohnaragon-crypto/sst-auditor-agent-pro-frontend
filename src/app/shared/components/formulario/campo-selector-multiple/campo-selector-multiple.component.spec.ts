@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { By } from '@angular/platform-browser';
 
 import { CampoSelectorMultipleComponent } from './campo-selector-multiple.component';
 
@@ -53,5 +54,34 @@ describe('CampoSelectorMultipleComponent', () => {
     fixture.detectChanges();
     const select = (fixture.nativeElement as HTMLElement).querySelector('select') as HTMLSelectElement;
     expect(select.disabled).toBe(true);
+  });
+
+  it('should cubrir ControlValueAccessor writeValue null y callbacks por defecto', () => {
+    const campo = fixture.debugElement.query(By.directive(CampoSelectorMultipleComponent))
+      .componentInstance as CampoSelectorMultipleComponent;
+    campo.alCambiar({
+      target: {
+        selectedOptions: [{ value: 'b' }],
+      },
+    } as unknown as Event);
+    campo.alBlur();
+    campo.writeValue(null);
+    expect(campo.valor).toEqual([]);
+    campo.writeValue(['b']);
+    expect(campo.estaSeleccionado('b')).toBe(true);
+    const onChange = jest.fn();
+    const onTouched = jest.fn();
+    campo.registerOnChange(onChange);
+    campo.registerOnTouched(onTouched);
+    campo.setDisabledState(true);
+    expect(campo.deshabilitado).toBe(true);
+    campo.alCambiar({
+      target: {
+        selectedOptions: [{ value: 'a' }, { value: 'b' }],
+      },
+    } as unknown as Event);
+    expect(onChange).toHaveBeenCalledWith(['a', 'b']);
+    campo.alBlur();
+    expect(onTouched).toHaveBeenCalled();
   });
 });
