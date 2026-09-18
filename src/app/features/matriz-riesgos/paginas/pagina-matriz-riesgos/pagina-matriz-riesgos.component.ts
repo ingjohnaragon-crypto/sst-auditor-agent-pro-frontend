@@ -24,6 +24,7 @@ import {
   DialogoFormularioMatrizComponent,
   ResultadoFormularioMatriz,
 } from "../../componentes/dialogo-formulario-matriz/dialogo-formulario-matriz.component";
+import { SemaforoRiesgoComponent } from "../../componentes/semaforo-riesgo/semaforo-riesgo.component";
 import type {
   ControlRiesgo,
   EmpresaMatriz,
@@ -44,7 +45,15 @@ import { ServicioMatrizRiesgos } from "../../servicios/servicio-matriz-riesgos";
 @Component({
   selector: "app-pagina-matriz-riesgos",
   standalone: true,
-  imports: [NgClass, NgFor, NgIf, FormsModule, AlertaComponent, BotonComponent],
+  imports: [
+    NgClass,
+    NgFor,
+    NgIf,
+    FormsModule,
+    AlertaComponent,
+    BotonComponent,
+    SemaforoRiesgoComponent,
+  ],
   templateUrl: "./pagina-matriz-riesgos.component.html",
   styleUrls: ["./pagina-matriz-riesgos.component.css"],
   changeDetection: ChangeDetectionStrategy.OnPush,

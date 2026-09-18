@@ -80,6 +80,14 @@ export interface SolicitudEvaluacion {
   nivel_consecuencia: NivelConsecuencia;
 }
 
+/** Preview local GTC 45 (espejo del dominio backend; no se envía en el PUT). */
+export interface ResultadoCalculoGtc45 {
+  nivel_probabilidad: number;
+  nivel_riesgo: number;
+  interpretacion_nr: InterpretacionNR;
+  aceptabilidad: AceptabilidadRiesgo;
+}
+
 export interface ControlRiesgo {
   id: string;
   evaluacion_riesgo_id: string;

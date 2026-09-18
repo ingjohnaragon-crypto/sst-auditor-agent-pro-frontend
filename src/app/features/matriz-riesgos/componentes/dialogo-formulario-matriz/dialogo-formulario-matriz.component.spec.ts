@@ -46,6 +46,41 @@ describe("DialogoFormularioMatrizComponent", () => {
     });
   });
 
+  it("should mostrar preview GTC 45 al abrir evaluación y al cambiar ND NE NC", async () => {
+    await crear({
+      tipo: "evaluacion",
+      titulo: "Evaluar",
+      valores: {
+        nivel_deficiencia: 10,
+        nivel_exposicion: 4,
+        nivel_consecuencia: 100,
+      },
+    });
+
+    expect(fixture.componentInstance.preview).toEqual({
+      nivel_probabilidad: 40,
+      nivel_riesgo: 4000,
+      interpretacion_nr: "I",
+      aceptabilidad: "NO_ACEPTABLE",
+    });
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain("Vista previa");
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain("Nivel I");
+
+    fixture.componentInstance.formulario.patchValue({
+      nivel_deficiencia: 0,
+      nivel_exposicion: 4,
+      nivel_consecuencia: 100,
+    });
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.preview).toEqual({
+      nivel_probabilidad: 0,
+      nivel_riesgo: 0,
+      interpretacion_nr: "IV",
+      aceptabilidad: "ACEPTABLE",
+    });
+  });
+
   it("should advertir cuando EPP sería el único control", async () => {
     await crear({
       tipo: "control",

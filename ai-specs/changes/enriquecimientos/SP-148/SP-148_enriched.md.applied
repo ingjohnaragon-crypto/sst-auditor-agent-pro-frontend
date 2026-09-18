@@ -1,0 +1,212 @@
+# Ticket enriquecido: SP-148 — SST-HU 3.1: Motor de Cálculo Automatizado GTC 45
+
+## Descripción original
+<!-- jira-skip -->
+Como Responsable de SST, quiero que el sistema calcule automáticamente el Nivel de Probabilidad (NP), el Nivel de Riesgo (NR) y aceptabilidad al ingresar ND, NE y NC, para mitigar fallas humanas de cálculo.
+<!-- /jira-skip -->
+
+## Descripción mejorada
+
+Historia transversal GTC 45 con **tres subtareas de capas distintas**:
+
+| Subtarea | Capa | Rol |
+|---|---|---|
+| **SP-199** | Backend (dominio) | Cálculo automático de NP = ND × NE |
+| **SP-200** | Backend (dominio) | NR = NP × NC, interpretación I–IV y aceptabilidad |
+| **SP-201** | Frontend (Angular) | Semáforo visual + preview en tiempo real |
+
+### Backend (SP-199 / SP-200) — ya entregado en SP-192
+
+La fuente de verdad de persistencia está en el dominio FastAPI:
+
+- `EvaluacionRiesgo.crear` / `recalcular` → NP, NR, interpretación, aceptabilidad
+- `interpretar_nr` + `ACEPTABILIDAD_POR_INTERPRETACION` en `gtc45.py`
+- Contrato: `PUT /api/v1/peligros/{id}/evaluacion` acepta **solo** ND/NE/NC; el servidor calcula el resto
+
+Trabajo restante en backend: **verificar/cerrar** (tests de dominio/integración ya cubren casos clave; no reimplementar).
+
+### Frontend (SP-201 + preview) — alcance de `feature/SP-148-frontend`
+
+La UI de matriz ya existe. El gap es UX: al elegir ND/NE/NC el diálogo no mostraba preview. El FE añade:
+
+1. Espejo local de las reglas backend (`ServicioCalculoRiesgoGtc45`) solo para preview.
+2. Semáforo presentacional (`SemaforoRiesgoComponent`) en diálogo y página.
+
+Si preview y API discreparan tras guardar, **gana la API**.
+
+Reglas (compartidas BE/FE):
+
+- ND ∈ {10, 6, 2, 0}; NE ∈ {4, 3, 2, 1}; NC ∈ {100, 60, 25, 10}
+- NP = ND × NE; NR = NP × NC
+- Interpretación: I 600–4000; II 150–500; III 40–120; IV 0–20 (ND=0 → IV)
+- Aceptabilidad: I→NO_ACEPTABLE; II→ACEPTABLE_CON_CONTROL; III→MEJORABLE; IV→ACEPTABLE
+
+Fuera de alcance: endpoints nuevos; reescribir el motor de dominio; migrar a `FormularioDinamico`; signal `input()`/`output()`.
+
+## Criterios de aceptación
+
+### Backend (SP-199 / SP-200)
+- [x] Dominio calcula NP = ND × NE al crear/recalcular evaluación.
+- [x] Dominio calcula NR, `interpretacion_nr` y `aceptabilidad` (tabla A.3).
+- [x] PUT de evaluación no acepta campos derivados del cliente.
+- [ ] Subtareas SP-199/SP-200 marcadas Done en Jira tras verificación (tests verdes).
+
+### Frontend (SP-201 + preview de la HU)
+- [ ] Preview local en el diálogo al cambiar ND/NE/NC (espejo de reglas backend).
+- [ ] Semáforo visual I–IV con etiqueta legible en diálogo (y opcionalmente en la página).
+- [ ] `guardar()` / `SolicitudEvaluacion` envían **solo** ND, NE, NC.
+- [ ] Preview neutro si valores inválidos; no inventar interpretación.
+- [ ] `npm test` / `npm run test:coverage` ≥ 90 %.
+
+## Campos y endpoints
+
+Sin API nueva. Contrato existente:
+
+- `PUT /api/v1/peligros/{peligro_id}/evaluacion`
+  - Request: `{ nivel_deficiencia, nivel_exposicion, nivel_consecuencia }`
+  - Response: `EvaluacionRiesgo` con derivados
+
+Backend (referencia): `src/domain/models/evaluacion_riesgo.py`, `src/domain/models/gtc45.py`.
+
+Frontend (preview): `ResultadoCalculoGtc45` + `ServicioCalculoRiesgoGtc45` (no se envía en el PUT).
+
+## Archivos a crear o modificar
+
+### Backend (SP-199 / SP-200) — verificación, sin reescritura
+- `src/domain/models/evaluacion_riesgo.py` — Domain — Verify (ya implementado)
+- `src/domain/models/gtc45.py` — Domain — Verify (ya implementado)
+- `tests/integration/test_matriz_riesgos.py` (y unitarios de dominio si aplican) — Verify
+
+### Frontend (SP-201 + preview HU)
+- `servicios/servicio-calculo-riesgo-gtc45.ts` — Application — Create (espejo preview)
+- `componentes/semaforo-riesgo/` — Presentation — Create
+- `componentes/dialogo-formulario-matriz/` — Presentation — Modify
+- `paginas/pagina-matriz-riesgos/` — Presentation — Modify (opcional)
+- `README.md` de la feature — Docs — Modify
+
+## Casos de prueba unitarios
+
+### Backend
+- `EvaluacionRiesgo.crear(10,4,100)` → NP 40, NR 4000, I, NO_ACEPTABLE
+- ND=0 → NP 0, NR 0, IV, ACEPTABLE
+- PUT con campos derivados extra → ignorados / no usados (solo ND/NE/NC en body)
+
+### Frontend
+- Servicio espejo: mismos casos de referencia que backend
+- Diálogo: preview en vivo; `guardar()` solo ND/NE/NC
+- Semáforo: I–IV + estado vacío
+
+## Requisitos no funcionales
+
+- Backend: dominio puro; sin aceptar derivados del cliente.
+- Frontend: OnPush, `@Input()`/`@Output()`, cálculo síncrono sin HTTP en preview.
+- Cobertura ≥ 90 % en ambos stacks según CI.
+
+## Puntos de historia
+<!-- STORY_POINTS:5 -->
+**5** — HU completa: motor dominio (ya en BE) + UX preview/semáforo (FE). Esfuerzo neto pendiente concentrado en FE (~3) tras verificar BE.
+<!-- /STORY_POINTS -->
+
+## Subtareas
+
+<!-- SUBTASK:SP-199 -->
+### Subtarea: SP-199 — Implementar cálculo automático de NP (ND x NE)
+
+#### Descripción original
+<!-- jira-skip -->
+Lógica para calcular nivel de probabilidad según las variables dadas.
+<!-- /jira-skip -->
+
+#### Descripción mejorada
+
+**Capa: backend (dominio Python / FastAPI).** No es trabajo Angular.
+
+Implementación de referencia (ya en repo vía matriz GTC 45 / SP-192):
+
+- `EvaluacionRiesgo.crear` / `recalcular`: `nivel_probabilidad = nd * ne`
+- Validación ND ∈ {10, 6, 2, 0}, NE ∈ {4, 3, 2, 1}
+- D1: ND=0 → NP=0
+- El cliente **nunca** envía NP; solo ND/NE/NC en `PUT .../evaluacion`
+
+Alcance restante: **verificar** con tests existentes (integración matriz / unitarios de dominio) y marcar Done. No duplicar la fórmula en otro servicio salvo necesidad documentada.
+
+El espejo TypeScript en frontend (`ServicioCalculoRiesgoGtc45`) es **solo preview UX** de SP-148/SP-201; no sustituye esta subtarea.
+
+#### Criterios de aceptación
+- [x] NP = ND × NE en dominio al crear/actualizar evaluación.
+- [x] ND=0 → NP=0.
+- [x] PUT no persiste NP enviado por el cliente.
+- [ ] Evidencia de tests verdes y subtarea cerrada en Jira.
+
+#### Puntos de historia
+<!-- STORY_POINTS:2 -->
+**2** — Fórmula de dominio; en la práctica ya entregada (verificar/cerrar).
+<!-- /STORY_POINTS -->
+<!-- /SUBTASK:SP-199 -->
+
+<!-- SUBTASK:SP-200 -->
+### Subtarea: SP-200 — Implementar matriz cruzada de NR (NP x NC) y Aceptabilidad
+
+#### Descripción original
+<!-- jira-skip -->
+Desarrollar algoritmo de decisión del nivel de riesgo e intervención.
+<!-- /jira-skip -->
+
+#### Descripción mejorada
+
+**Capa: backend (dominio Python / FastAPI).** No es trabajo Angular.
+
+Implementación de referencia (ya en repo):
+
+- `nivel_riesgo = nivel_probabilidad * nc`
+- `interpretar_nr(nr)` — I 600–4000; II 150–500; III 40–120; IV 0–20
+- `ACEPTABILIDAD_POR_INTERPRETACION` (I→NO_ACEPTABLE … IV→ACEPTABLE)
+- Respuesta de evaluación incluye `nivel_riesgo`, `interpretacion_nr`, `aceptabilidad`
+
+Alcance restante: **verificar** tests (p. ej. caso 10/4/100 → NR 4000 / I) y marcar Done. No reabrir el algoritmo salvo bug vs tabla A.3.
+
+El preview FE vuelve a aplicar las mismas reglas solo para feedback inmediato; la persistencia la impone el backend.
+
+#### Criterios de aceptación
+- [x] NR, interpretación y aceptabilidad calculados en dominio.
+- [x] ND=0 → IV / ACEPTABLE.
+- [x] Al menos un caso de integración/API demuestra los derivados en la respuesta.
+- [ ] Evidencia de tests verdes y subtarea cerrada en Jira.
+
+#### Puntos de historia
+<!-- STORY_POINTS:3 -->
+**3** — Rangos A.3 + aceptabilidad; en la práctica ya entregada (verificar/cerrar).
+<!-- /STORY_POINTS -->
+<!-- /SUBTASK:SP-200 -->
+
+<!-- SUBTASK:SP-201 -->
+### Subtarea: SP-201 — Crear semáforo visual de riesgo en Angular
+
+#### Descripción original
+<!-- jira-skip -->
+UI dinámica que cambie de color según los riesgos del formulario en tiempo real.
+<!-- /jira-skip -->
+
+#### Descripción mejorada
+
+**Capa: frontend Angular** (única subtarea de UI de esta HU).
+
+- Componente `SemaforoRiesgoComponent` (`features/matriz-riesgos/componentes/semaforo-riesgo/`)
+- Inputs: `interpretacion`, `aceptabilidad` (`@Input()`, no signal inputs)
+- Colores: I rojo … IV esmeralda; etiqueta legible
+- Ligado al preview del diálogo de evaluación (`valueChanges` + `ServicioCalculoRiesgoGtc45`)
+- Opcional: reutilizar en `pagina-matriz-riesgos`
+
+Depende de que SP-199/SP-200 existan en backend (reglas a espejar); no reimplementa persistencia.
+
+#### Criterios de aceptación
+- [ ] Semáforo cambia al modificar ND/NE/NC en el formulario.
+- [ ] Etiqueta legible además del color.
+- [ ] Specs I–IV y estado vacío.
+- [ ] Sin signal `input()`/`output()`.
+
+#### Puntos de historia
+<!-- STORY_POINTS:2 -->
+**2** — UI presentacional + wiring al diálogo / preview.
+<!-- /STORY_POINTS -->
+<!-- /SUBTASK:SP-201 -->
