@@ -5,7 +5,7 @@ import { provideRouter, Router } from '@angular/router';
 import { DialogModule } from '@angular/cdk/dialog';
 import { OverlayModule } from '@angular/cdk/overlay';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 
 import { ServicioLoader, ServicioModal } from '@app/shared';
 
@@ -284,5 +284,27 @@ describe('PaginaDashboardComponent', () => {
     listar.mockReturnValue(of([]));
     fixture!.componentInstance.reintentarSelector();
     expect(listar).toHaveBeenCalledTimes(2);
+  });
+
+  it('should ignorar el listado de empresas cancelado al reintentar', () => {
+    const primera = new Subject<Empresa[]>();
+    const segunda = new Subject<Empresa[]>();
+    listar
+      .mockReset()
+      .mockReturnValueOnce(primera.asObservable())
+      .mockReturnValueOnce(segunda.asObservable());
+
+    fixture!.componentInstance.reintentarSelector();
+    fixture!.componentInstance.reintentarSelector();
+
+    primera.next([{ id: 'vieja', razon_social: 'Stale', nit: '1' }]);
+    primera.complete();
+    expect(fixture!.componentInstance.empresas).toEqual([]);
+
+    segunda.next([{ id: 'nueva', razon_social: 'Nueva', nit: '2' }]);
+    segunda.complete();
+    expect(fixture!.componentInstance.empresas).toEqual([
+      { id: 'nueva', razon_social: 'Nueva', nit: '2' },
+    ]);
   });
 });

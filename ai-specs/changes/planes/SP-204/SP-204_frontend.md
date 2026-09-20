@@ -1,8 +1,8 @@
 # Plan de implementación: SP-204 Crear gráficos dinámicos de cumplimiento en Angular
 
-> **Secuencia HU SP-144:** **no mergear** este ticket antes de SP-189.
-> Aparcar esta rama, entregar la matriz (`os-develop SP-189`), y luego
-> rebasear `feature/SP-204-frontend` sobre `develop`. Detalle:
+> **Secuencia HU SP-144:** SP-189 (matriz) ya está en `develop`. Esta rama
+> se rearmó sobre ese merge: el panel PHVA se embebe en Inicio, índice y
+> detalle; no se recrean rutas chart-only. Detalle de la estrategia:
 > `ai-specs/changes/planes/SP-144/SP-144_estrategia_frontend.md`.
 
 ## 1. Resumen
@@ -25,8 +25,10 @@ Stack activo: `frontend-angular` (Angular 17.3 standalone + Tailwind + tokens
   `RespuestaCumplimientoPHVA` y la ruta ya existen en
   `sst-auditor-agent-pro-backend`.
 - Usuario autenticado (Bearer vía `interceptorAutenticacion`).
-- SP-189 (matriz de 60 ítems) **no** es prerequisito: este ticket siembra el
-  feature `diagnostico/` con el recorte mínimo para gráficos + histórico corto.
+- SP-189 (matriz de 60 ítems) **ya está en `develop`**: reutilizar
+  `ServicioEmpresas`, `ServicioAutoevaluaciones` y las páginas
+  `pagina-diagnostico` / `pagina-detalle-diagnostico` / `historico`.
+  No sembrar un recorte chart-only paralelo.
 
 **Decisión de charts:** **no** añadir Chart.js, ng2-charts, ngx-charts ni D3.
 Las cuatro barras se implementan con HTML/CSS (ancho porcentual) y SVG mínimo
@@ -61,22 +63,20 @@ esas barras; 4 valores estáticos no justifican una librería.
 
 | Capa | Archivos | Rol |
 |---|---|---|
-| Modelos | `features/diagnostico/modelos/ciclo-phva.ts` | `'PLANEAR' \| 'HACER' \| 'VERIFICAR' \| 'ACTUAR'` |
+| Modelos | `features/diagnostico/modelos/ciclo-phva.ts` | Ya en SP-189 (`'PLANEAR' \| 'HACER' \| 'VERIFICAR' \| 'ACTUAR'`) |
 | Modelos | `features/diagnostico/modelos/cumplimiento-phva.model.ts` | Espejo del DTO OpenAPI (decimales `string`) |
-| Modelos | `features/diagnostico/modelos/autoevaluacion-resumen.model.ts` | Recorte de `RespuestaAutoevaluacion` para el listado |
-| Modelos | `features/diagnostico/modelos/empresa-diagnostico.model.ts` | `{ id, razon_social, nit }` |
-| Modelos | `features/diagnostico/modelos/index.ts` | Barrel |
+| Modelos | `features/diagnostico/modelos/index.ts` | Barrel (reexporta el DTO PHVA) |
 | HTTP | `features/diagnostico/servicios/servicio-cumplimiento-phva.ts` | `GET .../cumplimiento-phva` |
-| HTTP | `features/diagnostico/servicios/servicio-autoevaluaciones.ts` | `GET /autoevaluaciones?empresa_id=` (solo listar) |
-| HTTP | `features/diagnostico/servicios/servicio-empresas-diagnostico.ts` | `GET /empresas` (no acoplar a `ServicioEmpresasMatriz`) |
+| HTTP | `features/diagnostico/servicios/servicio-autoevaluaciones.ts` | Reusar SP-189 (`listarPorEmpresa`) |
+| HTTP | `features/diagnostico/servicios/servicio-empresas.ts` | Reusar SP-189 (`GET /empresas`); no crear `ServicioEmpresasDiagnostico` |
 | Presentacional | `features/diagnostico/componentes/grafico-cumplimiento-phva/` | Barras + brecha + estados UI |
-| Contenedor | `features/diagnostico/componentes/panel-cumplimiento-phva/` | Carga HTTP a partir de un `autoevaluacionId` |
-| Página detalle | `features/diagnostico/paginas/pagina-detalle-cumplimiento/` | Ruta `:autoevaluacionId` |
-| Página índice | `features/diagnostico/paginas/pagina-diagnostico/` | Selector empresa + última autoevaluación |
+| Contenedor | `features/diagnostico/componentes/panel-cumplimiento-phva/` | Carga HTTP a partir de un `autoevaluacionId` + `recarga` |
+| Página índice | `features/diagnostico/paginas/pagina-diagnostico/` | Matriz SP-189 + panel embebido |
+| Página detalle | `features/diagnostico/paginas/pagina-detalle-diagnostico/` | Matriz/histórico + panel embebido |
 | Dashboard | `features/dashboard/paginas/pagina-dashboard/` | Sustituir aside PHVA decorativo |
-| Rutas | `app.routes.ts` | `/diagnostico` y `/diagnostico/:autoevaluacionId` |
-| Nav | `layout/componentes/barra-lateral/` | Activar ítem Diagnóstico |
-| Docs | `features/diagnostico/README.md`, `features/dashboard/README.md` | Contrato visual y alcance vs SP-189 |
+| Rutas | `app.routes.ts` | Hijos SP-189: `''`, `historico` (antes de `:id`), `:id` |
+| Nav | `layout/componentes/barra-lateral/` | Enlace Diagnóstico (ya activado en SP-189) |
+| Docs | `features/diagnostico/README.md`, `features/dashboard/README.md` | Contrato visual SP-189 + SP-204 |
 
 ### Contrato HTTP (fuente de verdad)
 
@@ -267,17 +267,19 @@ No subtasks — plan derived directly from the HU (SP-204 es la subtarea).
 - Carpeta:
   `src/app/features/diagnostico/componentes/panel-cumplimiento-phva/`
 - Selector: `app-panel-cumplimiento-phva`
-- Inputs: `autoevaluacionId: string | null`, `variante` (se reenvía al gráfico).
+- Inputs: `autoevaluacionId: string | null`, `recarga` (firma de calificaciones),
+  `variante` (se reenvía al gráfico).
 - Comportamiento:
   - `autoevaluacionId` vacío/null → `estado = 'vacio'` (no HTTP).
-  - Si hay id → `estado = 'cargando'`, llama
+  - Cambio de id → `estado = 'cargando'`, llama
     `ServicioCumplimientoPhva.obtenerCumplimiento`, OnPush + `markForCheck`.
+  - Cambio de `recarga` (mismo id) → debounce 400 ms y refetch **silencioso**
+    (no borrar barras ni pasar a `cargando`).
   - Éxito → `listo` + datos. Error `HttpErrorResponse` → mapear
-    `error.error.mensaje` (mismo patrón que
-    `PaginaMatrizRiesgosComponent.mostrarError`).
-  - Reintento re-dispara la carga.
-  - Cancelar suscripción en `ngOnDestroy`. Incrementar un contador de
-    secuencia para ignorar respuestas tardías si cambia el id.
+    `mensajeErrorHttp` (mismo patrón que el resto del feature).
+  - Reintento re-dispara la carga (no silenciosa).
+  - Cancelar suscripción y timer de debounce en `ngOnDestroy`. Incrementar un
+    contador de secuencia para ignorar respuestas tardías.
 - Template: solo `<app-grafico-cumplimiento-phva ...>`.
 
 ### Paso 5: Integración en dashboard (Inicio)
@@ -287,8 +289,8 @@ No subtasks — plan derived directly from the HU (SP-204 es la subtarea).
   - `features/dashboard/README.md`
 - Sustituir el aside de barras fijas (`aria-label="Fases PHVA"` con `h-2`
   indigo/emerald/amber/sky al 100 %) por:
-  1. `<select>` de empresas (carga `ServicioEmpresasDiagnostico.listarEmpresas`
-     en `ngOnInit`).
+  1. `<select>` de empresas (carga `ServicioEmpresas.listar()`
+     en `ngOnInit`; cancelar el GET previo al reintentar).
   2. Al elegir empresa: `listarPorEmpresa` → tomar la más reciente
      (`fecha` DESC, empate `fecha_creacion` DESC).
   3. `<app-panel-cumplimiento-phva [autoevaluacionId]="idSeleccionada" variante="oscuro">`.
@@ -297,31 +299,19 @@ No subtasks — plan derived directly from the HU (SP-204 es la subtarea).
 - Opcional acotado (recomendado): cuando hay `cumplimiento` en memoria,
   actualizar `TarjetaResumen` «Puntaje 0312» con `puntaje_total` + sufijo `%`
   y subtítulo según `requiere_plan_mejora`. No inventar el número.
-- CTA «Nueva autoevaluación» permanece como placeholder de SP-189.
+- CTA «Nueva autoevaluación» navega a `/diagnostico` (matriz SP-189).
 - RBAC: lectura para cualquier autenticado (incluido `CONSULTA`). No ocultar
   el gráfico.
 
-### Paso 6: Páginas de detalle + rutas + nav
+### Paso 6: Integrar el panel en las páginas de SP-189
 
-- Crear:
-  - `features/diagnostico/paginas/pagina-diagnostico/` — selector empresa +
-    panel (variante clara) + enlace a detalle si hay id.
-  - `features/diagnostico/paginas/pagina-detalle-cumplimiento/` —
-    `ActivatedRoute.paramMap` → `autoevaluacionId` → panel.
-- `app.routes.ts` (lazy `loadComponent`, `canActivate: [guardAutenticacion]`
-  heredado del shell):
-
-  ```ts
-  { path: 'diagnostico', loadComponent: () => import('...pagina-diagnostico...') }
-  { path: 'diagnostico/:autoevaluacionId', loadComponent: () => import('...pagina-detalle-cumplimiento...') }
-  ```
-
-  Registrar **antes** del `path: '**'` del shell.
-- `barra-lateral`: convertir el `<span>` «Diagnóstico / Próximo» en
-  `routerLink="/diagnostico"` (quitar `aria-disabled` y badge «Próximo»).
-  Actualizar spec `should marcar diagnostico como proximamente` → enlace activo.
-- No construir la matriz de ítems, acordeones PHVA de calificación ni
-  histórico completo (cards de SP-189). El índice es un selector + gráfico.
+- No crear `pagina-detalle-cumplimiento` ni rutas `:autoevaluacionId`.
+- Embeber `<app-panel-cumplimiento-phva>` (variante clara) en:
+  - `pagina-diagnostico` — encima de la matriz, con `[autoevaluacionId]` y
+    `[recarga]="firmaCalificaciones"` (debounce 400 ms, refresco silencioso).
+  - `pagina-detalle-diagnostico` — igual, en solo lectura si ya hay puntaje.
+- Conservar las rutas anidadas de SP-189 (`historico` **antes** de `:id`).
+- La barra lateral ya enlaza a `/diagnostico` (SP-189).
 
 ### Paso 7: Errores y estados (sin interceptor nuevo)
 
@@ -344,8 +334,7 @@ No subtasks — plan derived directly from the HU (SP-204 es la subtarea).
 - `servicio-cumplimiento-phva.spec.ts` (`HttpClientTestingModule`):
   - GET a la URL correcta con id codificado (`empresa/1` → `%2F`).
   - El body tipado se reemite sin transformar campos.
-- `servicio-autoevaluaciones.spec.ts` / `servicio-empresas-diagnostico.spec.ts`:
-  - query `empresa_id` y GET `/empresas`.
+- Reusar specs de `servicio-autoevaluaciones` / `servicio-empresas` (SP-189).
 - `grafico-cumplimiento-phva.component.spec.ts`:
   - `listo`: cuatro etiquetas Planear/Hacer/Verificar/Actuar y los `%` del API
     (p. ej. `"80.00"` visible; **no** un porcentaje calculado en el spec a
@@ -365,9 +354,9 @@ No subtasks — plan derived directly from the HU (SP-204 es la subtarea).
   - con empresa + autoevaluación + cumplimiento → aparece el `%` de una fase.
   - ya no existen las cuatro barras decorativas a ancho completo sin datos
     (el aside deja de ser solo ornamentación).
-- `pagina-detalle-cumplimiento.component.spec.ts`:
-  - `provideRouter` + param `autoevaluacionId` dispara el GET.
-- `barra-lateral.component.spec.ts`: Diagnóstico es enlace a `/diagnostico`.
+- Specs de `pagina-diagnostico` / `pagina-detalle-diagnostico`: mock de
+  `ServicioCumplimientoPhva` para no disparar HTTP real al embeber el panel.
+- `barra-lateral.component.spec.ts`: Diagnóstico es enlace a `/diagnostico` (SP-189).
 - Nombres: `should …` + resto en español (convención del repo).
 - AAA. Cobertura ≥ 90 % en archivos nuevos.
 
@@ -475,7 +464,7 @@ SP-204 no introduce códigos nuevos.
 
 **Fuera de alcance**
 
-- Matriz de 60 ítems, calificar, finalizar, crear autoevaluación (SP-189).
+- Reimplementar la matriz SP-189 (ya en `develop`); este ticket solo pinta PHVA.
 - Recalcular perfil Res. 0312, umbral o `NO_APLICA` virtual en el cliente.
 - PDF, IA, GTC 45, plan de mejora, chat.
 - NgRx store para este recorte (signals / campos del componente bastan).

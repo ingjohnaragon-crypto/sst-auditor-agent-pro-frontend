@@ -21,6 +21,8 @@ import {
   type VarianteGraficoCumplimiento,
 } from '../grafico-cumplimiento-phva/grafico-cumplimiento-phva.component';
 
+export const DEBOUNCE_RECARGA_CUMPLIMIENTO_MS = 400;
+
 @Component({
   selector: 'app-panel-cumplimiento-phva',
   standalone: true,
@@ -43,22 +45,46 @@ export class PanelCumplimientoPhvaComponent implements OnChanges, OnDestroy {
   private readonly cdr = inject(ChangeDetectorRef);
   private carga: Subscription | null = null;
   private secuencia = 0;
+  private debounceRecarga: ReturnType<typeof setTimeout> | null = null;
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['autoevaluacionId'] || changes['recarga']) {
-      this.cargar();
+    if (changes['autoevaluacionId']) {
+      this.limpiarDebounceRecarga();
+      this.cargar({ silencioso: false });
+      return;
+    }
+
+    if (changes['recarga'] && !changes['recarga'].firstChange) {
+      this.programarRecarga();
     }
   }
 
   ngOnDestroy(): void {
+    this.limpiarDebounceRecarga();
     this.carga?.unsubscribe();
   }
 
   reintentar(): void {
-    this.cargar();
+    this.limpiarDebounceRecarga();
+    this.cargar({ silencioso: false });
   }
 
-  private cargar(): void {
+  private programarRecarga(): void {
+    this.limpiarDebounceRecarga();
+    this.debounceRecarga = setTimeout(() => {
+      this.debounceRecarga = null;
+      this.cargar({ silencioso: true });
+    }, DEBOUNCE_RECARGA_CUMPLIMIENTO_MS);
+  }
+
+  private limpiarDebounceRecarga(): void {
+    if (this.debounceRecarga !== null) {
+      clearTimeout(this.debounceRecarga);
+      this.debounceRecarga = null;
+    }
+  }
+
+  private cargar(opciones: { silencioso: boolean }): void {
     const id = this.autoevaluacionId?.trim() ? this.autoevaluacionId.trim() : null;
     this.secuencia += 1;
     const secuencia = this.secuencia;
@@ -74,10 +100,13 @@ export class PanelCumplimientoPhvaComponent implements OnChanges, OnDestroy {
       return;
     }
 
-    this.estado = 'cargando';
-    this.cumplimiento = null;
-    this.mensajeError = '';
-    this.cdr.markForCheck();
+    const silencioso = opciones.silencioso && this.estado === 'listo' && this.cumplimiento !== null;
+    if (!silencioso) {
+      this.estado = 'cargando';
+      this.cumplimiento = null;
+      this.mensajeError = '';
+      this.cdr.markForCheck();
+    }
 
     this.carga = this.api.obtenerCumplimiento(id).subscribe({
       next: (datos) => {
@@ -86,6 +115,7 @@ export class PanelCumplimientoPhvaComponent implements OnChanges, OnDestroy {
         }
         this.cumplimiento = datos;
         this.estado = 'listo';
+        this.mensajeError = '';
         this.alCargarCumplimiento.emit(datos);
         this.cdr.markForCheck();
       },

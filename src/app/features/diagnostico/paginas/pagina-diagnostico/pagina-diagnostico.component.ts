@@ -29,6 +29,7 @@ import { ServicioAutoevaluaciones } from '../../servicios/servicio-autoevaluacio
 import { ServicioEmpresas } from '../../servicios/servicio-empresas';
 import { ServicioEscrituraAutoevaluacion } from '../../servicios/servicio-escritura-autoevaluacion';
 import { ServicioEstandaresMinimos } from '../../servicios/servicio-estandares-minimos';
+import { construirFirmaCalificaciones } from '../../utilidades/construir-firma-calificaciones';
 import { fechaHoyIso } from '../../utilidades/fecha-hoy-iso';
 import { mensajeErrorHttp } from '../../utilidades/mensaje-error-http';
 
@@ -104,10 +105,7 @@ export class PaginaDiagnosticoComponent implements OnInit, OnDestroy {
   }
 
   get firmaCalificaciones(): string {
-    return Object.values(this.calificaciones)
-      .map((item) => `${item.estandar_id}:${item.resultado}:${item.puntaje}`)
-      .sort()
-      .join('|');
+    return construirFirmaCalificaciones(this.calificaciones);
   }
 
   ngOnInit(): void {

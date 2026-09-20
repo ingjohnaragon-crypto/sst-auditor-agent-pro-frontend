@@ -86,6 +86,7 @@ export class PaginaDashboardComponent implements OnInit, OnDestroy {
 
   private timers: ReturnType<typeof setTimeout>[] = [];
   private suscripcionCancelar: Subscription | null = null;
+  private suscripcionEmpresas: Subscription | null = null;
   private suscripcionHistorico: Subscription | null = null;
   private readonly suscripciones = new Subscription();
   private reintentoSelector: 'empresas' | 'historico' = 'empresas';
@@ -370,22 +371,22 @@ export class PaginaDashboardComponent implements OnInit, OnDestroy {
   private cargarEmpresas(): void {
     this.reintentoSelector = 'empresas';
     this.mensajeErrorSelector = '';
-    this.suscripciones.add(
-      this.empresasApi.listar().subscribe({
-        next: (empresas) => {
-          this.empresas = empresas;
-          if (empresas[0] && !this.empresaSeleccionadaId) {
-            this.seleccionarEmpresa(empresas[0].id);
-          }
-          this.cdr.markForCheck();
-        },
-        error: (error: unknown) => {
-          this.empresas = [];
-          this.autoevaluacionId = null;
-          this.mensajeErrorSelector = mensajeErrorHttp(error);
-          this.cdr.markForCheck();
-        },
-      })
-    );
+    this.suscripcionEmpresas?.unsubscribe();
+    this.suscripcionEmpresas = this.empresasApi.listar().subscribe({
+      next: (empresas) => {
+        this.empresas = empresas;
+        if (empresas[0] && !this.empresaSeleccionadaId) {
+          this.seleccionarEmpresa(empresas[0].id);
+        }
+        this.cdr.markForCheck();
+      },
+      error: (error: unknown) => {
+        this.empresas = [];
+        this.autoevaluacionId = null;
+        this.mensajeErrorSelector = mensajeErrorHttp(error);
+        this.cdr.markForCheck();
+      },
+    });
+    this.suscripciones.add(this.suscripcionEmpresas);
   }
 }

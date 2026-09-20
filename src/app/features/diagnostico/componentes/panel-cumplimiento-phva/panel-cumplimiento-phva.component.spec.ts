@@ -1,9 +1,13 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import type { SimpleChange } from '@angular/core';
 
 import { environment } from '../../../../../environments/environment';
 import type { RespuestaCumplimientoPhva } from '../../modelos';
-import { PanelCumplimientoPhvaComponent } from './panel-cumplimiento-phva.component';
+import {
+  DEBOUNCE_RECARGA_CUMPLIMIENTO_MS,
+  PanelCumplimientoPhvaComponent,
+} from './panel-cumplimiento-phva.component';
 
 const respuesta: RespuestaCumplimientoPhva = {
   autoevaluacion_id: 'ae-1',
@@ -181,4 +185,77 @@ describe('PanelCumplimientoPhvaComponent', () => {
     });
     expect(http.match(() => true).length).toBe(0);
   });
+
+  it('should refrescar en silencio al cambiar recarga', fakeAsync(() => {
+    fixture.componentInstance.autoevaluacionId = 'ae-1';
+    fixture.componentInstance.ngOnChanges({
+      autoevaluacionId: cambio('ae-1', null),
+    });
+    fixture.detectChanges();
+    http
+      .expectOne(`${environment.apiBaseUrl}/autoevaluaciones/ae-1/cumplimiento-phva`)
+      .flush(respuesta);
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('80.00');
+
+    fixture.componentInstance.recarga = 'v2';
+    fixture.componentInstance.ngOnChanges({
+      recarga: cambio('v2', null),
+    });
+    fixture.detectChanges();
+    expect(http.match(() => true).length).toBe(0);
+    expect(fixture.componentInstance.estado).toBe('listo');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('80.00');
+
+    tick(DEBOUNCE_RECARGA_CUMPLIMIENTO_MS);
+    const recarga = http.expectOne(
+      `${environment.apiBaseUrl}/autoevaluaciones/ae-1/cumplimiento-phva`
+    );
+    expect(fixture.componentInstance.estado).toBe('listo');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('80.00');
+    recarga.flush({
+      ...respuesta,
+      puntaje_total: '40.00',
+      fases: [{ ...respuesta.fases[0], porcentaje_cumplimiento: '40.00' }],
+    });
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('40.00');
+  }));
+
+  it('should cancelar el GET de recarga si cambia de nuevo', fakeAsync(() => {
+    fixture.componentInstance.autoevaluacionId = 'ae-1';
+    fixture.componentInstance.ngOnChanges({
+      autoevaluacionId: cambio('ae-1', null),
+    });
+    fixture.detectChanges();
+    http
+      .expectOne(`${environment.apiBaseUrl}/autoevaluaciones/ae-1/cumplimiento-phva`)
+      .flush(respuesta);
+    fixture.detectChanges();
+
+    fixture.componentInstance.recarga = 'v2';
+    fixture.componentInstance.ngOnChanges({ recarga: cambio('v2', 'v1') });
+    tick(DEBOUNCE_RECARGA_CUMPLIMIENTO_MS);
+    const primera = http.expectOne(
+      `${environment.apiBaseUrl}/autoevaluaciones/ae-1/cumplimiento-phva`
+    );
+
+    fixture.componentInstance.recarga = 'v3';
+    fixture.componentInstance.ngOnChanges({ recarga: cambio('v3', 'v2') });
+    tick(DEBOUNCE_RECARGA_CUMPLIMIENTO_MS);
+    expect(primera.cancelled).toBe(true);
+    http
+      .expectOne(`${environment.apiBaseUrl}/autoevaluaciones/ae-1/cumplimiento-phva`)
+      .flush({ ...respuesta, puntaje_total: '11.00' });
+    expect(fixture.componentInstance.cumplimiento?.puntaje_total).toBe('11.00');
+  }));
 });
+
+function cambio(currentValue: unknown, previousValue: unknown): SimpleChange {
+  return {
+    currentValue,
+    previousValue,
+    firstChange: false,
+    isFirstChange: () => false,
+  };
+}
