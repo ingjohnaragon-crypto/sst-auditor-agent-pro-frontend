@@ -85,5 +85,11 @@ describe('ItemCalificacionComponent', () => {
     fixture.componentInstance.readonly = true;
     fixture.componentInstance.alEscribirObservaciones('otra');
     expect(emitir).toHaveBeenCalledTimes(1);
+    fixture.componentInstance.alEscribirDesdeCampo({ target: document.createElement('input') } as unknown as Event);
+    const area = document.createElement('textarea');
+    area.value = 'desde campo';
+    fixture.componentInstance.readonly = false;
+    fixture.componentInstance.alEscribirDesdeCampo({ target: area } as unknown as Event);
+    expect(emitir).toHaveBeenCalledWith('desde campo');
   });
 });

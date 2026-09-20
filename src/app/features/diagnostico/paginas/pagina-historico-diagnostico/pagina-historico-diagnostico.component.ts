@@ -39,6 +39,7 @@ export class PaginaHistoricoDiagnosticoComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly suscripciones = new Subscription();
+  private suscripcionListado: Subscription | null = null;
 
   empresas: Empresa[] = [];
   items: Autoevaluacion[] = [];
@@ -71,22 +72,23 @@ export class PaginaHistoricoDiagnosticoComponent implements OnInit, OnDestroy {
     this.empresaId = id;
     this.items = [];
     this.mensajeError = '';
+    this.suscripcionListado?.unsubscribe();
+    this.suscripcionListado = null;
     if (!id) {
       this.cdr.markForCheck();
       return;
     }
-    this.suscripciones.add(
-      this.autoevaluacionesApi.listarPorEmpresa(id).subscribe({
-        next: (items) => {
-          this.items = items;
-          this.cdr.markForCheck();
-        },
-        error: (error: unknown) => {
-          this.mensajeError = mensajeErrorHttp(error);
-          this.cdr.markForCheck();
-        },
-      })
-    );
+    this.suscripcionListado = this.autoevaluacionesApi.listarPorEmpresa(id).subscribe({
+      next: (items) => {
+        this.items = items;
+        this.cdr.markForCheck();
+      },
+      error: (error: unknown) => {
+        this.mensajeError = mensajeErrorHttp(error);
+        this.cdr.markForCheck();
+      },
+    });
+    this.suscripciones.add(this.suscripcionListado);
   }
 
   verDetalle(id: string): void {

@@ -26,9 +26,9 @@ import type {
 } from '../../modelos';
 import { ServicioAutoevaluaciones } from '../../servicios/servicio-autoevaluaciones';
 import { ServicioEmpresas } from '../../servicios/servicio-empresas';
+import { ServicioEscrituraAutoevaluacion } from '../../servicios/servicio-escritura-autoevaluacion';
 import { ServicioEstandaresMinimos } from '../../servicios/servicio-estandares-minimos';
 import { fechaHoyIso } from '../../utilidades/fecha-hoy-iso';
-import { mapaCalificaciones } from '../../utilidades/mapa-calificaciones';
 import { mensajeErrorHttp } from '../../utilidades/mensaje-error-http';
 
 @Component({
@@ -43,6 +43,7 @@ import { mensajeErrorHttp } from '../../utilidades/mensaje-error-http';
     SelectorEmpresaComponent,
     PanelMatrizDiagnosticoComponent,
   ],
+  providers: [ServicioEscrituraAutoevaluacion],
   templateUrl: './pagina-diagnostico.component.html',
   styleUrls: ['./pagina-diagnostico.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -51,23 +52,49 @@ export class PaginaDiagnosticoComponent implements OnInit, OnDestroy {
   private readonly empresasApi = inject(ServicioEmpresas);
   private readonly estandaresApi = inject(ServicioEstandaresMinimos);
   private readonly autoevaluacionesApi = inject(ServicioAutoevaluaciones);
+  private readonly escritura = inject(ServicioEscrituraAutoevaluacion);
   private readonly autenticacion = inject(ServicioAutenticacion);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly suscripciones = new Subscription();
-  private readonly timersObservaciones: Record<string, ReturnType<typeof setTimeout>> = {};
 
   readonly rolesEscritura = [...ROLES_ESCRITURA_DIAGNOSTICO];
 
   empresas: Empresa[] = [];
   estandares: EstandarMinimo[] = [];
   empresaId = '';
-  autoevaluacion: Autoevaluacion | null = null;
-  calificaciones: Record<string, CalificacionEstandar> = {};
   cargando = true;
   creando = false;
-  finalizando = false;
-  mensajeError = '';
-  guardandoIds: string[] = [];
+  private mensajeCarga = '';
+
+  get autoevaluacion(): Autoevaluacion | null {
+    return this.escritura.autoevaluacion;
+  }
+  set autoevaluacion(valor: Autoevaluacion | null) {
+    this.escritura.autoevaluacion = valor;
+  }
+
+  get calificaciones(): Record<string, CalificacionEstandar> {
+    return this.escritura.calificaciones;
+  }
+  set calificaciones(valor: Record<string, CalificacionEstandar>) {
+    this.escritura.calificaciones = valor;
+  }
+
+  get guardandoIds(): string[] {
+    return this.escritura.guardandoIds;
+  }
+
+  get finalizando(): boolean {
+    return this.escritura.finalizando;
+  }
+
+  get mensajeError(): string {
+    return this.escritura.mensajeError || this.mensajeCarga;
+  }
+  set mensajeError(valor: string) {
+    this.mensajeCarga = valor;
+    this.escritura.mensajeError = valor;
+  }
 
   get puedeEscribir(): boolean {
     const rol = this.autenticacion.usuarioActual()?.rol;
@@ -97,16 +124,13 @@ export class PaginaDiagnosticoComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.suscripciones.unsubscribe();
-    for (const timer of Object.values(this.timersObservaciones)) {
-      clearTimeout(timer);
-    }
+    this.escritura.destruir();
   }
 
   seleccionarEmpresa(id: string): void {
     this.empresaId = id;
-    this.autoevaluacion = null;
-    this.calificaciones = {};
-    this.mensajeError = '';
+    this.escritura.reiniciar();
+    this.mensajeCarga = '';
     this.cdr.markForCheck();
   }
 
@@ -121,8 +145,7 @@ export class PaginaDiagnosticoComponent implements OnInit, OnDestroy {
         .crear({ empresa_id: this.empresaId, fecha: fechaHoyIso() })
         .subscribe({
           next: (autoevaluacion) => {
-            this.autoevaluacion = autoevaluacion;
-            this.calificaciones = mapaCalificaciones(autoevaluacion.calificaciones);
+            this.escritura.establecer(autoevaluacion);
             this.creando = false;
             this.cdr.markForCheck();
           },
@@ -140,71 +163,14 @@ export class PaginaDiagnosticoComponent implements OnInit, OnDestroy {
     resultado: ResultadoCalificacion;
     observaciones: string | null;
   }): void {
-    this.persistirCalificacion(evento.estandarId, {
-      resultado: evento.resultado,
-      observaciones: evento.observaciones,
-    });
+    this.escritura.calificar(evento);
   }
 
   cambiarObservaciones(evento: { estandarId: string; observaciones: string | null }): void {
-    const actual = this.calificaciones[evento.estandarId];
-    if (!actual || !this.autoevaluacion) {
-      return;
-    }
-    clearTimeout(this.timersObservaciones[evento.estandarId]);
-    this.timersObservaciones[evento.estandarId] = setTimeout(() => {
-      this.persistirCalificacion(evento.estandarId, {
-        resultado: actual.resultado,
-        observaciones: evento.observaciones,
-      });
-    }, 400);
+    this.escritura.cambiarObservaciones(evento);
   }
 
   finalizar(): void {
-    if (!this.autoevaluacion) {
-      return;
-    }
-    this.finalizando = true;
-    this.mensajeError = '';
-    this.suscripciones.add(
-      this.autoevaluacionesApi.finalizar(this.autoevaluacion.id).subscribe({
-        next: (autoevaluacion) => {
-          this.autoevaluacion = autoevaluacion;
-          this.calificaciones = mapaCalificaciones(autoevaluacion.calificaciones);
-          this.finalizando = false;
-          this.cdr.markForCheck();
-        },
-        error: (error: unknown) => {
-          this.finalizando = false;
-          this.mensajeError = mensajeErrorHttp(error);
-          this.cdr.markForCheck();
-        },
-      })
-    );
-  }
-
-  private persistirCalificacion(
-    estandarId: string,
-    solicitud: { resultado: ResultadoCalificacion; observaciones: string | null }
-  ): void {
-    if (!this.autoevaluacion) {
-      return;
-    }
-    this.guardandoIds = [...this.guardandoIds.filter((id) => id !== estandarId), estandarId];
-    this.cdr.markForCheck();
-    this.suscripciones.add(
-      this.autoevaluacionesApi.calificar(this.autoevaluacion.id, estandarId, solicitud).subscribe({
-        next: (calificacion) => {
-          this.calificaciones = { ...this.calificaciones, [estandarId]: calificacion };
-          this.guardandoIds = this.guardandoIds.filter((id) => id !== estandarId);
-          this.cdr.markForCheck();
-        },
-        error: (error: unknown) => {
-          this.guardandoIds = this.guardandoIds.filter((id) => id !== estandarId);
-          this.mensajeError = mensajeErrorHttp(error);
-          this.cdr.markForCheck();
-        },
-      })
-    );
+    this.escritura.finalizar();
   }
 }

@@ -89,6 +89,14 @@ export class ItemCalificacionComponent implements OnChanges {
     });
   }
 
+  alEscribirDesdeCampo(evento: Event): void {
+    const destino = evento.target;
+    if (!(destino instanceof HTMLTextAreaElement)) {
+      return;
+    }
+    this.alEscribirObservaciones(destino.value);
+  }
+
   alEscribirObservaciones(valor: string): void {
     this.observaciones = valor;
     if (this.readonly) {

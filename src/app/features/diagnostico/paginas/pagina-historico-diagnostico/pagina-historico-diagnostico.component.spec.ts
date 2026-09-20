@@ -1,7 +1,9 @@
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
+import { environment } from '../../../../../environments/environment';
 import type { Autoevaluacion, Empresa } from '../../modelos';
 import { ServicioAutoevaluaciones } from '../../servicios/servicio-autoevaluaciones';
 import { ServicioEmpresas } from '../../servicios/servicio-empresas';
@@ -71,5 +73,67 @@ describe('PaginaHistoricoDiagnosticoComponent', () => {
     fixture = TestBed.createComponent(PaginaHistoricoDiagnosticoComponent);
     fixture.detectChanges();
     expect(fixture.componentInstance.mensajeError).toBe('No fue posible completar la operación.');
+  });
+});
+
+describe('PaginaHistoricoDiagnosticoComponent carrera HTTP', () => {
+  let fixture: ComponentFixture<PaginaHistoricoDiagnosticoComponent>;
+  let http: HttpTestingController;
+  const empresas: Empresa[] = [{ id: 'e-1', razon_social: 'Acme', nit: '900' }];
+  const historicoA: Autoevaluacion[] = [
+    {
+      id: 'ae-a',
+      empresa_id: 'e-1',
+      usuario_id: 'u-1',
+      fecha: '2026-09-01',
+      puntaje_total: '10.00',
+      requiere_plan_mejora: true,
+      calificaciones: [],
+      fecha_creacion: '2026-09-01T10:00:00Z',
+      fecha_actualizacion: '2026-09-01T10:00:00Z',
+    },
+  ];
+  const historicoB: Autoevaluacion[] = [
+    {
+      id: 'ae-b',
+      empresa_id: 'e-2',
+      usuario_id: 'u-1',
+      fecha: '2026-09-02',
+      puntaje_total: '90.00',
+      requiere_plan_mejora: false,
+      calificaciones: [],
+      fecha_creacion: '2026-09-02T10:00:00Z',
+      fecha_actualizacion: '2026-09-02T10:00:00Z',
+    },
+  ];
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [PaginaHistoricoDiagnosticoComponent, HttpClientTestingModule],
+      providers: [
+        provideRouter([]),
+        { provide: ServicioEmpresas, useValue: { listar: () => of(empresas) } },
+      ],
+    }).compileComponents();
+    http = TestBed.inject(HttpTestingController);
+    fixture = TestBed.createComponent(PaginaHistoricoDiagnosticoComponent);
+    fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    http.verify({ ignoreCancelled: true });
+  });
+
+  it('should cancelar el listado de la empresa anterior', () => {
+    fixture.componentInstance.seleccionarEmpresa('e-1');
+    fixture.componentInstance.seleccionarEmpresa('e-2');
+    const peticiones = http.match((req) => req.url.includes('/autoevaluaciones'));
+    expect(peticiones).toHaveLength(2);
+    expect(peticiones[0].cancelled).toBe(true);
+    peticiones[1].flush(historicoB);
+    expect(fixture.componentInstance.items).toEqual(historicoB);
+    expect(peticiones[0].request.params.get('empresa_id')).toBe('e-1');
+    expect(peticiones[1].request.params.get('empresa_id')).toBe('e-2');
+    expect(() => peticiones[0].flush(historicoA)).toThrow(/cancelled/i);
   });
 });

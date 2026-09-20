@@ -27,7 +27,7 @@
       class="sst-campo mt-2 min-h-20 w-full rounded-2xl p-3 text-sm"
       [value]="observaciones"
       [disabled]="readonly || guardando"
-      (input)="alEscribirObservaciones($any($event.target).value)"
+      (input)="alEscribirDesdeCampo($event)"
     ></textarea>
   </label>
 </article>

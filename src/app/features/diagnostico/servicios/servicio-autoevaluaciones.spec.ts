@@ -43,11 +43,15 @@ describe('ServicioAutoevaluaciones', () => {
     req.flush(autoevaluacion);
   });
 
-  it('should listar por empresa_id codificado', () => {
+  it('should listar por empresa_id con HttpParams', () => {
     servicio.listarPorEmpresa('empresa/1').subscribe((body) => expect(body).toEqual([autoevaluacion]));
 
-    const req = http.expectOne(`${base}/autoevaluaciones?empresa_id=empresa%2F1`);
-    expect(req.request.method).toBe('GET');
+    const req = http.expectOne(
+      (peticion) =>
+        peticion.method === 'GET' &&
+        peticion.url === `${base}/autoevaluaciones` &&
+        peticion.params.get('empresa_id') === 'empresa/1'
+    );
     req.flush([autoevaluacion]);
   });
 

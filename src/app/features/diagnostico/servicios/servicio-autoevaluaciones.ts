@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
@@ -21,9 +21,8 @@ export class ServicioAutoevaluaciones {
   }
 
   listarPorEmpresa(empresaId: string): Observable<Autoevaluacion[]> {
-    return this.http.get<Autoevaluacion[]>(
-      `${this.baseUrl}/autoevaluaciones?empresa_id=${codificarIdRuta(empresaId)}`
-    );
+    const params = new HttpParams().set('empresa_id', empresaId);
+    return this.http.get<Autoevaluacion[]>(`${this.baseUrl}/autoevaluaciones`, { params });
   }
 
   obtenerPorId(id: string): Observable<Autoevaluacion> {
