@@ -7,6 +7,7 @@ import { ServicioAutenticacion } from '../../../../nucleo/auth/servicio-autentic
 import type { RolUsuario, UsuarioAutenticado } from '../../../../nucleo/auth/modelos/usuario-autenticado';
 import type { Autoevaluacion, Empresa, EstandarMinimo } from '../../modelos';
 import { ServicioAutoevaluaciones } from '../../servicios/servicio-autoevaluaciones';
+import { ServicioCumplimientoPhva } from '../../servicios/servicio-cumplimiento-phva';
 import { ServicioEmpresas } from '../../servicios/servicio-empresas';
 import { ServicioEstandaresMinimos } from '../../servicios/servicio-estandares-minimos';
 import { PaginaDiagnosticoComponent } from './pagina-diagnostico.component';
@@ -64,6 +65,16 @@ describe('PaginaDiagnosticoComponent', () => {
           provide: ServicioAutoevaluaciones,
           useValue: { crear, calificar, finalizar, listarPorEmpresa: jest.fn(), obtenerPorId: jest.fn() },
         },
+        { provide: ServicioCumplimientoPhva, useValue: { obtenerCumplimiento: () => of({
+          autoevaluacion_id: 'ae-1',
+          empresa_id: 'e-1',
+          perfil: 'TABLA_7',
+          puntaje_total: '0.00',
+          umbral_plan_mejora: '85.00',
+          requiere_plan_mejora: true,
+          finalizada: false,
+          fases: [],
+        }) } },
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(PaginaDiagnosticoComponent);

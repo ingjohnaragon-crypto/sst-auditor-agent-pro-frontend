@@ -11,4 +11,5 @@ export type { CalificacionEstandar } from './calificacion-estandar';
 export type { Autoevaluacion } from './autoevaluacion';
 export type { SolicitudCrearAutoevaluacion } from './solicitud-crear-autoevaluacion';
 export type { SolicitudCalificarEstandar } from './solicitud-calificar-estandar';
+export type { CumplimientoFasePhva, RespuestaCumplimientoPhva } from './cumplimiento-phva.model';
 export { TOTAL_ESTANDARES_MINIMOS } from './constantes-diagnostico';

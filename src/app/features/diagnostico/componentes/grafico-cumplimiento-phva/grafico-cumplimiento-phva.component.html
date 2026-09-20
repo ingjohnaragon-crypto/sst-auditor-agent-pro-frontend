@@ -1,0 +1,70 @@
+<section [class]="clasesContenedor" [attr.aria-labelledby]="idTitulo">
+  <p [class]="clasesEtiqueta" [id]="idTitulo">Ciclo PHVA</p>
+
+  <div *ngIf="estado === 'cargando'" class="space-y-4" role="status">
+    <p class="text-sm">Cargando cumplimiento PHVA</p>
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div
+        *ngFor="let _ciclo of placeholders"
+        class="h-2 animate-pulse rounded-full"
+        [ngClass]="clasesPlaceholder"
+      ></div>
+    </div>
+  </div>
+
+  <p *ngIf="estado === 'vacio'" class="text-sm leading-relaxed opacity-80" role="status">
+    No hay autoevaluación para mostrar el cumplimiento PHVA.
+  </p>
+
+  <div *ngIf="estado === 'error'" class="space-y-4">
+    <app-alerta tipo="error" titulo="No fue posible cargar el cumplimiento" [mensaje]="mensajeError" />
+    <app-boton variante="secundario" (alHacerClic)="alReintentar.emit()">Reintentar</app-boton>
+  </div>
+
+  <div *ngIf="estado === 'listo' && cumplimiento" class="space-y-5">
+    <div class="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-widest">
+      <span [class]="clasesChip">{{ cumplimiento.perfil }}</span>
+      <span [class]="clasesChip">
+        {{ cumplimiento.finalizada ? 'Finalizada' : 'Borrador' }}
+      </span>
+    </div>
+
+    <p class="text-sm leading-relaxed">
+      Puntaje {{ cumplimiento.puntaje_total }} % · Umbral {{ cumplimiento.umbral_plan_mejora }} %
+    </p>
+    <p class="text-sm font-medium">Brecha al umbral: {{ distanciaAlUmbral }} pts</p>
+
+    <app-alerta
+      *ngIf="cumplimiento.requiere_plan_mejora"
+      tipo="advertencia"
+      [mensaje]="'Requiere plan de mejora (umbral ' + cumplimiento.umbral_plan_mejora + ' %).'"
+    />
+
+    <div class="grid grid-cols-1 gap-5 md:grid-cols-4">
+      <div *ngFor="let item of fases" class="space-y-2">
+        <div class="flex items-baseline justify-between gap-2 text-sm">
+          <span class="font-black">{{ item.etiqueta }}</span>
+          <span *ngIf="item.fase">{{ item.fase.porcentaje_cumplimiento }} %</span>
+        </div>
+        <div
+          *ngIf="item.fase"
+          class="h-2 overflow-hidden rounded-full"
+          [class]="clasesPista"
+          role="progressbar"
+          [attr.aria-valuemin]="0"
+          [attr.aria-valuemax]="100"
+          [attr.aria-valuenow]="anchoBarra(item.fase.porcentaje_cumplimiento)"
+          [attr.aria-label]="etiquetaAria(item)"
+        >
+          <span
+            class="block h-full rounded-full"
+            [class]="item.colorBarra"
+            [style.width.%]="anchoBarra(item.fase.porcentaje_cumplimiento)"
+          ></span>
+        </div>
+        <p *ngIf="!item.fase" class="text-xs opacity-70" role="status">Sin dato</p>
+        <p *ngIf="item.fase" class="text-xs opacity-80">Brecha: {{ item.fase.brecha }} pts</p>
+      </div>
+    </div>
+  </div>
+</section>

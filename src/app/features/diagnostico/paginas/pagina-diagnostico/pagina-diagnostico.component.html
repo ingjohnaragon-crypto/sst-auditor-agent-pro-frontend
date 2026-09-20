@@ -44,6 +44,12 @@
   </article>
 
   <article *ngIf="autoevaluacion" class="rounded-[2.5rem] border border-slate-100 bg-white p-6 shadow-sm md:p-10">
+    <app-panel-cumplimiento-phva
+      class="mb-8 block"
+      [autoevaluacionId]="autoevaluacion.id"
+      [recarga]="firmaCalificaciones"
+      variante="claro"
+    />
     <app-panel-matriz-diagnostico
       [estandares]="estandares"
       [calificaciones]="calificaciones"

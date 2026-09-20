@@ -1,4 +1,4 @@
-import { NgIf } from '@angular/common';
+import { NgFor, NgIf } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -7,7 +7,7 @@ import {
   OnInit,
   inject,
 } from '@angular/core';
-import { Validators } from '@angular/forms';
+import { FormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 
@@ -32,6 +32,12 @@ import type {
   FilaActividadHome,
 } from '../../modelos/fila-actividad-home.model';
 import { ServicioResumenHome } from '../../servicios/servicio-resumen-home';
+import { PanelCumplimientoPhvaComponent } from '../../../diagnostico/componentes/panel-cumplimiento-phva/panel-cumplimiento-phva.component';
+import type { Empresa, RespuestaCumplimientoPhva } from '../../../diagnostico/modelos';
+import { ServicioAutoevaluaciones } from '../../../diagnostico/servicios/servicio-autoevaluaciones';
+import { ServicioEmpresas } from '../../../diagnostico/servicios/servicio-empresas';
+import { mensajeErrorHttp } from '../../../diagnostico/utilidades/mensaje-error-http';
+import { seleccionarAutoevaluacionMasReciente } from '../../../diagnostico/utilidades/seleccionar-autoevaluacion-mas-reciente';
 
 @Component({
   selector: 'app-pagina-dashboard',
@@ -39,12 +45,15 @@ import { ServicioResumenHome } from '../../servicios/servicio-resumen-home';
   imports: [
     RouterLink,
     NgIf,
+    NgFor,
+    FormsModule,
     SiTieneRolDirective,
     TarjetaResumenComponent,
     BotonComponent,
     AlertaComponent,
     TablaComponent,
     FormularioDinamicoComponent,
+    PanelCumplimientoPhvaComponent,
   ],
   templateUrl: './pagina-dashboard.component.html',
   styleUrls: ['./pagina-dashboard.component.css'],
@@ -53,6 +62,8 @@ import { ServicioResumenHome } from '../../servicios/servicio-resumen-home';
 export class PaginaDashboardComponent implements OnInit, OnDestroy {
   readonly autenticacion = inject(ServicioAutenticacion);
   private readonly resumenHome = inject(ServicioResumenHome);
+  private readonly empresasApi = inject(ServicioEmpresas);
+  private readonly autoevaluacionesApi = inject(ServicioAutoevaluaciones);
   private readonly loader = inject(ServicioLoader);
   private readonly modal = inject(ServicioModal);
   private readonly router = inject(Router);
@@ -66,9 +77,20 @@ export class PaginaDashboardComponent implements OnInit, OnDestroy {
   mensajeFormularioDemo = '';
   mensajeLoaderDemo = '';
   mensajeAutoevaluacion = '';
+  empresas: Empresa[] = [];
+  empresaSeleccionadaId = '';
+  autoevaluacionId: string | null = null;
+  puntaje0312: string | number = '—';
+  subtituloPuntaje0312 = 'Disponible al completar el diagnóstico';
+  mensajeErrorSelector = '';
 
   private timers: ReturnType<typeof setTimeout>[] = [];
   private suscripcionCancelar: Subscription | null = null;
+  private suscripcionHistorico: Subscription | null = null;
+  private readonly suscripciones = new Subscription();
+  private reintentoSelector: 'empresas' | 'historico' = 'empresas';
+
+  readonly trackEmpresa = (_indice: number, empresa: Empresa): string => empresa.id;
 
   readonly columnasActividad: ColumnaTabla<FilaActividadHome>[] = [
     { clave: 'fecha', encabezado: 'Fecha', ordenable: true },
@@ -110,11 +132,13 @@ export class PaginaDashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.actividad = this.resumenHome.obtenerActividad();
+    this.cargarEmpresas();
   }
 
   ngOnDestroy(): void {
     this.limpiarTimers();
     this.suscripcionCancelar?.unsubscribe();
+    this.suscripciones.unsubscribe();
   }
 
   abrirComoEmpezar(): void {
@@ -123,7 +147,7 @@ export class PaginaDashboardComponent implements OnInit, OnDestroy {
         titulo: '¿Cómo empezar?',
         cerrable: true,
         mensaje:
-          'Usa Inicio para revisar tu resumen SG-SST. En Diagnóstico puedes iniciar la autoevaluación de estándares mínimos de la Res. 0312. Los planes de mejora se habilitarán en próximos entregables.',
+          'Usa Inicio para revisar el cumplimiento PHVA de la última autoevaluación. En Diagnóstico recorres la matriz de estándares mínimos de la Res. 0312. Los planes de mejora se habilitarán en próximos entregables.',
       },
     });
   }
@@ -209,6 +233,56 @@ export class PaginaDashboardComponent implements OnInit, OnDestroy {
     void this.router.navigate(['/diagnostico']);
   }
 
+  seleccionarEmpresa(empresaId: string): void {
+    this.empresaSeleccionadaId = empresaId;
+    this.autoevaluacionId = null;
+    this.puntaje0312 = '—';
+    this.subtituloPuntaje0312 = 'Disponible al completar el diagnóstico';
+    this.mensajeErrorSelector = '';
+    this.suscripcionHistorico?.unsubscribe();
+    this.suscripcionHistorico = null;
+    if (!empresaId) {
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this.reintentoSelector = 'historico';
+    this.suscripcionHistorico = this.autoevaluacionesApi.listarPorEmpresa(empresaId).subscribe({
+      next: (items) => {
+        this.autoevaluacionId = seleccionarAutoevaluacionMasReciente(items)?.id ?? null;
+        this.cdr.markForCheck();
+      },
+      error: (error: unknown) => {
+        this.autoevaluacionId = null;
+        this.mensajeErrorSelector = mensajeErrorHttp(error);
+        this.cdr.markForCheck();
+      },
+    });
+    this.suscripciones.add(this.suscripcionHistorico);
+  }
+
+  reintentarSelector(): void {
+    if (this.reintentoSelector === 'historico' && this.empresaSeleccionadaId) {
+      this.seleccionarEmpresa(this.empresaSeleccionadaId);
+      return;
+    }
+    this.cargarEmpresas();
+  }
+
+  alCargarCumplimiento(datos: RespuestaCumplimientoPhva | null): void {
+    if (!datos) {
+      this.puntaje0312 = '—';
+      this.subtituloPuntaje0312 = 'Disponible al completar el diagnóstico';
+      this.cdr.markForCheck();
+      return;
+    }
+    this.puntaje0312 = `${datos.puntaje_total} %`;
+    this.subtituloPuntaje0312 = datos.requiere_plan_mejora
+      ? 'Requiere plan de mejora'
+      : 'Cumple el umbral de la Res. 0312';
+    this.cdr.markForCheck();
+  }
+
   mostrarAccionRapida(): void {
     this.mensajeAccionRapida = 'Las acciones rápidas estarán disponibles próximamente.';
     this.cdr.markForCheck();
@@ -291,5 +365,27 @@ export class PaginaDashboardComponent implements OnInit, OnDestroy {
       clearTimeout(t);
     }
     this.timers = [];
+  }
+
+  private cargarEmpresas(): void {
+    this.reintentoSelector = 'empresas';
+    this.mensajeErrorSelector = '';
+    this.suscripciones.add(
+      this.empresasApi.listar().subscribe({
+        next: (empresas) => {
+          this.empresas = empresas;
+          if (empresas[0] && !this.empresaSeleccionadaId) {
+            this.seleccionarEmpresa(empresas[0].id);
+          }
+          this.cdr.markForCheck();
+        },
+        error: (error: unknown) => {
+          this.empresas = [];
+          this.autoevaluacionId = null;
+          this.mensajeErrorSelector = mensajeErrorHttp(error);
+          this.cdr.markForCheck();
+        },
+      })
+    );
   }
 }

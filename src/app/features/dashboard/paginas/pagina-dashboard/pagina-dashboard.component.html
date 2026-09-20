@@ -41,7 +41,7 @@
   <app-alerta
     tipo="informativa"
     titulo="Alcance actual"
-    mensaje="El diagnóstico de estándares mínimos ya está disponible. Los planes de mejora se habilitarán en próximos entregables."
+    mensaje="El diagnóstico de estándares mínimos y el cumplimiento PHVA ya están disponibles. Los planes de mejora se habilitarán en próximos entregables."
   />
 
   <div aria-labelledby="titulo-resumen">
@@ -49,8 +49,8 @@
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <app-tarjeta-resumen
         titulo="Puntaje 0312"
-        valor="—"
-        subtitulo="Disponible al completar el diagnóstico"
+        [valor]="puntaje0312"
+        [subtitulo]="subtituloPuntaje0312"
         color="indigo"
       >
         <svg
@@ -190,19 +190,36 @@
     <aside
       class="relative overflow-hidden rounded-panel bg-slate-900 p-7 text-white shadow-xl md:p-8"
     >
-      <div class="relative z-10">
-        <p class="sst-etiqueta mb-3 tracking-[0.25em] text-indigo-300">Ciclo PHVA</p>
-        <h2 class="text-2xl font-black tracking-tight">Mejora continua del SG-SST</h2>
-        <p class="mt-4 text-sm leading-relaxed text-slate-400">
-          Centraliza el diagnóstico, seguimiento y mejora del sistema de gestión de tu
-          organización.
-        </p>
-        <div class="mt-7 flex gap-2" aria-label="Fases PHVA">
-          <span class="h-2 flex-1 rounded-full bg-indigo-500" title="Planear"></span>
-          <span class="h-2 flex-1 rounded-full bg-emerald-500" title="Hacer"></span>
-          <span class="h-2 flex-1 rounded-full bg-amber-500" title="Verificar"></span>
-          <span class="h-2 flex-1 rounded-full bg-sky-500" title="Actuar"></span>
+      <div class="relative z-10 space-y-5">
+        <div>
+          <label for="empresa-phva-home" class="sst-etiqueta tracking-[0.25em] text-indigo-300">
+            Empresa
+          </label>
+          <select
+            id="empresa-phva-home"
+            class="mt-2 min-h-11 w-full rounded-control border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-white focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+            [ngModel]="empresaSeleccionadaId"
+            (ngModelChange)="seleccionarEmpresa($event)"
+          >
+            <option value="">Selecciona una empresa</option>
+            <option *ngFor="let empresa of empresas; trackBy: trackEmpresa" [value]="empresa.id">
+              {{ empresa.razon_social }}
+            </option>
+          </select>
         </div>
+        <div *ngIf="mensajeErrorSelector" class="space-y-3">
+          <app-alerta
+            tipo="error"
+            titulo="No fue posible cargar el selector"
+            [mensaje]="mensajeErrorSelector"
+          />
+          <app-boton variante="secundario" (alHacerClic)="reintentarSelector()">Reintentar</app-boton>
+        </div>
+        <app-panel-cumplimiento-phva
+          [autoevaluacionId]="autoevaluacionId"
+          variante="oscuro"
+          (alCargarCumplimiento)="alCargarCumplimiento($event)"
+        />
       </div>
       <div
         class="absolute -bottom-12 -right-12 h-40 w-40 rounded-full bg-indigo-600/20 blur-2xl"

@@ -16,6 +16,7 @@ import { ROLES_ESCRITURA_DIAGNOSTICO } from '../../../../nucleo/auth/constantes-
 import { ServicioAutenticacion } from '../../../../nucleo/auth/servicio-autenticacion';
 import { SiTieneRolDirective } from '../../../../shared/directivas/si-tiene-rol.directive';
 import { PanelMatrizDiagnosticoComponent } from '../../componentes/panel-matriz-diagnostico/panel-matriz-diagnostico.component';
+import { PanelCumplimientoPhvaComponent } from '../../componentes/panel-cumplimiento-phva/panel-cumplimiento-phva.component';
 import { SelectorEmpresaComponent } from '../../componentes/selector-empresa/selector-empresa.component';
 import type {
   Autoevaluacion,
@@ -42,6 +43,7 @@ import { mensajeErrorHttp } from '../../utilidades/mensaje-error-http';
     SiTieneRolDirective,
     SelectorEmpresaComponent,
     PanelMatrizDiagnosticoComponent,
+    PanelCumplimientoPhvaComponent,
   ],
   providers: [ServicioEscrituraAutoevaluacion],
   templateUrl: './pagina-diagnostico.component.html',
@@ -99,6 +101,13 @@ export class PaginaDiagnosticoComponent implements OnInit, OnDestroy {
   get puedeEscribir(): boolean {
     const rol = this.autenticacion.usuarioActual()?.rol;
     return !!rol && this.rolesEscritura.includes(rol);
+  }
+
+  get firmaCalificaciones(): string {
+    return Object.values(this.calificaciones)
+      .map((item) => `${item.estandar_id}:${item.resultado}:${item.puntaje}`)
+      .sort()
+      .join('|');
   }
 
   ngOnInit(): void {
