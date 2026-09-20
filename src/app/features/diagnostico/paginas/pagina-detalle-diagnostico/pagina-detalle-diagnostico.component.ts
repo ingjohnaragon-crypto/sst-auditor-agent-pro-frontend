@@ -15,16 +15,18 @@ import { AlertaComponent } from '@app/shared';
 import { ROLES_ESCRITURA_DIAGNOSTICO } from '../../../../nucleo/auth/constantes-roles';
 import { ServicioAutenticacion } from '../../../../nucleo/auth/servicio-autenticacion';
 import { PanelMatrizDiagnosticoComponent } from '../../componentes/panel-matriz-diagnostico/panel-matriz-diagnostico.component';
+import { PanelCumplimientoPhvaComponent } from '../../componentes/panel-cumplimiento-phva/panel-cumplimiento-phva.component';
 import type { Autoevaluacion, CalificacionEstandar, EstandarMinimo, ResultadoCalificacion } from '../../modelos';
 import { ServicioAutoevaluaciones } from '../../servicios/servicio-autoevaluaciones';
 import { ServicioEscrituraAutoevaluacion } from '../../servicios/servicio-escritura-autoevaluacion';
 import { ServicioEstandaresMinimos } from '../../servicios/servicio-estandares-minimos';
+import { construirFirmaCalificaciones } from '../../utilidades/construir-firma-calificaciones';
 import { mensajeErrorHttp } from '../../utilidades/mensaje-error-http';
 
 @Component({
   selector: 'app-pagina-detalle-diagnostico',
   standalone: true,
-  imports: [NgIf, RouterLink, AlertaComponent, PanelMatrizDiagnosticoComponent],
+  imports: [NgIf, RouterLink, AlertaComponent, PanelMatrizDiagnosticoComponent, PanelCumplimientoPhvaComponent],
   providers: [ServicioEscrituraAutoevaluacion],
   templateUrl: './pagina-detalle-diagnostico.component.html',
   styleUrls: ['./pagina-detalle-diagnostico.component.css'],
@@ -75,6 +77,10 @@ export class PaginaDetalleDiagnosticoComponent implements OnInit, OnDestroy {
   get puedeEscribir(): boolean {
     const rol = this.autenticacion.usuarioActual()?.rol;
     return !!rol && this.rolesEscritura.includes(rol) && !this.soloLecturaQuery;
+  }
+
+  get firmaCalificaciones(): string {
+    return construirFirmaCalificaciones(this.calificaciones);
   }
 
   ngOnInit(): void {

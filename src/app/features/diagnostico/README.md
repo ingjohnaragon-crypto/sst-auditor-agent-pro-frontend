@@ -1,7 +1,7 @@
 # Diagnóstico (estándares mínimos Res. 0312)
 
-Pantalla SP-189: crear, calificar y finalizar autoevaluaciones. Las barras PHVA
-(`cumplimiento-phva`) quedan para SP-204.
+Pantalla SP-189: crear, calificar y finalizar autoevaluaciones. SP-204 pinta
+el cumplimiento PHVA (`GET .../cumplimiento-phva`) en Inicio y junto a la matriz.
 
 Diseño de referencia: mockup
 [sst-audit-pro-mckp](https://github.com/ingjohnaragon-crypto/sst-audit-pro-mckp)
@@ -30,6 +30,7 @@ solo `ADMINISTRADOR` y `AUDITOR_SST` vía `*appSiTieneRol`. El backend impone
 - `GET /autoevaluaciones/{id}`
 - `PUT /autoevaluaciones/{id}/calificaciones/{estandar_id}`
 - `POST /autoevaluaciones/{id}/finalizar`
+- `GET /autoevaluaciones/{id}/cumplimiento-phva`
 
 Decimales como `string`. El cliente no recalcula el puntaje 0312.
 
@@ -39,3 +40,4 @@ Decimales como `string`. El cliente no recalcula el puntaje 0312.
 - La matriz se recorre por fases PHVA (Planear → Hacer → Verificar → Actuar): una etapa a la vez, con stepper y Continuar / Fase anterior.
 - Observaciones: debounce 400 ms; el resultado dispara PUT inmediato.
 - Vacío de empresas: mensaje orientativo (alta de empresas fuera de alcance).
+- Cumplimiento PHVA: 4 barras CSS (`porcentaje_cumplimiento` del API), brecha por fase y al umbral 85 %. Sin librería de charts. Estados carga / vacío (sin HTTP) / error / listo.

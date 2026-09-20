@@ -29,11 +29,12 @@ features/dashboard/
 - `Alerta` informativa + éxito tras refrescar.
 - Resumen con `TarjetaResumen` (métricas placeholder).
 - Actividad reciente con `TablaComponent` y datos mock (`ServicioResumenHome`).
-- Accesos rápidos (Diagnóstico → `/diagnostico`) + panel PHVA decorativo.
+- Accesos rápidos (Diagnóstico → `/diagnostico`) + panel PHVA en vivo
+  (`GET cumplimiento-phva` de la última autoevaluación de la empresa).
 - Demos técnicas SP-240/SP-241 en accordion **Herramientas de componentes
   (QA)**, cerrado por defecto (fuera del primer viewport).
 
-El diagnóstico de estándares mínimos vive en `features/diagnostico/` (SP-189).
+El diagnóstico de estándares mínimos vive en `features/diagnostico/` (SP-189 + SP-204).
 
 ## Componentes shared usados
 

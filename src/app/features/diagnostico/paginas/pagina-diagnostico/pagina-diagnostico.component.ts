@@ -16,6 +16,7 @@ import { ROLES_ESCRITURA_DIAGNOSTICO } from '../../../../nucleo/auth/constantes-
 import { ServicioAutenticacion } from '../../../../nucleo/auth/servicio-autenticacion';
 import { SiTieneRolDirective } from '../../../../shared/directivas/si-tiene-rol.directive';
 import { PanelMatrizDiagnosticoComponent } from '../../componentes/panel-matriz-diagnostico/panel-matriz-diagnostico.component';
+import { PanelCumplimientoPhvaComponent } from '../../componentes/panel-cumplimiento-phva/panel-cumplimiento-phva.component';
 import { SelectorEmpresaComponent } from '../../componentes/selector-empresa/selector-empresa.component';
 import type {
   Autoevaluacion,
@@ -28,6 +29,7 @@ import { ServicioAutoevaluaciones } from '../../servicios/servicio-autoevaluacio
 import { ServicioEmpresas } from '../../servicios/servicio-empresas';
 import { ServicioEscrituraAutoevaluacion } from '../../servicios/servicio-escritura-autoevaluacion';
 import { ServicioEstandaresMinimos } from '../../servicios/servicio-estandares-minimos';
+import { construirFirmaCalificaciones } from '../../utilidades/construir-firma-calificaciones';
 import { fechaHoyIso } from '../../utilidades/fecha-hoy-iso';
 import { mensajeErrorHttp } from '../../utilidades/mensaje-error-http';
 
@@ -42,6 +44,7 @@ import { mensajeErrorHttp } from '../../utilidades/mensaje-error-http';
     SiTieneRolDirective,
     SelectorEmpresaComponent,
     PanelMatrizDiagnosticoComponent,
+    PanelCumplimientoPhvaComponent,
   ],
   providers: [ServicioEscrituraAutoevaluacion],
   templateUrl: './pagina-diagnostico.component.html',
@@ -99,6 +102,10 @@ export class PaginaDiagnosticoComponent implements OnInit, OnDestroy {
   get puedeEscribir(): boolean {
     const rol = this.autenticacion.usuarioActual()?.rol;
     return !!rol && this.rolesEscritura.includes(rol);
+  }
+
+  get firmaCalificaciones(): string {
+    return construirFirmaCalificaciones(this.calificaciones);
   }
 
   ngOnInit(): void {
