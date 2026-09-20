@@ -1,6 +1,6 @@
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { DialogModule } from '@angular/cdk/dialog';
 import { OverlayModule } from '@angular/cdk/overlay';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
@@ -72,10 +72,10 @@ describe('PaginaDashboardComponent', () => {
     expect(texto).toContain('Inicio de sesión en SST-Audit Pro');
   });
 
-  it('should mostrar alerta informativa de modulos en construccion', () => {
+  it('should mostrar alerta informativa del alcance actual', () => {
     const texto = (fixture.nativeElement as HTMLElement).textContent;
-    expect(texto).toContain('En construcción');
-    expect(texto).toContain('diagnóstico y planes de mejora');
+    expect(texto).toContain('Alcance actual');
+    expect(texto).toContain('diagnóstico de estándares mínimos ya está disponible');
   });
 
   it('should no mostrar demos tecnicas fuera del accordion cerrado', () => {
@@ -131,6 +131,14 @@ describe('PaginaDashboardComponent', () => {
       'a[href="/ejemplo-sensible"]'
     );
     expect(enlace).toBeNull();
+  });
+
+  it('should navegar a diagnostico al CTA de nueva autoevaluacion', () => {
+    const router = TestBed.inject(Router);
+    const navegar = jest.spyOn(router, 'navigate').mockResolvedValue(true);
+    fixture.componentInstance.mostrarNuevaAutoevaluacion();
+    expect(navegar).toHaveBeenCalledWith(['/diagnostico']);
+    expect(fixture.nativeElement.querySelector('a[href="/diagnostico"]')).toBeTruthy();
   });
 
   it('should mostrar respuesta al usar la accion rapida compartida', () => {

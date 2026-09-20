@@ -1,0 +1,27 @@
+<section class="mx-auto max-w-4xl space-y-6">
+  <p>
+    <a routerLink="/diagnostico" class="text-sm font-semibold text-indigo-700 hover:text-indigo-500">
+      Volver al diagnóstico
+    </a>
+  </p>
+  <p *ngIf="cargando" role="status" class="text-sm text-slate-500">Cargando autoevaluación…</p>
+  <app-alerta
+    *ngIf="mensajeError"
+    tipo="error"
+    titulo="No fue posible cargar el diagnóstico"
+    [mensaje]="mensajeError"
+  />
+  <article *ngIf="autoevaluacion" class="rounded-[2.5rem] border border-slate-100 bg-white p-6 shadow-sm md:p-10">
+    <app-panel-matriz-diagnostico
+      [estandares]="estandares"
+      [calificaciones]="calificaciones"
+      [autoevaluacion]="autoevaluacion"
+      [puedeEscribir]="puedeEscribir"
+      [guardandoIds]="guardandoIds"
+      [finalizando]="finalizando"
+      (alCalificar)="calificar($event)"
+      (alCambiarObservaciones)="cambiarObservaciones($event)"
+      (alFinalizar)="finalizar()"
+    />
+  </article>
+</section>

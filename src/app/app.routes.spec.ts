@@ -17,6 +17,25 @@ describe('rutasApp', () => {
     expect(dashboard?.loadComponent).toBeDefined();
   });
 
+  it('should definir las rutas de diagnostico antes del wildcard', () => {
+    const shell = rutasApp.find((r) => r.path === '');
+    const diagnostico = shell?.children?.find((r) => r.path === 'diagnostico');
+    const historico = diagnostico?.children?.find((r) => r.path === 'historico');
+    const detalle = diagnostico?.children?.find((r) => r.path === ':id');
+    const wildcardIndex = shell?.children?.findIndex((r) => r.path === '**') ?? -1;
+    const diagnosticoIndex = shell?.children?.findIndex((r) => r.path === 'diagnostico') ?? -1;
+    const historicoIndex = diagnostico?.children?.findIndex((r) => r.path === 'historico') ?? -1;
+    const detalleIndex = diagnostico?.children?.findIndex((r) => r.path === ':id') ?? -1;
+
+    expect(diagnostico?.children?.[0]?.loadComponent).toBeDefined();
+    expect(historico?.loadComponent).toBeDefined();
+    expect(detalle?.loadComponent).toBeDefined();
+    expect(diagnosticoIndex).toBeGreaterThanOrEqual(0);
+    expect(diagnosticoIndex).toBeLessThan(wildcardIndex);
+    expect(historicoIndex).toBeGreaterThanOrEqual(0);
+    expect(historicoIndex).toBeLessThan(detalleIndex);
+  });
+
   it('should restringir ejemplo-sensible a roles de auditoria sensible', () => {
     const shell = rutasApp.find((r) => r.path === '');
     const sensible = shell?.children?.find((r) => r.path === 'ejemplo-sensible');

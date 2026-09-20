@@ -77,10 +77,11 @@
       </span>
     </a>
 
-    <span
-      class="flex cursor-not-allowed items-center justify-center gap-4 rounded-2xl p-4 text-slate-600 md:justify-start"
-      aria-label="Diagnóstico, próximamente"
-      aria-disabled="true"
+    <a
+      routerLink="/diagnostico"
+      routerLinkActive="bg-indigo-600 text-white shadow-xl shadow-indigo-950/30"
+      class="group flex items-center justify-center gap-4 rounded-2xl p-4 text-slate-500 transition hover:bg-slate-800/80 hover:text-white md:justify-start"
+      aria-label="Diagnóstico"
     >
       <svg
         class="h-5 w-5 shrink-0"
@@ -96,12 +97,7 @@
       <span class="hidden flex-1 text-xs font-black uppercase tracking-widest md:block">
         Diagnóstico
       </span>
-      <span
-        class="hidden rounded-full bg-slate-800 px-2 py-1 text-[8px] font-black uppercase tracking-widest text-slate-400 md:block"
-      >
-        Próximo
-      </span>
-    </span>
+    </a>
   </div>
 
   <p class="sst-etiqueta hidden px-4 text-[9px] md:block">Gestión integral SG-SST</p>

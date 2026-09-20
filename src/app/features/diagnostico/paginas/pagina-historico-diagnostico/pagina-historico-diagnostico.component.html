@@ -1,0 +1,29 @@
+<section class="mx-auto max-w-4xl space-y-6">
+  <article class="rounded-[2.5rem] border border-slate-100 bg-white p-6 shadow-sm md:p-10">
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <p class="sst-etiqueta mb-2">Diagnóstico</p>
+        <h1 class="text-2xl font-black tracking-tight text-slate-800">Histórico de autoevaluaciones</h1>
+      </div>
+      <a routerLink="/diagnostico" class="text-sm font-semibold text-indigo-700 hover:text-indigo-500">
+        Nueva evaluación
+      </a>
+    </div>
+    <p *ngIf="cargando" role="status" class="text-sm text-slate-500">Cargando empresas…</p>
+    <app-alerta
+      *ngIf="mensajeError"
+      tipo="error"
+      titulo="No fue posible cargar el histórico"
+      [mensaje]="mensajeError"
+      class="mb-4"
+    />
+    <div *ngIf="!cargando" class="space-y-6">
+      <app-selector-empresa
+        [empresas]="empresas"
+        [empresaId]="empresaId"
+        (alSeleccionar)="seleccionarEmpresa($event)"
+      />
+      <app-lista-historico-autoevaluaciones [items]="items" (alVerDetalle)="verDetalle($event)" />
+    </div>
+  </article>
+</section>

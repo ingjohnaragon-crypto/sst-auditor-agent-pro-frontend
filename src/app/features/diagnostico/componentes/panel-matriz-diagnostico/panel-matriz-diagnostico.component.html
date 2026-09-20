@@ -1,0 +1,38 @@
+<div class="space-y-8">
+  <app-cabecera-diagnostico [totalItems]="total" [puntajeTotal]="autoevaluacion?.puntaje_total ?? null" />
+  <app-barra-avance-diagnostico [calificados]="calificados" [total]="total" />
+  <app-resultado-finalizacion
+    *ngIf="finalizada"
+    [puntajeTotal]="autoevaluacion?.puntaje_total ?? null"
+    [requierePlanMejora]="autoevaluacion?.requiere_plan_mejora ?? false"
+  />
+  <app-navegador-fases-phva
+    [fases]="fases"
+    [cicloActual]="cicloActual"
+    [mostrarAcciones]="false"
+    (alSeleccionar)="seleccionarFase($event)"
+  />
+  <app-grupo-phva
+    [ciclo]="cicloActual"
+    [items]="itemsFaseActual"
+    [calificados]="calificadosFaseActual"
+    [calificaciones]="calificaciones"
+    [readonly]="readonly"
+    [guardandoIds]="guardandoIds"
+    (alCalificar)="alCalificar.emit($event)"
+    (alCambiarObservaciones)="alCambiarObservaciones.emit($event)"
+  />
+  <app-navegador-fases-phva
+    [fases]="fases"
+    [cicloActual]="cicloActual"
+    [mostrarStepper]="false"
+    [mostrarContinuar]="!esUltimaFase"
+    (alSeleccionar)="seleccionarFase($event)"
+  />
+  <app-boton-finalizar-diagnostico
+    *ngIf="puedeEscribir && !finalizada && esUltimaFase"
+    [deshabilitado]="!puedeFinalizar"
+    [cargando]="finalizando"
+    (alFinalizar)="alFinalizar.emit()"
+  />
+</div>

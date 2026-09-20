@@ -14,6 +14,7 @@ describe("BarraLateralComponent", () => {
         provideRouter([
           { path: "dashboard", children: [] },
           { path: "matriz-riesgos", children: [] },
+          { path: "diagnostico", children: [] },
         ]),
       ],
     }).compileComponents();
@@ -41,12 +42,13 @@ describe("BarraLateralComponent", () => {
     expect(inicio?.classList.contains("text-white")).toBe(true);
   });
 
-  it("should marcar diagnostico como proximamente", () => {
+  it("should mostrar el acceso a diagnostico", () => {
     const diagnostico = (fixture.nativeElement as HTMLElement).querySelector(
-      '[aria-label="Diagnóstico, próximamente"]'
+      'a[aria-label="Diagnóstico"]'
     );
 
-    expect(diagnostico?.getAttribute("aria-disabled")).toBe("true");
+    expect(diagnostico?.getAttribute("href")).toBe("/diagnostico");
+    expect(diagnostico?.textContent).toContain("Diagnóstico");
   });
 
   it("should mostrar el acceso a la matriz de riesgos", () => {

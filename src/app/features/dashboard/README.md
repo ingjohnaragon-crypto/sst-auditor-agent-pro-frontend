@@ -25,16 +25,15 @@ features/dashboard/
 
 - Saludo con `nombre_completo` / `rol` desde `ServicioAutenticacion`.
 - CTAs de producto: modal onboarding (`ServicioModal`), actualizar resumen
-  (`ServicioLoader`), autoevaluación (RBAC, placeholder).
+  (`ServicioLoader`), autoevaluación (RBAC, navega a `/diagnostico`).
 - `Alerta` informativa + éxito tras refrescar.
 - Resumen con `TarjetaResumen` (métricas placeholder).
 - Actividad reciente con `TablaComponent` y datos mock (`ServicioResumenHome`).
-- Accesos rápidos + panel PHVA.
+- Accesos rápidos (Diagnóstico → `/diagnostico`) + panel PHVA decorativo.
 - Demos técnicas SP-240/SP-241 en accordion **Herramientas de componentes
   (QA)**, cerrado por defecto (fuera del primer viewport).
 
-Sin llamadas HTTP de negocio: las métricas reales se conectarán en tickets
-posteriores (p. ej. SP-189).
+El diagnóstico de estándares mínimos vive en `features/diagnostico/` (SP-189).
 
 ## Componentes shared usados
 

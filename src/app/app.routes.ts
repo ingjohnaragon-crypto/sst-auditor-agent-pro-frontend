@@ -32,6 +32,32 @@ export const rutasApp: Routes = [
           ),
       },
       {
+        path: "diagnostico",
+        children: [
+          {
+            path: "",
+            loadComponent: () =>
+              import("./features/diagnostico/paginas/pagina-diagnostico/pagina-diagnostico.component").then(
+                (modulo) => modulo.PaginaDiagnosticoComponent
+              ),
+          },
+          {
+            path: "historico",
+            loadComponent: () =>
+              import("./features/diagnostico/paginas/pagina-historico-diagnostico/pagina-historico-diagnostico.component").then(
+                (modulo) => modulo.PaginaHistoricoDiagnosticoComponent
+              ),
+          },
+          {
+            path: ":id",
+            loadComponent: () =>
+              import("./features/diagnostico/paginas/pagina-detalle-diagnostico/pagina-detalle-diagnostico.component").then(
+                (modulo) => modulo.PaginaDetalleDiagnosticoComponent
+              ),
+          },
+        ],
+      },
+      {
         path: "ejemplo-sensible",
         component: PaginaEjemploSensibleComponent,
         canActivate: [guardRoles],

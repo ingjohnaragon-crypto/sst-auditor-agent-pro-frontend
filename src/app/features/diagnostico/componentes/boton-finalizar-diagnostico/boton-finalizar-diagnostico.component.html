@@ -1,0 +1,9 @@
+<app-boton
+  variante="primario"
+  tamano="lg"
+  [deshabilitado]="deshabilitado || cargando"
+  [cargando]="cargando"
+  (alHacerClic)="alFinalizar.emit()"
+>
+  Finalizar autoevaluación
+</app-boton>

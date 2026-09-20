@@ -40,8 +40,8 @@
 
   <app-alerta
     tipo="informativa"
-    titulo="En construcción"
-    mensaje="Los módulos de diagnóstico y planes de mejora se habilitarán en próximos entregables."
+    titulo="Alcance actual"
+    mensaje="El diagnóstico de estándares mínimos ya está disponible. Los planes de mejora se habilitarán en próximos entregables."
   />
 
   <div aria-labelledby="titulo-resumen">
@@ -146,23 +146,20 @@
       </div>
 
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div
-          class="rounded-control border border-slate-100 bg-fondo p-5 text-slate-500"
-          aria-disabled="true"
-          appTooltip="Disponible en un próximo entregable"
+        <a
+          routerLink="/diagnostico"
+          class="group rounded-control border border-indigo-100 bg-indigo-50 p-5 transition hover:border-indigo-200 hover:bg-indigo-100"
         >
           <div class="mb-3 flex items-center justify-between">
-            <span class="sst-etiqueta text-xs text-slate-600">Diagnóstico</span>
-            <span
-              class="rounded-full bg-white px-2 py-1 text-[8px] font-black uppercase tracking-widest"
-            >
-              Próximamente
+            <span class="sst-etiqueta text-xs text-indigo-700">Diagnóstico</span>
+            <span class="text-indigo-500 transition group-hover:translate-x-1" aria-hidden="true">
+              →
             </span>
           </div>
-          <p class="text-xs leading-relaxed">
+          <p class="text-xs leading-relaxed text-indigo-600">
             Autoevaluación de estándares mínimos de la Resolución 0312.
           </p>
-        </div>
+        </a>
 
         <a
           *appSiTieneRol="['ADMINISTRADOR', 'AUDITOR_SST']"

@@ -1,0 +1,1 @@
+export const TOTAL_ESTANDARES_MINIMOS = 60;

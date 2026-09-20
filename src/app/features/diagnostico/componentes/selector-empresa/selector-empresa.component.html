@@ -1,0 +1,13 @@
+<label for="selector-empresa-diagnostico" class="sst-etiqueta mb-2 block">Empresa</label>
+<select
+  id="selector-empresa-diagnostico"
+  class="sst-campo min-h-11 w-full max-w-xl rounded-2xl px-3 py-2 text-sm"
+  [value]="empresaId"
+  [disabled]="deshabilitado"
+  (change)="alSeleccionar.emit($any($event.target).value)"
+>
+  <option value="">Selecciona una empresa</option>
+  <option *ngFor="let empresa of empresas; trackBy: trackEmpresa" [value]="empresa.id">
+    {{ empresa.razon_social }} — {{ empresa.nit }}
+  </option>
+</select>
