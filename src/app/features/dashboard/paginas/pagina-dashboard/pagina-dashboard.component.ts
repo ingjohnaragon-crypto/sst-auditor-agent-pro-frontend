@@ -8,7 +8,7 @@ import {
   inject,
 } from '@angular/core';
 import { Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 
 import {
@@ -22,7 +22,6 @@ import {
   ServicioLoader,
   ServicioModal,
   TablaComponent,
-  TooltipDirective,
 } from '@app/shared';
 
 import { ServicioAutenticacion } from '../../../../nucleo/auth/servicio-autenticacion';
@@ -46,7 +45,6 @@ import { ServicioResumenHome } from '../../servicios/servicio-resumen-home';
     AlertaComponent,
     TablaComponent,
     FormularioDinamicoComponent,
-    TooltipDirective,
   ],
   templateUrl: './pagina-dashboard.component.html',
   styleUrls: ['./pagina-dashboard.component.css'],
@@ -57,6 +55,7 @@ export class PaginaDashboardComponent implements OnInit, OnDestroy {
   private readonly resumenHome = inject(ServicioResumenHome);
   private readonly loader = inject(ServicioLoader);
   private readonly modal = inject(ServicioModal);
+  private readonly router = inject(Router);
   private readonly cdr = inject(ChangeDetectorRef);
 
   actividad: FilaActividadHome[] = [];
@@ -124,7 +123,7 @@ export class PaginaDashboardComponent implements OnInit, OnDestroy {
         titulo: '¿Cómo empezar?',
         cerrable: true,
         mensaje:
-          'Usa Inicio para revisar tu resumen SG-SST. El diagnóstico Resolución 0312 y los planes de mejora se habilitarán en próximos entregables. Mientras tanto puedes explorar el área de auditoría si tu rol lo permite.',
+          'Usa Inicio para revisar tu resumen SG-SST. En Diagnóstico puedes iniciar la autoevaluación de estándares mínimos de la Res. 0312. Los planes de mejora se habilitarán en próximos entregables.',
       },
     });
   }
@@ -207,9 +206,7 @@ export class PaginaDashboardComponent implements OnInit, OnDestroy {
   }
 
   mostrarNuevaAutoevaluacion(): void {
-    this.mensajeAutoevaluacion =
-      'La autoevaluación estará disponible cuando se habilite el módulo de diagnóstico.';
-    this.cdr.markForCheck();
+    void this.router.navigate(['/diagnostico']);
   }
 
   mostrarAccionRapida(): void {

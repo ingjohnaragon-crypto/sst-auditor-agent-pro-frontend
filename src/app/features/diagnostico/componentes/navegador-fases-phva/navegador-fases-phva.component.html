@@ -1,0 +1,39 @@
+<ng-container *ngIf="mostrarStepper">
+  <nav aria-label="Fases PHVA de la autoevaluación">
+    <ol class="grid grid-cols-2 gap-2 md:grid-cols-4">
+      <li *ngFor="let fase of fases">
+        <button
+          type="button"
+          class="flex h-full w-full flex-col items-start gap-1 rounded-2xl border-2 p-3 text-left transition"
+          [ngClass]="clasesFase(fase)"
+          [attr.aria-current]="fase.ciclo === cicloActual ? 'step' : null"
+          (click)="seleccionar(fase.ciclo)"
+        >
+          <span class="text-[10px] font-black uppercase tracking-widest">
+            Fase {{ fase.numero }}
+            <span *ngIf="fase.completa" class="ml-1 text-emerald-600">lista</span>
+          </span>
+          <span class="text-sm font-black">{{ fase.etiquetaCorta }}</span>
+          <span class="text-xs font-semibold">{{ fase.calificados }} / {{ fase.total }}</span>
+        </button>
+      </li>
+    </ol>
+  </nav>
+</ng-container>
+
+<div *ngIf="mostrarAcciones" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" role="group" aria-label="Acciones de fase">
+  <app-boton variante="secundario" [deshabilitado]="!anterior" (alHacerClic)="irAnterior()">
+    Fase anterior
+  </app-boton>
+  <p *ngIf="faseActual" class="text-center text-sm text-slate-500">
+    <ng-container *ngIf="faseActual.completa; else pendiente">
+      Fase completa. Puedes continuar cuando quieras.
+    </ng-container>
+    <ng-template #pendiente>
+      {{ textoPendientes }}
+    </ng-template>
+  </p>
+  <app-boton *ngIf="mostrarContinuar && siguiente" (alHacerClic)="irSiguiente()">
+    Continuar a {{ etiquetaSiguiente }}
+  </app-boton>
+</div>

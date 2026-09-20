@@ -1,0 +1,12 @@
+<header class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+  <div>
+    <p class="sst-etiqueta mb-2">Estándares mínimos</p>
+    <h1 class="text-3xl font-black tracking-tight text-slate-800">Resolución 0312</h1>
+    <p class="mt-2 text-sm text-slate-500">
+      Autoevaluación en 4 fases PHVA ({{ totalItems }} estándares). Recorre una fase a la vez.
+    </p>
+  </div>
+  <p *ngIf="puntajeTotal !== null" class="font-mono text-5xl font-black text-indigo-600 md:text-6xl">
+    {{ puntajeTotal }} %
+  </p>
+</header>

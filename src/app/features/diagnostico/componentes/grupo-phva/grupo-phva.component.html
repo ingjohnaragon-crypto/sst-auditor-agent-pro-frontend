@@ -1,0 +1,23 @@
+<section class="space-y-4" [attr.aria-labelledby]="'titulo-fase-' + ciclo">
+  <header class="space-y-1">
+    <div class="flex items-center gap-3">
+      <h2 [id]="'titulo-fase-' + ciclo" class="text-xs font-black uppercase tracking-widest text-slate-800">
+        {{ titulo }}
+      </h2>
+      <span class="h-px flex-1 bg-slate-200"></span>
+      <span class="text-xs font-bold text-slate-400">{{ calificados }} / {{ items.length }}</span>
+    </div>
+    <p *ngIf="!readonly" class="text-sm text-slate-500">
+      Califica solo los estándares de esta fase. Luego pasa a la siguiente.
+    </p>
+  </header>
+  <app-item-calificacion
+    *ngFor="let item of items; trackBy: trackItem"
+    [estandar]="item"
+    [calificacion]="calificacionDe(item.id)"
+    [readonly]="readonly"
+    [guardando]="estaGuardando(item.id)"
+    (alCalificar)="alCalificar.emit({ estandarId: item.id, resultado: $event.resultado, observaciones: $event.observaciones })"
+    (alCambiarObservaciones)="alCambiarObservaciones.emit({ estandarId: item.id, observaciones: $event })"
+  />
+</section>

@@ -1,0 +1,59 @@
+<section class="mx-auto max-w-4xl space-y-6">
+  <article class="rounded-[2.5rem] border border-slate-100 bg-white p-6 shadow-sm md:p-10">
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <p class="sst-etiqueta">Diagnóstico</p>
+      <a routerLink="/diagnostico/historico" class="text-sm font-semibold text-indigo-700 hover:text-indigo-500">
+        Ver histórico
+      </a>
+    </div>
+
+    <p *ngIf="cargando" role="status" class="text-sm text-slate-500">Cargando diagnóstico…</p>
+
+    <app-alerta
+      *ngIf="mensajeError"
+      tipo="error"
+      titulo="No fue posible completar la operación"
+      [mensaje]="mensajeError"
+      class="mb-4"
+    />
+
+    <div *ngIf="!cargando" class="space-y-4">
+      <app-selector-empresa
+        [empresas]="empresas"
+        [empresaId]="empresaId"
+        [deshabilitado]="!!autoevaluacion"
+        (alSeleccionar)="seleccionarEmpresa($event)"
+      />
+      <p *ngIf="empresas.length === 0" class="text-sm text-slate-500" role="status">
+        No hay empresas disponibles. El alta de empresas está fuera de este módulo.
+      </p>
+      <p class="text-sm text-slate-500">
+        La autoevaluación se recorre en 4 fases: Planear, Hacer, Verificar y Actuar. No verás los 60
+        ítems a la vez.
+      </p>
+      <div *appSiTieneRol="rolesEscritura">
+        <app-boton
+          [deshabilitado]="!empresaId || creando || !!autoevaluacion"
+          [cargando]="creando"
+          (alHacerClic)="iniciar()"
+        >
+          Iniciar autoevaluación
+        </app-boton>
+      </div>
+    </div>
+  </article>
+
+  <article *ngIf="autoevaluacion" class="rounded-[2.5rem] border border-slate-100 bg-white p-6 shadow-sm md:p-10">
+    <app-panel-matriz-diagnostico
+      [estandares]="estandares"
+      [calificaciones]="calificaciones"
+      [autoevaluacion]="autoevaluacion"
+      [puedeEscribir]="puedeEscribir"
+      [guardandoIds]="guardandoIds"
+      [finalizando]="finalizando"
+      (alCalificar)="calificar($event)"
+      (alCambiarObservaciones)="cambiarObservaciones($event)"
+      (alFinalizar)="finalizar()"
+    />
+  </article>
+</section>
