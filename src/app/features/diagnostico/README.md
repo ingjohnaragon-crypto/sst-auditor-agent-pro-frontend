@@ -32,6 +32,16 @@ solo `ADMINISTRADOR` y `AUDITOR_SST` vía `*appSiTieneRol`. El backend impone
 - `POST /autoevaluaciones/{id}/finalizar`
 - `GET /autoevaluaciones/{id}/cumplimiento-phva`
 
+## Evidencias (SP-153)
+
+Sobre un ítem ya calificado (`calificacion.id`, no el id del estándar):
+
+- `POST /calificaciones-estandar/{calificacion_id}/archivo` — `FormData` con un solo campo `archivo` (PDF, JPEG o PNG, máx. 10 MB).
+- `GET /calificaciones-estandar/{calificacion_id}/evidencias` — lista activas.
+- `POST /evidencias/{id}/enlace-descarga` — URL de corta vida. PDF en iframe, imagen en `img`. Cada apertura pide un enlace nuevo; no se guarda en `localStorage`.
+
+La zona de carga solo se muestra a `ADMINISTRADOR` y `AUDITOR_SST`. El cliente valida tipo y tamaño antes de llamar. El servidor valida el contenido.
+
 Decimales como `string`. El cliente no recalcula el puntaje 0312.
 
 ## UI

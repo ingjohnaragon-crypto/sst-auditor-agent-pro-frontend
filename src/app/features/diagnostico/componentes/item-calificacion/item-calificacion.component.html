@@ -30,4 +30,10 @@
       (input)="alEscribirDesdeCampo($event)"
     ></textarea>
   </label>
+
+  <app-zona-carga-evidencia
+    *ngIf="calificacionId as idCalificacion"
+    [calificacionId]="idCalificacion"
+    [readonly]="readonly"
+  />
 </article>
