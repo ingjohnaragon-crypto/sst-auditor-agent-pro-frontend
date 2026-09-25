@@ -1,5 +1,3 @@
-import { TestBed } from '@angular/core/testing';
-
 import { environment } from '../../../../environments/environment';
 import { resolverUrlAbsoluta } from './resolver-url-absoluta';
 import { validarArchivoEvidencia } from './validar-archivo-evidencia';
@@ -21,6 +19,21 @@ describe('validarArchivoEvidencia', () => {
     expect(
       validarArchivoEvidencia(new File(['a'], 'nota.txt', { type: 'text/plain' }))
     ).toMatch(/PDF, JPEG y PNG/);
+  });
+
+  it('should rechazar nombre vacio, sin extension, mime distinto y archivo vacio', () => {
+    expect(validarArchivoEvidencia(new File(['a'], '   ', { type: 'application/pdf' }))).toMatch(
+      /no tiene nombre/
+    );
+    expect(
+      validarArchivoEvidencia(new File(['a'], 'sin-extension', { type: 'application/pdf' }))
+    ).toMatch(/PDF, JPEG y PNG/);
+    expect(validarArchivoEvidencia(new File(['a'], 'a.pdf', { type: 'text/plain' }))).toMatch(
+      /PDF, JPEG y PNG/
+    );
+    expect(validarArchivoEvidencia(new File([], 'vacio.pdf', { type: 'application/pdf' }))).toMatch(
+      /vacío/
+    );
   });
 
   it('should rechazar archivos mayores a 10 MB', () => {
@@ -45,5 +58,13 @@ describe('resolverUrlAbsoluta', () => {
     expect(resolverUrlAbsoluta('https://cdn.example/archivo.pdf', environment.apiBaseUrl)).toBe(
       'https://cdn.example/archivo.pdf'
     );
+    expect(resolverUrlAbsoluta('http://cdn.example/archivo.pdf', environment.apiBaseUrl)).toBe(
+      'http://cdn.example/archivo.pdf'
+    );
+  });
+
+  it('should anteponer barra si la ruta relativa no la trae', () => {
+    const absoluta = resolverUrlAbsoluta('descargas/evidencias?token=abc', environment.apiBaseUrl);
+    expect(absoluta).toContain('/descargas/evidencias?token=abc');
   });
 });
