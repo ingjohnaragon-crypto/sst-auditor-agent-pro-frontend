@@ -16,11 +16,12 @@ import {
   type EstandarMinimo,
   type ResultadoCalificacion,
 } from '../../modelos';
+import { ZonaCargaEvidenciaComponent } from '../zona-carga-evidencia/zona-carga-evidencia.component';
 
 @Component({
   selector: 'app-item-calificacion',
   standalone: true,
-  imports: [NgIf, NgFor, NgClass],
+  imports: [NgIf, NgFor, NgClass, ZonaCargaEvidenciaComponent],
   templateUrl: './item-calificacion.component.html',
   styleUrls: ['./item-calificacion.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -42,6 +43,11 @@ export class ItemCalificacionComponent implements OnChanges {
 
   get resultadoActual(): ResultadoCalificacion | null {
     return this.calificacion?.resultado ?? null;
+  }
+
+  get calificacionId(): string | null {
+    const id = this.calificacion?.id;
+    return id ? id : null;
   }
 
   get clasesTarjeta(): string {

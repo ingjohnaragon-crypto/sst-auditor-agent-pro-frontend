@@ -42,6 +42,26 @@ describe('ItemCalificacionComponent', () => {
     expect((botones[0] as HTMLButtonElement).disabled).toBe(true);
   });
 
+  it('should exponer el id de la calificacion ya persistida', () => {
+    expect(fixture.componentInstance.calificacionId).toBeNull();
+    fixture.componentInstance.calificacion = {
+      id: 'cal-9',
+      estandar_id: 'est-1',
+      resultado: 'CUMPLE',
+      puntaje: '4.00',
+      observaciones: null,
+    };
+    expect(fixture.componentInstance.calificacionId).toBe('cal-9');
+    fixture.componentInstance.calificacion = {
+      id: '',
+      estandar_id: 'est-1',
+      resultado: 'CUMPLE',
+      puntaje: '4.00',
+      observaciones: null,
+    };
+    expect(fixture.componentInstance.calificacionId).toBeNull();
+  });
+
   it('should aplicar clases de estado CUMPLE NO_CUMPLE y NO_APLICA', () => {
     fixture.componentInstance.calificacion = {
       estandar_id: 'est-1',

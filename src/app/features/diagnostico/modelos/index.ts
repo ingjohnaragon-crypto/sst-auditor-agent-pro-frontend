@@ -8,6 +8,8 @@ export type { ResultadoCalificacion } from './resultado-calificacion';
 export type { Empresa } from './empresa';
 export type { EstandarMinimo } from './estandar-minimo';
 export type { CalificacionEstandar } from './calificacion-estandar';
+export type { Evidencia } from './evidencia';
+export type { RespuestaEnlaceDescarga } from './respuesta-enlace-descarga';
 export type { Autoevaluacion } from './autoevaluacion';
 export type { SolicitudCrearAutoevaluacion } from './solicitud-crear-autoevaluacion';
 export type { SolicitudCalificarEstandar } from './solicitud-calificar-estandar';
