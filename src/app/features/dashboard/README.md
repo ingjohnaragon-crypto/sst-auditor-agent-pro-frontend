@@ -45,6 +45,12 @@ Debajo de las tarjetas, cuatro barras HTML leen `distribucion_riesgos` del mismo
 `GET /empresas/{id}/resumen-ejecutivo`. Un nivel en cero sigue visible. No hay
 Chart.js ni Recharts. El ancho es el conteo partido por el máximo de los cuatro.
 
+## Irrenunciables (SP-256)
+
+Si el resumen trae 1.1.1 o 1.1.4 en `NO_CUMPLE`, el inicio muestra una alerta y el
+enlace «Ver en el diagnóstico» hacia `/diagnostico/{autoevaluacion_id}`. No hay
+acción de calificar en esta pantalla.
+
 El diagnóstico de estándares mínimos vive en `features/diagnostico/` (SP-189 + SP-204).
 
 ## Componentes shared usados

@@ -49,6 +49,22 @@ describe('PaginaDashboardComponent', () => {
     };
   }
 
+  function irrenunciables(
+    resultado111: 'CUMPLE' | 'NO_CUMPLE' | 'NO_APLICA' | 'SIN_CALIFICAR',
+    resultado114: 'CUMPLE' | 'NO_CUMPLE' | 'NO_APLICA' | 'SIN_CALIFICAR'
+  ): ResumenEjecutivo['irrenunciables'] {
+    return [
+      { numeral: '1.1.1', descripcion: 'Responsable del SG-SST', resultado: resultado111 },
+      { numeral: '1.1.4', descripcion: 'Afiliación al sistema', resultado: resultado114 },
+    ];
+  }
+
+  function alertaIrrenunciables(): HTMLElement | undefined {
+    return Array.from((fixture!.nativeElement as HTMLElement).querySelectorAll('app-alerta')).find(
+      (el) => el.textContent?.includes('Estándares irrenunciables sin cumplir')
+    );
+  }
+
   function tarjeta(titulo: string): HTMLElement | undefined {
     const tarjetas = Array.from(
       (fixture!.nativeElement as HTMLElement).querySelectorAll('app-tarjeta-resumen')
@@ -188,6 +204,34 @@ describe('PaginaDashboardComponent', () => {
     expect(botones.some((t) => t.includes('Nueva autoevaluación'))).toBe(false);
   });
 
+  it('should mostrar la alerta de irrenunciables a CONSULTA sin calificar', () => {
+    establecerUsuario('CONSULTA');
+    obtenerResumen.mockReturnValue(
+      of(
+        resumen({
+          cantidad_autoevaluaciones: 1,
+          autoevaluacion_id: 'ae-9',
+          irrenunciables: irrenunciables('NO_CUMPLE', 'CUMPLE'),
+        })
+      )
+    );
+    fixture!.componentInstance.seleccionarEmpresa('e-1');
+    fixture!.detectChanges();
+
+    const alerta = alertaIrrenunciables();
+    expect(alerta?.textContent).toContain('1.1.1');
+    expect(alerta?.textContent).toContain('Responsable del SG-SST');
+    expect(
+      (fixture!.nativeElement as HTMLElement).querySelector('a[href="/diagnostico/ae-9"]')
+    ).toBeTruthy();
+    expect((fixture!.nativeElement as HTMLElement).textContent).not.toContain('Calificar');
+    const botones = Array.from(
+      (fixture!.nativeElement as HTMLElement).querySelectorAll('app-boton')
+    ).map((el) => el.textContent?.trim() ?? '');
+    expect(botones.some((t) => t.includes('Nueva autoevaluación'))).toBe(false);
+    expect(obtenerResumen).toHaveBeenCalledTimes(1);
+  });
+
   it('should ocultar acceso de auditoria a rol CONSULTA', () => {
     establecerUsuario('CONSULTA');
     fixture!.detectChanges();
@@ -278,6 +322,8 @@ describe('PaginaDashboardComponent', () => {
     fixture!.componentInstance.puntaje0312 = '80 %';
     fixture!.componentInstance.valorAutoevaluaciones = 4;
     fixture!.componentInstance.distribucionRiesgos = { I: 4, II: 0, III: 0, IV: 0 };
+    fixture!.componentInstance.irrenunciablesIncumplidos = irrenunciables('NO_CUMPLE', 'CUMPLE');
+    fixture!.componentInstance.autoevaluacionAlertaId = 'ae-9';
     fixture!.componentInstance.seleccionarEmpresa('');
     expect(fixture!.componentInstance.autoevaluacionId).toBeNull();
     expect(fixture!.componentInstance.puntaje0312).toBe('—');
@@ -285,6 +331,7 @@ describe('PaginaDashboardComponent', () => {
     expect(fixture!.componentInstance.valorAutoevaluaciones).toBe('—');
     expect(fixture!.componentInstance.valorPlanes).toBe('—');
     expect(fixture!.componentInstance.distribucionRiesgos).toEqual({ I: 0, II: 0, III: 0, IV: 0 });
+    expect(alertaIrrenunciables()).toBeUndefined();
   });
 
   it('should mostrar conteo y Si cuando el resumen pide plan', () => {
@@ -399,6 +446,80 @@ describe('PaginaDashboardComponent', () => {
     expect(fixture!.componentInstance.subtituloPlanes).toBe('Acciones derivadas de los resultados');
     expect(fixture!.componentInstance.mensajeErrorSelector).toBe('No se encontró la empresa.');
     expect(fixture!.componentInstance.distribucionRiesgos).toEqual({ I: 0, II: 0, III: 0, IV: 0 });
+    expect(alertaIrrenunciables()).toBeUndefined();
+  });
+
+  it('should alertar un irrenunciable en NO_CUMPLE', () => {
+    obtenerResumen.mockReturnValue(
+      of(
+        resumen({
+          cantidad_autoevaluaciones: 1,
+          autoevaluacion_id: 'ae-9',
+          irrenunciables: irrenunciables('NO_CUMPLE', 'CUMPLE'),
+        })
+      )
+    );
+    fixture!.componentInstance.seleccionarEmpresa('e-1');
+    fixture!.detectChanges();
+
+    const alerta = alertaIrrenunciables();
+    expect(alerta?.textContent).toContain('1.1.1');
+    expect(alerta?.textContent).toContain('Responsable del SG-SST');
+    expect(alerta?.textContent).not.toContain('1.1.4');
+    expect(
+      (fixture!.nativeElement as HTMLElement).querySelector('a[href="/diagnostico/ae-9"]')
+    ).toBeTruthy();
+    expect(obtenerResumen).toHaveBeenCalledTimes(1);
+  });
+
+  it('should alertar los dos irrenunciables en NO_CUMPLE', () => {
+    obtenerResumen.mockReturnValue(
+      of(
+        resumen({
+          cantidad_autoevaluaciones: 2,
+          autoevaluacion_id: 'ae-2',
+          irrenunciables: irrenunciables('NO_CUMPLE', 'NO_CUMPLE'),
+        })
+      )
+    );
+    fixture!.componentInstance.seleccionarEmpresa('e-1');
+    fixture!.detectChanges();
+
+    const alerta = alertaIrrenunciables();
+    expect(alerta?.textContent).toContain('1.1.1');
+    expect(alerta?.textContent).toContain('1.1.4');
+    expect(alerta?.textContent).toContain('Afiliación al sistema');
+  });
+
+  it('should no alertar si los irrenunciables no estan en NO_CUMPLE', () => {
+    obtenerResumen.mockReturnValue(
+      of(
+        resumen({
+          cantidad_autoevaluaciones: 1,
+          autoevaluacion_id: 'ae-1',
+          irrenunciables: irrenunciables('NO_APLICA', 'SIN_CALIFICAR'),
+        })
+      )
+    );
+    fixture!.componentInstance.seleccionarEmpresa('e-1');
+    fixture!.detectChanges();
+    expect(alertaIrrenunciables()).toBeUndefined();
+  });
+
+  it('should no alertar si no hay autoevaluacion aunque el cuerpo traiga NO_CUMPLE', () => {
+    obtenerResumen.mockReturnValue(
+      of(
+        resumen({
+          cantidad_autoevaluaciones: 0,
+          autoevaluacion_id: null,
+          irrenunciables: irrenunciables('NO_CUMPLE', 'CUMPLE'),
+        })
+      )
+    );
+    fixture!.componentInstance.seleccionarEmpresa('e-1');
+    fixture!.detectChanges();
+    expect(alertaIrrenunciables()).toBeUndefined();
+    expect(valorTarjeta('Planes de mejora')).toBe('—');
   });
 
   it('should actualizar la tarjeta 0312 al cargar cumplimiento', () => {
