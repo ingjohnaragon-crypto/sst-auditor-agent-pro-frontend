@@ -18,6 +18,8 @@ import type { Autoevaluacion, Empresa, RespuestaCumplimientoPhva } from '../../.
 import { ServicioAutoevaluaciones } from '../../../diagnostico/servicios/servicio-autoevaluaciones';
 import { ServicioCumplimientoPhva } from '../../../diagnostico/servicios/servicio-cumplimiento-phva';
 import { ServicioEmpresas } from '../../../diagnostico/servicios/servicio-empresas';
+import type { ResumenEjecutivo } from '../../modelos/resumen-ejecutivo.model';
+import { ServicioResumenEjecutivo } from '../../servicios/servicio-resumen-ejecutivo';
 import { PaginaDashboardComponent } from './pagina-dashboard.component';
 
 describe('PaginaDashboardComponent', () => {
@@ -28,6 +30,35 @@ describe('PaginaDashboardComponent', () => {
   const listar = jest.fn();
   const listarPorEmpresa = jest.fn();
   const obtenerCumplimiento = jest.fn();
+  const obtenerResumen = jest.fn();
+
+  function resumen(parcial: Partial<ResumenEjecutivo> = {}): ResumenEjecutivo {
+    return {
+      empresa_id: 'e-1',
+      cantidad_autoevaluaciones: 0,
+      autoevaluacion_id: null,
+      requiere_plan_mejora: false,
+      riesgos_nivel_i: 0,
+      riesgos_nivel_ii: 0,
+      distribucion_riesgos: { I: 0, II: 0, III: 0, IV: 0 },
+      irrenunciables: [
+        { numeral: '1.1.1', descripcion: 'Responsable del SG-SST', resultado: 'SIN_CALIFICAR' },
+        { numeral: '1.1.4', descripcion: 'Afiliación al sistema', resultado: 'SIN_CALIFICAR' },
+      ],
+      ...parcial,
+    };
+  }
+
+  function tarjeta(titulo: string): HTMLElement | undefined {
+    const tarjetas = Array.from(
+      (fixture!.nativeElement as HTMLElement).querySelectorAll('app-tarjeta-resumen')
+    );
+    return tarjetas.find((el) => el.textContent?.includes(titulo));
+  }
+
+  function valorTarjeta(titulo: string): string {
+    return tarjeta(titulo)?.querySelector('p.text-3xl')?.textContent?.trim() ?? '';
+  }
 
   function establecerUsuario(rol: RolUsuario): void {
     usuario.set({
@@ -56,6 +87,7 @@ describe('PaginaDashboardComponent', () => {
         { provide: ServicioEmpresas, useValue: { listar } },
         { provide: ServicioAutoevaluaciones, useValue: { listarPorEmpresa } },
         { provide: ServicioCumplimientoPhva, useValue: { obtenerCumplimiento } },
+        { provide: ServicioResumenEjecutivo, useValue: { obtener: obtenerResumen } },
       ],
     }).compileComponents();
 
@@ -70,6 +102,7 @@ describe('PaginaDashboardComponent', () => {
     listar.mockReset().mockReturnValue(of([]));
     listarPorEmpresa.mockReset().mockReturnValue(of([]));
     obtenerCumplimiento.mockReset().mockReturnValue(of(null));
+    obtenerResumen.mockReset().mockReturnValue(of(resumen()));
     await crearComponente();
   });
 
@@ -125,6 +158,18 @@ describe('PaginaDashboardComponent', () => {
     tick(1600);
     expect(ocultar).toHaveBeenCalled();
     expect(fixture!.componentInstance.alertaExitoVisible).toBe(true);
+    expect(obtenerResumen).not.toHaveBeenCalled();
+  }));
+
+  it('should no volver a pedir el resumen al actualizar la actividad', fakeAsync(() => {
+    obtenerResumen.mockReturnValue(
+      of(resumen({ cantidad_autoevaluaciones: 2, requiere_plan_mejora: true }))
+    );
+    fixture!.componentInstance.seleccionarEmpresa('e-1');
+    expect(obtenerResumen).toHaveBeenCalledTimes(1);
+    fixture!.componentInstance.actualizarResumen();
+    tick(1600);
+    expect(obtenerResumen).toHaveBeenCalledTimes(1);
   }));
 
   it('should mostrar CTA de autoevaluacion a roles de escritura', () => {
@@ -223,9 +268,82 @@ describe('PaginaDashboardComponent', () => {
 
   it('should limpiar puntaje y autoevaluacion al vaciar la empresa', () => {
     fixture!.componentInstance.puntaje0312 = '80 %';
+    fixture!.componentInstance.valorAutoevaluaciones = 4;
     fixture!.componentInstance.seleccionarEmpresa('');
     expect(fixture!.componentInstance.autoevaluacionId).toBeNull();
     expect(fixture!.componentInstance.puntaje0312).toBe('—');
+    expect(obtenerResumen).not.toHaveBeenCalled();
+    expect(fixture!.componentInstance.valorAutoevaluaciones).toBe('—');
+    expect(fixture!.componentInstance.valorPlanes).toBe('—');
+  });
+
+  it('should mostrar conteo y Si cuando el resumen pide plan', () => {
+    obtenerResumen.mockReturnValue(
+      of(resumen({ cantidad_autoevaluaciones: 2, requiere_plan_mejora: true }))
+    );
+    fixture!.componentInstance.seleccionarEmpresa('e-1');
+    fixture!.detectChanges();
+    expect(valorTarjeta('Autoevaluaciones')).toBe('2');
+    expect(valorTarjeta('Planes de mejora')).toBe('Sí');
+    expect(tarjeta('Planes de mejora')?.textContent).toContain('Acciones derivadas de los resultados');
+  });
+
+  it('should mostrar No cuando la ultima autoevaluacion no pide plan', () => {
+    obtenerResumen.mockReturnValue(
+      of(resumen({ cantidad_autoevaluaciones: 1, requiere_plan_mejora: false }))
+    );
+    fixture!.componentInstance.seleccionarEmpresa('e-1');
+    fixture!.detectChanges();
+    expect(valorTarjeta('Planes de mejora')).toBe('No');
+    expect(fixture!.componentInstance.puntaje0312).toBe('—');
+  });
+
+  it('should explicar que no hay autoevaluacion cuando el conteo es 0', () => {
+    obtenerResumen.mockReturnValue(
+      of(resumen({ cantidad_autoevaluaciones: 0, requiere_plan_mejora: true }))
+    );
+    fixture!.componentInstance.seleccionarEmpresa('e-1');
+    fixture!.detectChanges();
+    expect(valorTarjeta('Autoevaluaciones')).toBe('0');
+    expect(valorTarjeta('Planes de mejora')).toBe('—');
+    expect(tarjeta('Planes de mejora')?.textContent).toContain('Aún no hay autoevaluación');
+    expect(valorTarjeta('Planes de mejora')).not.toBe('Sí');
+  });
+
+  it('should ignorar un resumen de otra empresa', () => {
+    const primera = new Subject<ResumenEjecutivo>();
+    const segunda = new Subject<ResumenEjecutivo>();
+    obtenerResumen
+      .mockReturnValueOnce(primera.asObservable())
+      .mockReturnValueOnce(segunda.asObservable());
+    fixture!.componentInstance.seleccionarEmpresa('e-1');
+    fixture!.componentInstance.seleccionarEmpresa('e-2');
+    primera.next(
+      resumen({ empresa_id: 'e-1', cantidad_autoevaluaciones: 9, requiere_plan_mejora: true })
+    );
+    expect(fixture!.componentInstance.valorAutoevaluaciones).toBe('—');
+    segunda.next(resumen({ empresa_id: 'e-2', cantidad_autoevaluaciones: 3, requiere_plan_mejora: false }));
+    expect(fixture!.componentInstance.valorAutoevaluaciones).toBe(3);
+    expect(fixture!.componentInstance.valorPlanes).toBe('No');
+  });
+
+  it('should limpiar las tarjetas si falla el resumen', () => {
+    obtenerResumen.mockReturnValue(
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            error: { mensaje: 'No se encontró la empresa.' },
+            status: 404,
+            statusText: 'Not Found',
+          })
+      )
+    );
+    fixture!.componentInstance.seleccionarEmpresa('e-404');
+    fixture!.detectChanges();
+    expect(fixture!.componentInstance.valorAutoevaluaciones).toBe('—');
+    expect(fixture!.componentInstance.valorPlanes).toBe('—');
+    expect(fixture!.componentInstance.subtituloPlanes).toBe('Acciones derivadas de los resultados');
+    expect(fixture!.componentInstance.mensajeErrorSelector).toBe('No se encontró la empresa.');
   });
 
   it('should actualizar la tarjeta 0312 al cargar cumplimiento', () => {

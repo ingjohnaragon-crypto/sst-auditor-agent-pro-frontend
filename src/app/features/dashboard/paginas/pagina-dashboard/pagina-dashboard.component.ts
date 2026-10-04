@@ -31,6 +31,8 @@ import type {
   EstadoActividadHome,
   FilaActividadHome,
 } from '../../modelos/fila-actividad-home.model';
+import type { ResumenEjecutivo } from '../../modelos/resumen-ejecutivo.model';
+import { ServicioResumenEjecutivo } from '../../servicios/servicio-resumen-ejecutivo';
 import { ServicioResumenHome } from '../../servicios/servicio-resumen-home';
 import { PanelCumplimientoPhvaComponent } from '../../../diagnostico/componentes/panel-cumplimiento-phva/panel-cumplimiento-phva.component';
 import type { Empresa, RespuestaCumplimientoPhva } from '../../../diagnostico/modelos';
@@ -62,6 +64,7 @@ import { seleccionarAutoevaluacionMasReciente } from '../../../diagnostico/utili
 export class PaginaDashboardComponent implements OnInit, OnDestroy {
   readonly autenticacion = inject(ServicioAutenticacion);
   private readonly resumenHome = inject(ServicioResumenHome);
+  private readonly resumenEjecutivo = inject(ServicioResumenEjecutivo);
   private readonly empresasApi = inject(ServicioEmpresas);
   private readonly autoevaluacionesApi = inject(ServicioAutoevaluaciones);
   private readonly loader = inject(ServicioLoader);
@@ -82,12 +85,17 @@ export class PaginaDashboardComponent implements OnInit, OnDestroy {
   autoevaluacionId: string | null = null;
   puntaje0312: string | number = '—';
   subtituloPuntaje0312 = 'Disponible al completar el diagnóstico';
+  valorAutoevaluaciones: string | number = '—';
+  subtituloAutoevaluaciones = 'Histórico de evaluaciones de la empresa';
+  valorPlanes: string | number = '—';
+  subtituloPlanes = 'Acciones derivadas de los resultados';
   mensajeErrorSelector = '';
 
   private timers: ReturnType<typeof setTimeout>[] = [];
   private suscripcionCancelar: Subscription | null = null;
   private suscripcionEmpresas: Subscription | null = null;
   private suscripcionHistorico: Subscription | null = null;
+  private suscripcionResumen: Subscription | null = null;
   private readonly suscripciones = new Subscription();
   private reintentoSelector: 'empresas' | 'historico' = 'empresas';
 
@@ -242,6 +250,9 @@ export class PaginaDashboardComponent implements OnInit, OnDestroy {
     this.mensajeErrorSelector = '';
     this.suscripcionHistorico?.unsubscribe();
     this.suscripcionHistorico = null;
+    this.suscripcionResumen?.unsubscribe();
+    this.suscripcionResumen = null;
+    this.restaurarTarjetasResumen();
     if (!empresaId) {
       this.cdr.markForCheck();
       return;
@@ -260,6 +271,24 @@ export class PaginaDashboardComponent implements OnInit, OnDestroy {
       },
     });
     this.suscripciones.add(this.suscripcionHistorico);
+    this.suscripcionResumen = this.resumenEjecutivo.obtener(empresaId).subscribe({
+      next: (resumen) => {
+        if (resumen.empresa_id !== this.empresaSeleccionadaId) {
+          return;
+        }
+        this.aplicarResumen(resumen);
+        this.cdr.markForCheck();
+      },
+      error: (error: unknown) => {
+        if (empresaId !== this.empresaSeleccionadaId) {
+          return;
+        }
+        this.restaurarTarjetasResumen();
+        this.mensajeErrorSelector = mensajeErrorHttp(error);
+        this.cdr.markForCheck();
+      },
+    });
+    this.suscripciones.add(this.suscripcionResumen);
   }
 
   reintentarSelector(): void {
@@ -348,6 +377,25 @@ export class PaginaDashboardComponent implements OnInit, OnDestroy {
 
   cerrarAlertaExito(): void {
     this.alertaExitoVisible = false;
+  }
+
+  private restaurarTarjetasResumen(): void {
+    this.valorAutoevaluaciones = '—';
+    this.subtituloAutoevaluaciones = 'Histórico de evaluaciones de la empresa';
+    this.valorPlanes = '—';
+    this.subtituloPlanes = 'Acciones derivadas de los resultados';
+  }
+
+  private aplicarResumen(resumen: ResumenEjecutivo): void {
+    this.valorAutoevaluaciones = resumen.cantidad_autoevaluaciones;
+    this.subtituloAutoevaluaciones = 'Histórico de evaluaciones de la empresa';
+    if (resumen.cantidad_autoevaluaciones === 0) {
+      this.valorPlanes = '—';
+      this.subtituloPlanes = 'Aún no hay autoevaluación';
+      return;
+    }
+    this.valorPlanes = resumen.requiere_plan_mejora ? 'Sí' : 'No';
+    this.subtituloPlanes = 'Acciones derivadas de los resultados';
   }
 
   private etiquetaEstado(estado: EstadoActividadHome): string {

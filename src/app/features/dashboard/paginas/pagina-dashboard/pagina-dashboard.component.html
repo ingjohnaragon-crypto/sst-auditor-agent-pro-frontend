@@ -67,8 +67,8 @@
 
       <app-tarjeta-resumen
         titulo="Autoevaluaciones"
-        valor="—"
-        subtitulo="Histórico de evaluaciones de la empresa"
+        [valor]="valorAutoevaluaciones"
+        [subtitulo]="subtituloAutoevaluaciones"
         color="emerald"
       >
         <svg
@@ -85,8 +85,8 @@
 
       <app-tarjeta-resumen
         titulo="Planes de mejora"
-        valor="—"
-        subtitulo="Acciones derivadas de los resultados"
+        [valor]="valorPlanes"
+        [subtitulo]="subtituloPlanes"
         color="amber"
       >
         <svg
