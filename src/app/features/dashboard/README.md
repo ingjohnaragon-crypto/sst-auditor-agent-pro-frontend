@@ -15,9 +15,11 @@ features/dashboard/
 ├── componentes/
 │   └── tarjeta-resumen/
 ├── modelos/
-│   └── fila-actividad-home.model.ts
+│   ├── fila-actividad-home.model.ts
+│   └── resumen-ejecutivo.model.ts
 ├── servicios/
-│   └── servicio-resumen-home.ts
+│   ├── servicio-resumen-home.ts
+│   └── servicio-resumen-ejecutivo.ts
 └── README.md
 ```
 
@@ -27,8 +29,10 @@ features/dashboard/
 - CTAs de producto: modal onboarding (`ServicioModal`), actualizar resumen
   (`ServicioLoader`), autoevaluación (RBAC, navega a `/diagnostico`).
 - `Alerta` informativa + éxito tras refrescar.
-- Resumen con `TarjetaResumen` (métricas placeholder).
+- Autoevaluaciones y Planes de mejora leen
+  `GET /empresas/{id}/resumen-ejecutivo`. Puntaje 0312 sigue en cumplimiento PHVA.
 - Actividad reciente con `TablaComponent` y datos mock (`ServicioResumenHome`).
+  «Actualizar resumen» no vuelve a pedir el resumen ejecutivo.
 - Accesos rápidos (Diagnóstico → `/diagnostico`) + panel PHVA en vivo
   (`GET cumplimiento-phva` de la última autoevaluación de la empresa).
 - Demos técnicas SP-240/SP-241 en accordion **Herramientas de componentes

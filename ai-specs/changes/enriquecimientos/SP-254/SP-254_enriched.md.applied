@@ -1,0 +1,92 @@
+# Ticket enriquecido: SP-254 — Reemplazar placeholders del inicio con datos reales
+
+## Descripción original
+<!-- jira-skip -->
+Subtarea: SP-254 — Reemplazar placeholders del inicio con datos reales
+Descripción original
+Descripción mejorada
+En pagina-dashboard, la tarjeta Autoevaluaciones muestra cantidad_autoevaluaciones. La tarjeta Planes de mejora muestra «Sí» o «No» según requiere_plan_mejora. Si cantidad_autoevaluaciones es 0, el valor de planes queda en «—» y el subtítulo dice que aún no hay autoevaluación. Al cambiar empresaSeleccionadaId se vuelve a pedir el resumen. ServicioResumenHome.obtenerActividad sigue siendo la lista de demostración.
+Criterios de aceptación
+Las dos tarjetas dejan de tener el guion fijo cuando hay datos.
+
+Cambiar de empresa actualiza las tarjetas.
+
+Sin autoevaluación, el texto lo explica.
+
+La tabla de actividad reciente no llama al API.
+
+
+Puntos de historia
+3 — enlace de las dos tarjetas al resumen. La pantalla de planes no existe todavía.
+<!-- /jira-skip -->
+
+## Descripción mejorada
+
+En `PaginaDashboardComponent`, las tarjetas **Autoevaluaciones** y **Planes de mejora** dejan de tener el guion fijo. Leen el resumen ejecutivo de la empresa seleccionada. El conteo y el flag salen del API; el cliente no recalcula la Resolución 0312 ni decide el plan de mejora.
+
+`GET /api/v1/empresas/{empresa_id}/resumen-ejecutivo` ya existe (SP-253). `CONSULTA` puede leerlo. Esta tarea solo usa `cantidad_autoevaluaciones` y `requiere_plan_mejora`. `distribucion_riesgos` e `irrenunciables` se tipan para no perder el contrato, y se pintan en SP-255 y SP-256.
+
+Al elegir empresa, o al cargar la primera de la lista, se pide el resumen. Cambiar `empresaSeleccionadaId` cancela la petición anterior y vuelve a pedir. Sin empresa, las dos tarjetas vuelven al guion y no hay HTTP.
+
+- Autoevaluaciones: el valor es `cantidad_autoevaluaciones`, también cuando es 0. El subtítulo sigue siendo «Histórico de evaluaciones de la empresa».
+- Planes de mejora, si el conteo es mayor que 0: «Sí» cuando `requiere_plan_mejora` es verdadero y «No» cuando es falso. El subtítulo sigue siendo «Acciones derivadas de los resultados». No hay ruta de planes.
+- Planes de mejora, si el conteo es 0: valor «—» y subtítulo «Aún no hay autoevaluación».
+
+La tarjeta Puntaje 0312 sigue saliendo de cumplimiento PHVA. La de Sesión actual sigue saliendo de la sesión. `ServicioResumenHome.obtenerActividad` y `refrescarActividad` siguen siendo la lista de demostración. El botón «Actualizar resumen» no llama a este endpoint.
+
+Si el GET falla, las dos tarjetas quedan en «—», los subtítulos vuelven al texto inicial y `mensajeErrorSelector` muestra `mensajeErrorHttp`. Una respuesta de otra empresa no pinta las tarjetas.
+
+## Criterios de aceptación
+- [ ] Con datos, Autoevaluaciones muestra el conteo y Planes de mejora muestra «Sí» o «No».
+- [ ] Cambiar de empresa, o seleccionar la primera al entrar, vuelve a pedir el resumen y actualiza las dos tarjetas.
+- [ ] Si `cantidad_autoevaluaciones` es 0, Autoevaluaciones muestra 0, Planes de mejora muestra «—» y el subtítulo dice que aún no hay autoevaluación.
+- [ ] Sin empresa seleccionada no hay petición y las dos tarjetas muestran «—».
+- [ ] Un 404 u otro error del resumen limpia las dos tarjetas y muestra el mensaje en el selector.
+- [ ] La tabla de actividad reciente no llama al API. Puntaje 0312 y Sesión actual no cambian de fuente.
+- [ ] No se dibujan las barras I–IV ni la alerta de irrenunciables.
+
+## Campos y endpoints
+- `GET /api/v1/empresas/{empresa_id}/resumen-ejecutivo`
+- Base: `environment.apiBaseUrl` (`http://localhost:8000/api/v1`). El `empresa_id` va con `encodeURIComponent`.
+- Auth: el interceptor ya envía el Bearer. No hace falta `*appSiTieneRol` en estas tarjetas.
+- 200, campos que pinta esta tarea:
+  - `cantidad_autoevaluaciones`: entero ≥ 0
+  - `requiere_plan_mejora`: booleano de la última autoevaluación; si el conteo es 0 el API igual lo envía y la UI no lo muestra como Sí/No
+- El mismo 200 trae, sin usarlos aquí: `empresa_id`, `autoevaluacion_id` (uuid o null), `riesgos_nivel_i`, `riesgos_nivel_ii`, `distribucion_riesgos` (`I`, `II`, `III`, `IV`) e `irrenunciables` (`numeral`, `descripcion`, `resultado` en `CUMPLE | NO_CUMPLE | NO_APLICA | SIN_CALIFICAR`).
+- 401 `TOKEN_INVALIDO` lo resuelve el interceptor de sesión.
+- 404 `EMPRESA_NO_ENCONTRADA`: cuerpo `RespuestaError` (`exito`, `codigo`, `mensaje`, `detalle`). La página lo muestra con `mensajeErrorHttp`.
+- El servicio no captura el error. El componente sí.
+
+## Archivos a crear o modificar
+- `src/app/features/dashboard/modelos/resumen-ejecutivo.model.ts` — Presentation — Create. Interfaces del 200 completo.
+- `src/app/features/dashboard/servicios/servicio-resumen-ejecutivo.ts` — Presentation — Create. `obtener(empresaId): Observable<ResumenEjecutivo>` con `HttpClient`.
+- `src/app/features/dashboard/servicios/servicio-resumen-ejecutivo.spec.ts` — Presentation — Create. `HttpClientTestingModule`: URL, método GET y cuerpo tipado.
+- `src/app/features/dashboard/paginas/pagina-dashboard/pagina-dashboard.component.ts` — Presentation — Modify. Estado de las dos tarjetas; pedir el resumen dentro de `seleccionarEmpresa`; ignorar una respuesta si la empresa ya cambió; `markForCheck`.
+- `src/app/features/dashboard/paginas/pagina-dashboard/pagina-dashboard.component.html` — Presentation — Modify. Enlazar `[valor]` y `[subtitulo]` de las dos `app-tarjeta-resumen`.
+- `src/app/features/dashboard/paginas/pagina-dashboard/pagina-dashboard.component.spec.ts` — Presentation — Modify. Casos de las tarjetas, cambio de empresa, conteo 0, error y actividad sin HTTP.
+- `src/app/features/dashboard/README.md` — Presentation — Modify. Decir que esas dos tarjetas leen el resumen ejecutivo.
+
+No se toca `tarjeta-resumen` (ya recibe `valor` y `subtitulo` por `@Input()`). No se usa `input()` ni `output()`. No se agrega Chart.js ni Recharts. No se crea pantalla de planes.
+
+## Casos de prueba unitarios
+- El servicio hace GET a `{apiBaseUrl}/empresas/{id}/resumen-ejecutivo` y devuelve el cuerpo.
+- Con conteo 2 y `requiere_plan_mejora: true`, las tarjetas muestran 2 y «Sí».
+- Con `requiere_plan_mejora: false` y conteo mayor que 0, Planes de mejora muestra «No».
+- Con conteo 0, Autoevaluaciones muestra 0, Planes muestra «—» y el subtítulo «Aún no hay autoevaluación».
+- Al pasar de una empresa a otra se dispara un segundo GET y se pintan los datos nuevos. Una respuesta tardía de la primera no pisa la segunda.
+- Con `empresaId` vacío no hay GET y ambas tarjetas quedan en «—».
+- Un 404 limpia las tarjetas y deja `mensajeErrorSelector` con el mensaje del API.
+- `ngOnInit` sigue llenando la actividad con `ServicioResumenHome` y no pide el resumen por esa vía.
+- `npm test` mantiene el umbral global de ramas en 90 %.
+
+## Requisitos no funcionales
+- OnPush y `templateUrl` / `styleUrls` se mantienen. Las llamadas HTTP viven en el servicio, no en la plantilla.
+- El cliente no interpreta `requiere_plan_mejora` ni aplica el umbral del 85 %. Copia el booleano.
+- El navegador no habla con R2 ni recibe credenciales. Este ticket no sube archivos.
+- Una respuesta obsoleta no puede mostrar el resumen de otra empresa.
+- `CONSULTA` ve las tarjetas. No se agrega un control de edición.
+
+## Puntos de historia
+<!-- STORY_POINTS:3 -->
+**3** — enlace de las dos tarjetas al resumen. La pantalla de planes no existe todavía.
+<!-- /STORY_POINTS -->
