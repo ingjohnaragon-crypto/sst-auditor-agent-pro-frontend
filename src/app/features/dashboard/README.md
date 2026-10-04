@@ -13,7 +13,8 @@ features/dashboard/
 │   └── pagina-dashboard/
 │       └── pagina-dashboard.component.{ts,html,css,spec.ts}
 ├── componentes/
-│   └── tarjeta-resumen/
+│   ├── tarjeta-resumen/
+│   └── barras-distribucion-riesgos/
 ├── modelos/
 │   ├── fila-actividad-home.model.ts
 │   └── resumen-ejecutivo.model.ts
@@ -37,6 +38,12 @@ features/dashboard/
   (`GET cumplimiento-phva` de la última autoevaluación de la empresa).
 - Demos técnicas SP-240/SP-241 en accordion **Herramientas de componentes
   (QA)**, cerrado por defecto (fuera del primer viewport).
+
+## Distribución de riesgos (SP-255)
+
+Debajo de las tarjetas, cuatro barras HTML leen `distribucion_riesgos` del mismo
+`GET /empresas/{id}/resumen-ejecutivo`. Un nivel en cero sigue visible. No hay
+Chart.js ni Recharts. El ancho es el conteo partido por el máximo de los cuatro.
 
 El diagnóstico de estándares mínimos vive en `features/diagnostico/` (SP-189 + SP-204).
 

@@ -1,0 +1,29 @@
+<section class="sst-superficie p-6 md:p-8" aria-labelledby="titulo-distribucion-riesgos">
+  <h2 id="titulo-distribucion-riesgos" class="text-sm font-black uppercase tracking-widest text-slate-800">
+    Distribución de riesgos
+  </h2>
+  <p class="mt-1 text-xs text-slate-500">Hallazgos por nivel de interpretación</p>
+
+  <div class="mt-6 space-y-4">
+    <div *ngFor="let nivel of niveles; trackBy: trackNivel" class="space-y-2">
+      <div class="flex items-baseline justify-between gap-2 text-sm">
+        <span class="font-black text-slate-800">{{ nivel.etiqueta }}</span>
+        <span class="font-semibold text-slate-700">{{ conteo(nivel.clave) }}</span>
+      </div>
+      <div
+        class="h-2 overflow-hidden rounded-full bg-slate-100"
+        role="progressbar"
+        aria-valuemin="0"
+        [attr.aria-valuemax]="maximo"
+        [attr.aria-valuenow]="conteo(nivel.clave)"
+        [attr.aria-label]="etiquetaAria(nivel)"
+      >
+        <span
+          class="block h-full rounded-full"
+          [ngClass]="nivel.color"
+          [style.width.%]="ancho(nivel.clave)"
+        ></span>
+      </div>
+    </div>
+  </div>
+</section>
