@@ -44,6 +44,20 @@
     mensaje="El diagnóstico de estándares mínimos y el cumplimiento PHVA ya están disponibles. Los planes de mejora se habilitarán en próximos entregables."
   />
 
+  <div *ngIf="irrenunciablesIncumplidos.length > 0 && autoevaluacionAlertaId" class="space-y-3">
+    <app-alerta
+      tipo="error"
+      titulo="Estándares irrenunciables sin cumplir"
+      [mensaje]="mensajeIrrenunciables"
+    />
+    <a
+      class="inline-flex text-sm font-semibold text-red-700 underline"
+      [routerLink]="['/diagnostico', autoevaluacionAlertaId]"
+    >
+      Ver en el diagnóstico
+    </a>
+  </div>
+
   <div aria-labelledby="titulo-resumen">
     <h2 id="titulo-resumen" class="sr-only">Resumen del sistema</h2>
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">

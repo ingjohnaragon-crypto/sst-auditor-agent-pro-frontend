@@ -1,0 +1,77 @@
+# Ticket enriquecido: SP-256 — Alertar incumplimientos de responsable SST y afiliación
+
+## Descripción original
+<!-- jira-skip -->
+Subtarea: SP-256 — Alertar incumplimientos de responsable SST y afiliación
+Descripción original
+Descripción mejorada
+Si algún irrenunciable de la respuesta tiene resultado NO_CUMPLE, mostrar app-alerta con el numeral y la descripcion. El enlace va a /diagnostico/{autoevaluacion_id}. CUMPLE, NO_APLICA y SIN_CALIFICAR no disparan alerta. Sin autoevaluación no hay alerta. CONSULTA la ve. La alerta no tiene acción de calificar.
+Criterios de aceptación
+NO_CUMPLE en 1.1.1 o en 1.1.4 muestra la alerta y el enlace al detalle.
+
+Si ninguno está en NO_CUMPLE, o no hay autoevaluación, la alerta no está.
+
+CONSULTA no ve un control de edición.
+
+
+Puntos de historia
+2 — alerta de lectura sobre el resumen ya cargado.
+<!-- /jira-skip -->
+
+## Descripción mejorada
+
+En `/dashboard`, si la última autoevaluación deja en `NO_CUMPLE` el estándar 1.1.1 (responsable del SG-SST) o el 1.1.4 (afiliación al sistema de riesgos laborales), el inicio muestra una alerta prioritaria. El texto sale de `irrenunciables` del mismo resumen que ya piden SP-254 y SP-255. No hay un segundo `GET`. El cliente no recalifica.
+
+`app-alerta` no proyecta un enlace. La alerta lleva `tipo="error"`, título «Estándares irrenunciables sin cumplir» y, en `mensaje`, cada ítem en `NO_CUMPLE` con su `numeral` y su `descripcion`. Al lado, un `routerLink` a `/diagnostico/{autoevaluacion_id}` con el texto «Ver en el diagnóstico». El `id` es el `autoevaluacion_id` del resumen, no el de otra lista. `routerLink` va como arreglo `['/diagnostico', id]`.
+
+La alerta solo aparece si `autoevaluacion_id` tiene valor y al menos un irrenunciable está en `NO_CUMPLE`. `CUMPLE`, `NO_APLICA` y `SIN_CALIFICAR` no la disparan. Si los dos están en `NO_CUMPLE`, los dos entran en el mismo mensaje. Sin empresa, si el GET falla, o si `autoevaluacion_id` es `null`, la alerta no está.
+
+`CONSULTA` ve la alerta y el enlace. El detalle ya impide calificar a ese rol. Esta tarea no agrega un botón de calificar ni `*appSiTieneRol` sobre la alerta.
+
+Las tarjetas, las barras I–IV y la actividad reciente no cambian.
+
+## Criterios de aceptación
+- [ ] `NO_CUMPLE` en 1.1.1 o en 1.1.4 muestra la alerta con numeral y descripción, y un enlace a `/diagnostico/{autoevaluacion_id}`.
+- [ ] Si los dos están en `NO_CUMPLE`, el mensaje incluye los dos.
+- [ ] `CUMPLE`, `NO_APLICA` y `SIN_CALIFICAR` no muestran la alerta.
+- [ ] Sin empresa, con error del resumen, o con `autoevaluacion_id` null, la alerta no está.
+- [ ] `CONSULTA` ve la alerta y el enlace, y no hay un control para calificar.
+- [ ] No hay un segundo `GET`. El cliente no recalcula el resultado.
+
+## Campos y endpoints
+- No hay endpoint nuevo. Se reutiliza `GET /api/v1/empresas/{empresa_id}/resumen-ejecutivo`.
+- Campos de esta tarea:
+  - `autoevaluacion_id`: uuid o `null`. Si es `null`, no hay alerta.
+  - `irrenunciables`: exactamente 1.1.1 y 1.1.4, cada uno con `numeral`, `descripcion` y `resultado` en `CUMPLE | NO_CUMPLE | NO_APLICA | SIN_CALIFICAR`.
+- El enlace usa solo `autoevaluacion_id` y el `resultado` ya persistido. No se lee el umbral del 85 % ni `requiere_plan_mejora`.
+- Auth: el interceptor envía el Bearer. `CONSULTA` puede leer el resumen y abrir el detalle.
+- Si el GET falla, se mantiene la limpieza de SP-254 y la alerta no se muestra.
+
+## Archivos a crear o modificar
+- `src/app/features/dashboard/paginas/pagina-dashboard/pagina-dashboard.component.ts` — Presentation — Modify. Derivar los irrenunciables en `NO_CUMPLE` al aplicar el resumen. Limpiar esa lista al restaurar.
+- `src/app/features/dashboard/paginas/pagina-dashboard/pagina-dashboard.component.html` — Presentation — Modify. `app-alerta` `tipo="error"` y el `routerLink` al detalle, antes del grid de tarjetas.
+- `src/app/features/dashboard/paginas/pagina-dashboard/pagina-dashboard.component.spec.ts` — Presentation — Modify.
+- `src/app/features/dashboard/README.md` — Presentation — Modify. Decir que el inicio alerta los irrenunciables en `NO_CUMPLE`.
+
+No se modifica `AlertaComponent`, el servicio ni el modelo: `IrrenunciableResumen` ya existe. No se tocan las barras de SP-255 ni la matriz.
+
+## Casos de prueba unitarios
+- Con 1.1.1 en `NO_CUMPLE` y `autoevaluacion_id` presente, el texto muestra el numeral, la descripción y un enlace `a[href="/diagnostico/{id}"]`.
+- Con los dos en `NO_CUMPLE`, el mensaje contiene 1.1.1 y 1.1.4.
+- Con ambos en `CUMPLE`, o uno en `NO_APLICA` y otro en `SIN_CALIFICAR`, no hay `app-alerta` de irrenunciables.
+- Con `autoevaluacion_id` null y un `NO_CUMPLE` en el cuerpo, la alerta no está.
+- `seleccionarEmpresa('')` y un 404 dejan la alerta fuera del DOM.
+- Con rol `CONSULTA`, la alerta y el enlace se ven, y no hay un botón de calificar.
+- `obtener` se llama una sola vez por empresa.
+- `npm test` mantiene el umbral global de ramas en 90 %.
+
+## Requisitos no funcionales
+- OnPush y `markForCheck` al aplicar o limpiar el resumen.
+- La alerta usa `tipo="error"` para quedar con `role="alert"`. No es el error del selector.
+- El enlace no abre un formulario de calificación.
+- Una respuesta de otra empresa no deja visible la alerta anterior: al cambiar de empresa se limpia antes del nuevo GET.
+
+## Puntos de historia
+<!-- STORY_POINTS:2 -->
+**2** — alerta de lectura sobre el resumen ya cargado.
+<!-- /STORY_POINTS -->
