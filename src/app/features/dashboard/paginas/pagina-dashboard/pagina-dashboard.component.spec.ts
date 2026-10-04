@@ -209,7 +209,15 @@ describe('PaginaDashboardComponent', () => {
     const texto = (fixture!.nativeElement as HTMLElement).textContent ?? '';
     expect(texto).toContain('No hay autoevaluación para mostrar el cumplimiento PHVA.');
     expect(fixture!.nativeElement.querySelector('[aria-label="Fases PHVA"]')).toBeNull();
-    expect(fixture!.nativeElement.querySelectorAll('[role="progressbar"]').length).toBe(0);
+    expect(
+      fixture!.nativeElement.querySelectorAll('app-panel-cumplimiento-phva [role="progressbar"]')
+        .length
+    ).toBe(0);
+    expect(
+      fixture!.nativeElement.querySelectorAll(
+        'app-barras-distribucion-riesgos [role="progressbar"]'
+      ).length
+    ).toBe(4);
   });
 
   it('should mostrar el porcentaje del API cuando hay autoevaluacion', async () => {
@@ -269,12 +277,14 @@ describe('PaginaDashboardComponent', () => {
   it('should limpiar puntaje y autoevaluacion al vaciar la empresa', () => {
     fixture!.componentInstance.puntaje0312 = '80 %';
     fixture!.componentInstance.valorAutoevaluaciones = 4;
+    fixture!.componentInstance.distribucionRiesgos = { I: 4, II: 0, III: 0, IV: 0 };
     fixture!.componentInstance.seleccionarEmpresa('');
     expect(fixture!.componentInstance.autoevaluacionId).toBeNull();
     expect(fixture!.componentInstance.puntaje0312).toBe('—');
     expect(obtenerResumen).not.toHaveBeenCalled();
     expect(fixture!.componentInstance.valorAutoevaluaciones).toBe('—');
     expect(fixture!.componentInstance.valorPlanes).toBe('—');
+    expect(fixture!.componentInstance.distribucionRiesgos).toEqual({ I: 0, II: 0, III: 0, IV: 0 });
   });
 
   it('should mostrar conteo y Si cuando el resumen pide plan', () => {
@@ -310,6 +320,49 @@ describe('PaginaDashboardComponent', () => {
     expect(valorTarjeta('Planes de mejora')).not.toBe('Sí');
   });
 
+  it('should mostrar las cuatro barras con un solo resumen', () => {
+    obtenerResumen.mockReturnValue(
+      of(
+        resumen({
+          cantidad_autoevaluaciones: 2,
+          requiere_plan_mejora: true,
+          distribucion_riesgos: { I: 2, II: 0, III: 1, IV: 4 },
+        })
+      )
+    );
+    fixture!.componentInstance.seleccionarEmpresa('e-1');
+    fixture!.detectChanges();
+
+    const texto =
+      (fixture!.nativeElement as HTMLElement).querySelector('app-barras-distribucion-riesgos')
+        ?.textContent ?? '';
+    expect(texto).toContain('Nivel I');
+    expect(texto).toContain('Nivel II');
+    expect(texto).toContain('2');
+    expect(texto).toContain('4');
+    expect(obtenerResumen).toHaveBeenCalledTimes(1);
+  });
+
+  it('should mostrar riesgos aunque no haya autoevaluacion', () => {
+    obtenerResumen.mockReturnValue(
+      of(
+        resumen({
+          cantidad_autoevaluaciones: 0,
+          requiere_plan_mejora: true,
+          distribucion_riesgos: { I: 3, II: 0, III: 0, IV: 0 },
+        })
+      )
+    );
+    fixture!.componentInstance.seleccionarEmpresa('e-1');
+    fixture!.detectChanges();
+
+    const texto =
+      (fixture!.nativeElement as HTMLElement).querySelector('app-barras-distribucion-riesgos')
+        ?.textContent ?? '';
+    expect(texto).toContain('3');
+    expect(valorTarjeta('Planes de mejora')).toBe('—');
+  });
+
   it('should ignorar un resumen de otra empresa', () => {
     const primera = new Subject<ResumenEjecutivo>();
     const segunda = new Subject<ResumenEjecutivo>();
@@ -338,12 +391,14 @@ describe('PaginaDashboardComponent', () => {
           })
       )
     );
+    fixture!.componentInstance.distribucionRiesgos = { I: 4, II: 1, III: 0, IV: 0 };
     fixture!.componentInstance.seleccionarEmpresa('e-404');
     fixture!.detectChanges();
     expect(fixture!.componentInstance.valorAutoevaluaciones).toBe('—');
     expect(fixture!.componentInstance.valorPlanes).toBe('—');
     expect(fixture!.componentInstance.subtituloPlanes).toBe('Acciones derivadas de los resultados');
     expect(fixture!.componentInstance.mensajeErrorSelector).toBe('No se encontró la empresa.');
+    expect(fixture!.componentInstance.distribucionRiesgos).toEqual({ I: 0, II: 0, III: 0, IV: 0 });
   });
 
   it('should actualizar la tarjeta 0312 al cargar cumplimiento', () => {

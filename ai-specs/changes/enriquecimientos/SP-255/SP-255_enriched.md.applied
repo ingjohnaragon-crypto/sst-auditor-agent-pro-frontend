@@ -1,0 +1,79 @@
+# Ticket enriquecido: SP-255 — Mostrar distribución de riesgos I-IV en el inicio
+
+## Descripción original
+<!-- jira-skip -->
+Subtarea: SP-255 — Mostrar distribución de riesgos I-IV en el inicio
+Descripción original
+Descripción mejorada
+Cuatro barras HTML o CSS en el inicio, alimentadas por distribucion_riesgos. Un nivel en cero se ve en cero, no se oculta. Reutilizar las clases de claseInterpretacion en la matriz: I red, II orange, III amber, IV emerald. No agregar Chart.js ni Recharts.
+Criterios de aceptación
+Se ven siempre los cuatro niveles.
+
+El ancho refleja el conteo del resumen, no un cálculo en el cliente.
+
+No hay librería de gráficas nueva.
+
+
+Puntos de historia
+3 — barras en el inicio con el semáforo de la matriz.
+<!-- /jira-skip -->
+
+## Descripción mejorada
+
+En `/dashboard`, debajo de las cuatro tarjetas, se ven siempre cuatro barras: nivel I, II, III y IV. Los números salen de `distribucion_riesgos` del resumen ejecutivo que SP-254 ya pide al elegir empresa. No hay un segundo `GET`. El cliente no llama a `ServicioCalculoRiesgoGtc45` ni interpreta ND, NE o NC.
+
+`claseInterpretacion` en la matriz es un método de la página de riesgos para chips (`border-red-300`, `bg-red-50`, …). No se importa. La barra copia el mismo semáforo en el relleno: I `bg-red-500`, II `bg-orange-500`, III `bg-amber-400`, IV `bg-emerald-500`.
+
+El ancho es solo escala visual: `conteo / máximo de los cuatro`. Si el máximo es 0, las cuatro barras quedan sin relleno. Un nivel en 0 sigue en la lista, con el número 0 y relleno 0 %. El número se lee en texto, no solo por el color.
+
+Sin empresa, o si el resumen falla, las cuatro barras muestran 0. No se ocultan. `cantidad_autoevaluaciones` no decide si se pintan: la matriz puede tener riesgos aunque no haya autoevaluación.
+
+La actividad reciente, las tarjetas de SP-254 y la alerta de irrenunciables (SP-256) no cambian.
+
+## Criterios de aceptación
+- [ ] Se ven siempre I, II, III y IV, en ese orden, también cuando el conteo es 0.
+- [ ] El número de cada barra es el de `distribucion_riesgos`. El relleno es `conteo / máximo`; si el máximo es 0, el relleno es 0 %.
+- [ ] Cambiar de empresa actualiza las barras con la misma respuesta que las tarjetas. No hay un segundo `GET`.
+- [ ] Sin empresa, o con error del resumen, las cuatro barras muestran 0.
+- [ ] Los colores son rojo, naranja, ámbar y esmeralda. No se agrega Chart.js ni Recharts.
+- [ ] El cliente no recalcula la GTC 45.
+
+## Campos y endpoints
+- No hay endpoint nuevo. Se reutiliza el `GET /api/v1/empresas/{empresa_id}/resumen-ejecutivo` de SP-253, ya llamado desde `seleccionarEmpresa`.
+- Campo que pinta esta tarea: `distribucion_riesgos`, objeto con `I`, `II`, `III` y `IV`, enteros ≥ 0. Son conteos de `interpretacion_nr` ya persistida.
+- `riesgos_nivel_i` y `riesgos_nivel_ii` no se usan aquí. Deben coincidir con `I` y `II`, y la barra lee las claves del objeto.
+- Auth: el interceptor ya envía el Bearer. `CONSULTA` ve las barras. Sin `*appSiTieneRol`.
+- Si el GET falla, las barras vuelven a 0 junto con la limpieza de tarjetas que ya hace SP-254.
+
+## Archivos a crear o modificar
+- `src/app/features/dashboard/componentes/barras-distribucion-riesgos/barras-distribucion-riesgos.component.ts` — Presentation — Create. Standalone, OnPush, `@Input() distribucion`. Sin `input()`.
+- `src/app/features/dashboard/componentes/barras-distribucion-riesgos/barras-distribucion-riesgos.component.html` — Presentation — Create. Cuatro filas fijas. Pista `h-2`, relleno con `[style.width.%]`, `role="progressbar"`.
+- `src/app/features/dashboard/componentes/barras-distribucion-riesgos/barras-distribucion-riesgos.component.css` — Presentation — Create. Solo lo que Tailwind no cubra.
+- `src/app/features/dashboard/componentes/barras-distribucion-riesgos/barras-distribucion-riesgos.component.spec.ts` — Presentation — Create.
+- `src/app/features/dashboard/paginas/pagina-dashboard/pagina-dashboard.component.ts` — Presentation — Modify. Guardar `distribucionRiesgos` al aplicar el resumen y restaurarla en ceros al limpiar.
+- `src/app/features/dashboard/paginas/pagina-dashboard/pagina-dashboard.component.html` — Presentation — Modify. La sección va después del grid de tarjetas y antes de accesos rápidos.
+- `src/app/features/dashboard/paginas/pagina-dashboard/pagina-dashboard.component.spec.ts` — Presentation — Modify. Las barras siguen el resumen ya mockeado. `obtener` se llama una vez por empresa.
+- `src/app/features/dashboard/README.md` — Presentation — Modify. Decir que el inicio muestra las cuatro barras del resumen.
+
+No se modifica `servicio-resumen-ejecutivo.ts` ni el modelo: `DistribucionRiesgos` ya existe. No se toca `claseInterpretacion` ni se extrae un util compartido con la matriz.
+
+## Casos de prueba unitarios
+- Con `{ I: 2, II: 0, III: 1, IV: 4 }` se ven los cuatro niveles, los números 2, 0, 1 y 4, y el nivel II no desaparece.
+- El relleno de IV es 100 % (es el máximo) y el de II es 0 %. Si los cuatro son 0, los cuatro rellenos son 0 % y los números son 0.
+- El `aria-label` de cada barra nombra el nivel y el conteo.
+- Al elegir empresa, la página pasa `distribucion_riesgos` al componente y `obtener` se llama una sola vez.
+- `seleccionarEmpresa('')` y un 404 dejan las cuatro barras en 0.
+- No aparece `ServicioCalculoRiesgoGtc45` ni un import de Chart.js o Recharts.
+- `npm test` mantiene el umbral global de ramas en 90 %.
+
+## Requisitos no funcionales
+- OnPush, `templateUrl` y `styleUrls`. Una carpeta por componente, con spec al lado.
+- El relleno usa el ancho en porcentaje. No hay librería de gráficas.
+- El orden fijo es I, II, III, IV. Un 0 no se filtra.
+- El color no es el único dato: el número va en texto.
+- `CONSULTA` ve el bloque. No hay acción de editar la matriz desde estas barras.
+
+## Puntos de historia
+<!-- STORY_POINTS:3 -->
+**3** — barras en el inicio con el semáforo de la matriz. El GET ya existe.
+<!-- /STORY_POINTS -->

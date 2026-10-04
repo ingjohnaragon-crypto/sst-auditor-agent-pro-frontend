@@ -26,12 +26,16 @@ import {
 
 import { ServicioAutenticacion } from '../../../../nucleo/auth/servicio-autenticacion';
 import { SiTieneRolDirective } from '../../../../shared/directivas/si-tiene-rol.directive';
+import { BarrasDistribucionRiesgosComponent } from '../../componentes/barras-distribucion-riesgos/barras-distribucion-riesgos.component';
 import { TarjetaResumenComponent } from '../../componentes/tarjeta-resumen/tarjeta-resumen.component';
 import type {
   EstadoActividadHome,
   FilaActividadHome,
 } from '../../modelos/fila-actividad-home.model';
-import type { ResumenEjecutivo } from '../../modelos/resumen-ejecutivo.model';
+import type {
+  DistribucionRiesgos,
+  ResumenEjecutivo,
+} from '../../modelos/resumen-ejecutivo.model';
 import { ServicioResumenEjecutivo } from '../../servicios/servicio-resumen-ejecutivo';
 import { ServicioResumenHome } from '../../servicios/servicio-resumen-home';
 import { PanelCumplimientoPhvaComponent } from '../../../diagnostico/componentes/panel-cumplimiento-phva/panel-cumplimiento-phva.component';
@@ -51,6 +55,7 @@ import { seleccionarAutoevaluacionMasReciente } from '../../../diagnostico/utili
     FormsModule,
     SiTieneRolDirective,
     TarjetaResumenComponent,
+    BarrasDistribucionRiesgosComponent,
     BotonComponent,
     AlertaComponent,
     TablaComponent,
@@ -89,6 +94,7 @@ export class PaginaDashboardComponent implements OnInit, OnDestroy {
   subtituloAutoevaluaciones = 'Histórico de evaluaciones de la empresa';
   valorPlanes: string | number = '—';
   subtituloPlanes = 'Acciones derivadas de los resultados';
+  distribucionRiesgos: DistribucionRiesgos = { I: 0, II: 0, III: 0, IV: 0 };
   mensajeErrorSelector = '';
 
   private timers: ReturnType<typeof setTimeout>[] = [];
@@ -384,9 +390,11 @@ export class PaginaDashboardComponent implements OnInit, OnDestroy {
     this.subtituloAutoevaluaciones = 'Histórico de evaluaciones de la empresa';
     this.valorPlanes = '—';
     this.subtituloPlanes = 'Acciones derivadas de los resultados';
+    this.distribucionRiesgos = { I: 0, II: 0, III: 0, IV: 0 };
   }
 
   private aplicarResumen(resumen: ResumenEjecutivo): void {
+    this.distribucionRiesgos = { ...resumen.distribucion_riesgos };
     this.valorAutoevaluaciones = resumen.cantidad_autoevaluaciones;
     this.subtituloAutoevaluaciones = 'Histórico de evaluaciones de la empresa';
     if (resumen.cantidad_autoevaluaciones === 0) {
