@@ -103,6 +103,18 @@ export class PanelMatrizDiagnosticoComponent implements OnInit {
     return this.autoevaluacion?.puntaje_total != null;
   }
 
+  get enlacePlanId(): string | null {
+    const autoevaluacion = this.autoevaluacion;
+    if (
+      !autoevaluacion ||
+      autoevaluacion.puntaje_total == null ||
+      !autoevaluacion.requiere_plan_mejora
+    ) {
+      return null;
+    }
+    return autoevaluacion.id;
+  }
+
   get readonly(): boolean {
     return this.soloLectura || this.finalizada || !this.puedeEscribir;
   }
