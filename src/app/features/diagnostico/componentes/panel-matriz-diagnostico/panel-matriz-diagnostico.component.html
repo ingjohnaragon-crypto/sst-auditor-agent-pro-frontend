@@ -6,6 +6,9 @@
     [puntajeTotal]="autoevaluacion?.puntaje_total ?? null"
     [requierePlanMejora]="autoevaluacion?.requiere_plan_mejora ?? false"
   />
+  <a *ngIf="enlacePlanId as idPlan" [routerLink]="['/planes-mejora', idPlan]">
+    Ver plan de mejora
+  </a>
   <app-navegador-fases-phva
     [fases]="fases"
     [cicloActual]="cicloActual"

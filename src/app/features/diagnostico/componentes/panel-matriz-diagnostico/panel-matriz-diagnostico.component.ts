@@ -1,4 +1,5 @@
 import { NgIf } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -37,6 +38,7 @@ import { ResultadoFinalizacionComponent } from '../resultado-finalizacion/result
   standalone: true,
   imports: [
     NgIf,
+    RouterLink,
     CabeceraDiagnosticoComponent,
     BarraAvanceDiagnosticoComponent,
     NavegadorFasesPhvaComponent,
@@ -99,6 +101,18 @@ export class PanelMatrizDiagnosticoComponent implements OnInit {
 
   get finalizada(): boolean {
     return this.autoevaluacion?.puntaje_total != null;
+  }
+
+  get enlacePlanId(): string | null {
+    const autoevaluacion = this.autoevaluacion;
+    if (
+      !autoevaluacion ||
+      autoevaluacion.puntaje_total == null ||
+      !autoevaluacion.requiere_plan_mejora
+    ) {
+      return null;
+    }
+    return autoevaluacion.id;
   }
 
   get readonly(): boolean {

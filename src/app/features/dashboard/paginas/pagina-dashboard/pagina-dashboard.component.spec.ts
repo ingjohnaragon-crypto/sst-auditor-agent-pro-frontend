@@ -365,6 +365,64 @@ describe('PaginaDashboardComponent', () => {
     expect(valorTarjeta('Planes de mejora')).toBe('—');
     expect(tarjeta('Planes de mejora')?.textContent).toContain('Aún no hay autoevaluación');
     expect(valorTarjeta('Planes de mejora')).not.toBe('Sí');
+    expect(
+      (fixture!.nativeElement as HTMLElement).querySelector('a[href^="/planes-mejora/"]')
+    ).toBeNull();
+  });
+
+  it('should enlazar la tarjeta de planes cuando el resumen trae autoevaluacion', () => {
+    obtenerResumen.mockReturnValue(
+      of(
+        resumen({
+          cantidad_autoevaluaciones: 1,
+          autoevaluacion_id: 'ae-9',
+          requiere_plan_mejora: false,
+        })
+      )
+    );
+    fixture!.componentInstance.seleccionarEmpresa('e-1');
+    fixture!.detectChanges();
+    const enlace = (fixture!.nativeElement as HTMLElement).querySelector(
+      'a[href="/planes-mejora/ae-9"]'
+    );
+    expect(enlace?.textContent).toContain('Planes de mejora');
+  });
+
+  it('should mostrar el enlace del plan a CONSULTA', () => {
+    establecerUsuario('CONSULTA');
+    obtenerResumen.mockReturnValue(
+      of(
+        resumen({
+          cantidad_autoevaluaciones: 1,
+          autoevaluacion_id: 'ae-9',
+          requiere_plan_mejora: true,
+        })
+      )
+    );
+    fixture!.componentInstance.seleccionarEmpresa('e-1');
+    fixture!.detectChanges();
+    expect(
+      (fixture!.nativeElement as HTMLElement).querySelector('a[href="/planes-mejora/ae-9"]')
+    ).toBeTruthy();
+  });
+
+  it('should limpiar el id del plan antes del resumen de la empresa nueva', () => {
+    fixture!.componentInstance.autoevaluacionPlanId = 'ae-vieja';
+    const pendiente = new Subject<ResumenEjecutivo>();
+    obtenerResumen.mockReturnValue(pendiente.asObservable());
+    fixture!.componentInstance.seleccionarEmpresa('e-2');
+    expect(fixture!.componentInstance.autoevaluacionPlanId).toBeNull();
+    pendiente.next(
+      resumen({
+        empresa_id: 'e-2',
+        cantidad_autoevaluaciones: 1,
+        autoevaluacion_id: 'ae-nueva',
+      })
+    );
+    fixture!.detectChanges();
+    const raiz = fixture!.nativeElement as HTMLElement;
+    expect(raiz.querySelector('a[href="/planes-mejora/ae-nueva"]')).toBeTruthy();
+    expect(raiz.querySelector('a[href="/planes-mejora/ae-vieja"]')).toBeNull();
   });
 
   it('should mostrar las cuatro barras con un solo resumen', () => {

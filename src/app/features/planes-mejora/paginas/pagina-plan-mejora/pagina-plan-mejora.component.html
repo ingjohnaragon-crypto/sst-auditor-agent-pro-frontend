@@ -1,0 +1,44 @@
+<section class="space-y-6">
+  <header>
+    <p class="sst-etiqueta text-indigo-500">Plan de mejora</p>
+    <h1 class="text-2xl font-black text-slate-900">Cronograma</h1>
+  </header>
+
+  <p *ngIf="mensajeError" class="text-sm font-semibold text-red-700">{{ mensajeError }}</p>
+  <p *ngIf="mensajeVacio" class="text-sm font-semibold text-amber-800">{{ mensajeVacio }}</p>
+
+  <article *ngFor="let actividad of plan?.actividades; trackBy: trackActividad" class="space-y-3 rounded-2xl border border-slate-200 p-4">
+    <p class="font-semibold text-slate-900">{{ actividad.descripcion }}</p>
+
+    <ng-container *appSiTieneRol="['ADMINISTRADOR', 'AUDITOR_SST']">
+      <ng-container *ngIf="edicion[actividad.id] as edicionActividad">
+        <label class="block text-sm text-slate-600">
+          Responsable
+          <input
+            class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2"
+            [name]="'responsable-' + actividad.id"
+            [(ngModel)]="edicionActividad.responsable"
+          />
+        </label>
+        <label class="block text-sm text-slate-600">
+          Indicador
+          <input
+            class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2"
+            [name]="'indicador-' + actividad.id"
+            [(ngModel)]="edicionActividad.indicador"
+          />
+        </label>
+        <button type="button" class="text-sm font-semibold text-indigo-700" (click)="guardar(actividad)">
+          Guardar
+        </button>
+      </ng-container>
+    </ng-container>
+
+    <ng-container *ngIf="!puedeEscribir">
+      <p>{{ actividad.responsable }}</p>
+      <p>{{ actividad.indicador }}</p>
+    </ng-container>
+
+    <p class="text-sm text-slate-500">Meses: {{ actividad.meses.join(', ') }}</p>
+  </article>
+</section>

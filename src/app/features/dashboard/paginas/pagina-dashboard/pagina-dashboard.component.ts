@@ -1,4 +1,4 @@
-import { NgFor, NgIf } from '@angular/common';
+import { NgFor, NgIf, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -53,6 +53,7 @@ import { seleccionarAutoevaluacionMasReciente } from '../../../diagnostico/utili
     RouterLink,
     NgIf,
     NgFor,
+    NgTemplateOutlet,
     FormsModule,
     SiTieneRolDirective,
     TarjetaResumenComponent,
@@ -98,6 +99,7 @@ export class PaginaDashboardComponent implements OnInit, OnDestroy {
   distribucionRiesgos: DistribucionRiesgos = { I: 0, II: 0, III: 0, IV: 0 };
   irrenunciablesIncumplidos: IrrenunciableResumen[] = [];
   autoevaluacionAlertaId: string | null = null;
+  autoevaluacionPlanId: string | null = null;
   mensajeErrorSelector = '';
 
   private timers: ReturnType<typeof setTimeout>[] = [];
@@ -402,6 +404,7 @@ export class PaginaDashboardComponent implements OnInit, OnDestroy {
     this.distribucionRiesgos = { I: 0, II: 0, III: 0, IV: 0 };
     this.irrenunciablesIncumplidos = [];
     this.autoevaluacionAlertaId = null;
+    this.autoevaluacionPlanId = null;
   }
 
   private aplicarResumen(resumen: ResumenEjecutivo): void {
@@ -411,6 +414,7 @@ export class PaginaDashboardComponent implements OnInit, OnDestroy {
       : [];
     this.irrenunciablesIncumplidos = incumplidos;
     this.autoevaluacionAlertaId = incumplidos.length > 0 ? resumen.autoevaluacion_id : null;
+    this.autoevaluacionPlanId = resumen.autoevaluacion_id;
     this.valorAutoevaluaciones = resumen.cantidad_autoevaluaciones;
     this.subtituloAutoevaluaciones = 'Histórico de evaluaciones de la empresa';
     if (resumen.cantidad_autoevaluaciones === 0) {

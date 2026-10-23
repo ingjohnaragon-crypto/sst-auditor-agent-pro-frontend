@@ -1,0 +1,87 @@
+# Ticket enriquecido: SP-261 — Crear pantalla de plan de mejora
+
+## Descripción original
+<!-- jira-skip -->
+Historia base:  y . Nueva ruta bajo el shell autenticado, enlazada desde la tarjeta Planes de mejora del inicio y desde el diagnóstico finalizado cuando requiere_plan_mejora es verdadero. Lista las acciones, permite editar responsable e indicador y respeta RBAC. Criterios: CONSULTA no ve botones de escritura; el estado vacío indica que la autoevaluación no exige plan.
+<!-- /jira-skip -->
+
+## Descripción mejorada
+
+Nueva ruta `/planes-mejora/:autoevaluacionId` dentro del shell autenticado. Muestra el cronograma del plan de esa autoevaluación y deja editar el responsable y el indicador de cada actividad. No hay API nuevo. Las «acciones» de esta historia son las filas de `actividades_cronograma` que ya publica SP-258: `descripcion`, `responsable`, `indicador` y `meses`. No es el borrador de `acciones_mejora` de SP-260: ese borrador no tiene indicador ni edición.
+
+La pantalla lee primero `GET /api/v1/autoevaluaciones/{id}`. Si `requiere_plan_mejora` es falso, muestra «Esta autoevaluación no exige plan de mejora.» y no pide el plan. Si es verdadero, lee `GET /api/v1/autoevaluaciones/{id}/plan-mejora` y pinta `actividades` en el orden del API. La descripción y los meses se ven y no se editan. Un escritor guarda con `PUT /api/v1/planes-mejora/{plan_id}/actividades/{actividad_id}` reenviando la `descripcion` y los `meses` que vinieron, más el responsable y el indicador editados. El id de la actividad no cambia. La respuesta sustituye la lista.
+
+`CONSULTA` abre la ruta, ve la lista y no ve campos ni botón de guardar. El enlace del inicio y el del diagnóstico tampoco llevan `*appSiTieneRol`. No se abre el plan, no se agregan ni se borran actividades, y no se recalcula el umbral de 85.
+
+Entradas:
+
+- En `/dashboard`, la tarjeta «Planes de mejora» enlaza a `/planes-mejora/{autoevaluacion_id}` solo cuando el resumen trae `autoevaluacion_id`. Sin autoevaluación la tarjeta sigue en «—» y no enlaza. El id del enlace no es el de la alerta de irrenunciables.
+- En el detalle del diagnóstico, si está finalizado (`puntaje_total` distinto de null) y `requiere_plan_mejora` es verdadero, un enlace «Ver plan de mejora» va a la misma ruta con el `id` de esa autoevaluación. En borrador, o con el flag en falso, ese enlace no está.
+
+## Criterios de aceptación
+- [ ] `/planes-mejora/:autoevaluacionId` vive bajo el shell y exige sesión. Un anónimo va a login.
+- [ ] Con `requiere_plan_mejora` falso, el texto es «Esta autoevaluación no exige plan de mejora.» y no se llama al GET del plan.
+- [ ] Con el flag verdadero y plan existente, se listan descripción, responsable, indicador y meses en el orden recibido.
+- [ ] `ADMINISTRADOR` y `AUDITOR_SST` editan responsable e indicador. El PUT reenvía descripción y meses intactos y pinta el plan devuelto.
+- [ ] `CONSULTA` ve la lista y no ve campos ni botón de guardar.
+- [ ] Si el plan es obligatorio y el GET responde 404 `PLAN_MEJORA_NO_ENCONTRADO`, el texto es «Aún no hay plan de mejora para esta autoevaluación.»
+- [ ] Si el plan existe y `actividades` viene vacío, el texto es «Este plan todavía no tiene actividades.» No hay botón para agregar.
+- [ ] La tarjeta del inicio enlaza solo cuando `autoevaluacion_id` del resumen tiene valor. `CONSULTA` también ve ese enlace.
+- [ ] El diagnóstico finalizado con `requiere_plan_mejora` verdadero enlaza al plan de ese `id`. En borrador o sin el flag, el enlace no está.
+- [ ] Un 422 muestra el `mensaje` del API. El cliente no recalcula la Resolución 0312.
+
+## Campos y endpoints
+- No hay endpoint nuevo. Base: `environment.apiBaseUrl` (`/api/v1`).
+- `GET /autoevaluaciones/{id}` — cualquier rol autenticado. Campos usados: `id`, `puntaje_total`, `requiere_plan_mejora`. 404 `AUTOEVALUACION_NO_ENCONTRADA`.
+- `GET /autoevaluaciones/{id}/plan-mejora` — cualquier rol autenticado. Respuesta: `id`, `empresa_id`, `autoevaluacion_id`, `actividades[]` con `id`, `descripcion`, `responsable`, `indicador`, `meses` (enteros 1–12). 404 `PLAN_MEJORA_NO_ENCONTRADO`.
+- `PUT /planes-mejora/{plan_id}/actividades/{actividad_id}` — solo escritor. Cuerpo exacto: `descripcion`, `responsable`, `indicador`, `meses`. Sin campos extra. 200 devuelve el plan completo. 403 `ACCESO_DENEGADO`. 404 `PLAN_MEJORA_NO_ENCONTRADO` o `ACTIVIDAD_NO_ENCONTRADA`. 422 `ACTIVIDAD_CRONOGRAMA_INVALIDA` (responsable vacío o de más de 150, indicador vacío o de más de 200).
+- El resumen del inicio ya trae `autoevaluacion_id`. No se agrega un GET.
+- Errores: cuerpo `RespuestaError` (`exito`, `codigo`, `mensaje`, `detalle`). La pantalla muestra `mensaje` con `mensajeErrorHttp`.
+- Quedan fuera: `POST` de abrir plan, `POST` y `DELETE` de actividades, `DELETE` del plan, y `POST/GET` de `acciones/borrador`.
+
+## Archivos a crear o modificar
+- `src/app/app.routes.ts` — Presentation — Modify. Ruta `planes-mejora/:autoevaluacionId` con `loadComponent`, dentro del shell y antes del comodín.
+- `src/app/features/planes-mejora/modelos/plan-mejora.model.ts` — Presentation — Create. Plan y actividad, con los nombres del API.
+- `src/app/features/planes-mejora/servicios/servicio-plan-mejora.ts` — Presentation — Create. Los tres llamados. Los ids van con `codificarIdRuta`. No captura el error.
+- `src/app/features/planes-mejora/paginas/pagina-plan-mejora/pagina-plan-mejora.component.ts` — Presentation — Create. OnPush, `templateUrl` y `styleUrls`.
+- `src/app/features/planes-mejora/paginas/pagina-plan-mejora/pagina-plan-mejora.component.html` — Presentation — Create.
+- `src/app/features/planes-mejora/paginas/pagina-plan-mejora/pagina-plan-mejora.component.spec.ts` — Presentation — Create.
+- `src/app/features/planes-mejora/servicios/servicio-plan-mejora.spec.ts` — Presentation — Create.
+- `src/app/features/planes-mejora/README.md` — Presentation — Create.
+- `src/app/features/dashboard/paginas/pagina-dashboard/pagina-dashboard.component.ts` — Presentation — Modify. Guardar `autoevaluacionPlanId` al aplicar el resumen y limpiarlo al restaurar.
+- `src/app/features/dashboard/paginas/pagina-dashboard/pagina-dashboard.component.html` — Presentation — Modify. Enlace solo en la tarjeta «Planes de mejora».
+- `src/app/features/dashboard/paginas/pagina-dashboard/pagina-dashboard.component.spec.ts` — Presentation — Modify.
+- `src/app/features/dashboard/README.md` — Presentation — Modify.
+- `src/app/features/diagnostico/componentes/panel-matriz-diagnostico/panel-matriz-diagnostico.component.html` — Presentation — Modify. Enlace junto al resultado de finalización.
+- `src/app/features/diagnostico/componentes/panel-matriz-diagnostico/panel-matriz-diagnostico.component.ts` — Presentation — Modify. Importar `RouterLink`.
+- `src/app/features/diagnostico/componentes/panel-matriz-diagnostico/panel-matriz-diagnostico.component.spec.ts` — Presentation — Modify.
+
+No se modifica `TarjetaResumenComponent`, `ResultadoFinalizacionComponent`, la barra lateral ni el backend.
+
+## Casos de prueba unitarios
+- Con `requiere_plan_mejora` falso, el texto de que no exige plan está y el GET del plan no se llama.
+- Con plan y dos actividades, el DOM muestra descripción, responsable, indicador y meses en ese orden.
+- El guardar de un escritor envía descripción y meses originales y el responsable e indicador nuevos, y reemplaza la lista con la respuesta.
+- Con rol `CONSULTA`, no hay `input` ni botón de guardar, y la lista sí está.
+- Un 404 `PLAN_MEJORA_NO_ENCONTRADO` con el flag verdadero muestra que aún no hay plan, no el texto de «no exige».
+- Un plan con `actividades: []` muestra que todavía no hay actividades y no hay botón de agregar.
+- Un 404 de la autoevaluación muestra `mensaje` y no el estado vacío del plan.
+- Un 422 del PUT muestra `mensaje`.
+- En el inicio, con `autoevaluacion_id` presente, la tarjeta enlaza a `/planes-mejora/{id}`. Con el id null, no hay enlace. `CONSULTA` ve el enlace.
+- Al cambiar de empresa se cancela el id anterior antes del GET nuevo.
+- En el detalle, finalizada y `requiere_plan_mejora` verdadero: enlace a `/planes-mejora/{id}`. En borrador, o finalizada con el flag falso, el enlace no está.
+- `npm test` mantiene el umbral global de ramas en 90 %.
+
+## Requisitos no funcionales
+- OnPush y `markForCheck` al pintar, limpiar o guardar.
+- `@Input()` y `@Output()` si hace falta un hijo. No usar `input()`, `output()` ni `model()`.
+- Nombres de archivos, clases y métodos en español. El texto de la pantalla también.
+- El cliente no recalcula el 85 % ni reordena las actividades.
+- El Bearer lo pone el interceptor. `CONSULTA` no recibe controles de escritura.
+- Sin Chart.js, Recharts ni credenciales de almacenamiento.
+- Validar el guardado con el `mensaje` del API. No duplicar en el cliente el tope de 150 y 200 como regla que oculte el 422.
+
+## Puntos de historia
+<!-- STORY_POINTS:5 -->
+**5** — una ruta de lectura y edición sobre el API ya publicado, más dos enlaces. Sin endpoint ni modelo nuevo.
+<!-- /STORY_POINTS -->

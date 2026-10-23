@@ -51,6 +51,12 @@ Si el resumen trae 1.1.1 o 1.1.4 en `NO_CUMPLE`, el inicio muestra una alerta y 
 enlace «Ver en el diagnóstico» hacia `/diagnostico/{autoevaluacion_id}`. No hay
 acción de calificar en esta pantalla.
 
+## Plan de mejora (SP-261)
+
+La tarjeta «Planes de mejora» enlaza a `/planes-mejora/{autoevaluacion_id}` cuando
+el resumen trae `autoevaluacion_id`. Sin autoevaluación la tarjeta sigue en «—» y
+no enlaza.
+
 El diagnóstico de estándares mínimos vive en `features/diagnostico/` (SP-189 + SP-204).
 
 ## Componentes shared usados
