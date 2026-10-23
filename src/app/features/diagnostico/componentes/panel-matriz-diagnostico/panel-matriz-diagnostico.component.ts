@@ -1,4 +1,5 @@
 import { NgIf } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -37,6 +38,7 @@ import { ResultadoFinalizacionComponent } from '../resultado-finalizacion/result
   standalone: true,
   imports: [
     NgIf,
+    RouterLink,
     CabeceraDiagnosticoComponent,
     BarraAvanceDiagnosticoComponent,
     NavegadorFasesPhvaComponent,

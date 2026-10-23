@@ -97,24 +97,36 @@
         </svg>
       </app-tarjeta-resumen>
 
-      <app-tarjeta-resumen
-        titulo="Planes de mejora"
-        [valor]="valorPlanes"
-        [subtitulo]="subtituloPlanes"
-        color="amber"
+      <a
+        *ngIf="autoevaluacionPlanId"
+        class="block"
+        [routerLink]="['/planes-mejora', autoevaluacionPlanId]"
       >
-        <svg
-          class="h-5 w-5 text-amber-600"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
+        <ng-container *ngTemplateOutlet="tarjetaPlanes" />
+      </a>
+      <ng-container *ngIf="!autoevaluacionPlanId">
+        <ng-container *ngTemplateOutlet="tarjetaPlanes" />
+      </ng-container>
+      <ng-template #tarjetaPlanes>
+        <app-tarjeta-resumen
+          titulo="Planes de mejora"
+          [valor]="valorPlanes"
+          [subtitulo]="subtituloPlanes"
+          color="amber"
         >
-          <path d="M12 2v20" />
-          <path d="m17 5-5-3-5 3" />
-          <path d="m17 19-5 3-5-3" />
-        </svg>
-      </app-tarjeta-resumen>
+          <svg
+            class="h-5 w-5 text-amber-600"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M12 2v20" />
+            <path d="m17 5-5-3-5 3" />
+            <path d="m17 19-5 3-5-3" />
+          </svg>
+        </app-tarjeta-resumen>
+      </ng-template>
 
       <app-tarjeta-resumen
         titulo="Sesión actual"

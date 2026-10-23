@@ -58,6 +58,13 @@ export const rutasApp: Routes = [
         ],
       },
       {
+        path: "planes-mejora/:autoevaluacionId",
+        loadComponent: () =>
+          import("./features/planes-mejora/paginas/pagina-plan-mejora/pagina-plan-mejora.component").then(
+            (modulo) => modulo.PaginaPlanMejoraComponent
+          ),
+      },
+      {
         path: "ejemplo-sensible",
         component: PaginaEjemploSensibleComponent,
         canActivate: [guardRoles],

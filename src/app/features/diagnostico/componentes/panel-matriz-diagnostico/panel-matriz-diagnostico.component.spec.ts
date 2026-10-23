@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 
 import { PanelMatrizDiagnosticoComponent } from './panel-matriz-diagnostico.component';
 import type { EstandarMinimo } from '../../modelos';
@@ -26,6 +27,7 @@ describe('PanelMatrizDiagnosticoComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [PanelMatrizDiagnosticoComponent],
+      providers: [provideRouter([])],
     }).compileComponents();
     fixture = TestBed.createComponent(PanelMatrizDiagnosticoComponent);
     fixture.componentRef.setInput('estandares', estandares);
@@ -80,5 +82,42 @@ describe('PanelMatrizDiagnosticoComponent', () => {
     otro.detectChanges();
     expect(otro.componentInstance.cicloActual).toBe('PLANEAR');
     expect(otro.componentInstance.readonly).toBe(true);
+    expect((otro.nativeElement as HTMLElement).querySelector('a[href^="/planes-mejora/"]')).toBeNull();
+  });
+
+  it('should enlazar el plan si esta finalizada y lo exige', () => {
+    const otro = TestBed.createComponent(PanelMatrizDiagnosticoComponent);
+    otro.componentRef.setInput('estandares', estandares);
+    otro.componentRef.setInput('autoevaluacion', {
+      id: 'ae-9',
+      empresa_id: 'e-1',
+      usuario_id: 'u-1',
+      fecha: '2026-09-19',
+      puntaje_total: '70.00',
+      requiere_plan_mejora: true,
+      calificaciones: [],
+      fecha_creacion: '2026-09-19T10:00:00Z',
+      fecha_actualizacion: '2026-09-19T10:00:00Z',
+    });
+    otro.detectChanges();
+    expect((otro.nativeElement as HTMLElement).querySelector('a[href="/planes-mejora/ae-9"]')).toBeTruthy();
+  });
+
+  it('should no enlazar el plan cuando la autoevaluacion sigue en borrador', () => {
+    const otro = TestBed.createComponent(PanelMatrizDiagnosticoComponent);
+    otro.componentRef.setInput('estandares', estandares);
+    otro.componentRef.setInput('autoevaluacion', {
+      id: 'ae-9',
+      empresa_id: 'e-1',
+      usuario_id: 'u-1',
+      fecha: '2026-09-19',
+      puntaje_total: null,
+      requiere_plan_mejora: true,
+      calificaciones: [],
+      fecha_creacion: '2026-09-19T10:00:00Z',
+      fecha_actualizacion: '2026-09-19T10:00:00Z',
+    });
+    otro.detectChanges();
+    expect((otro.nativeElement as HTMLElement).textContent).not.toContain('Ver plan de mejora');
   });
 });
