@@ -1,0 +1,77 @@
+# Ticket enriquecido: SP-262 — Crear grilla editable del plan de trabajo anual
+
+## Descripción original
+<!-- jira-skip -->
+Historia base: . En la misma pantalla, grilla de actividades por los doce meses, como el cronograma del mockup: agregar actividad, quitarla y marcar o desmarcar meses. Persiste con la API del cronograma. Criterios: el cambio de un mes se guarda y se refleja al recargar; en viewport estrecho la grilla se desplaza en horizontal sin romper el shell.
+<!-- /jira-skip -->
+
+## Descripción mejorada
+
+En la pantalla de SP-261, `/planes-mejora/:autoevaluacionId`, el cronograma pasa a ser una grilla de doce meses. Cada actividad es una fila. Las columnas son los meses 1 a 12, con etiqueta corta de Ene a Dic. Una celda marcada significa que ese mes está en `meses`. El orden de las filas es el del API. No se reordena en el cliente.
+
+No hay endpoint nuevo. Marcar o desmarcar un mes hace `PUT /api/v1/planes-mejora/{plan_id}/actividades/{actividad_id}` con la `descripcion`, el `responsable` y el `indicador` que ya tiene la fila, y la lista nueva de meses. La respuesta sustituye el plan. Al volver a entrar, un `GET` pinta esas mismas marcas.
+
+Agregar pide descripción, responsable, indicador y al menos un mes, y llama `POST /api/v1/planes-mejora/{plan_id}/actividades`. La respuesta, que es el plan completo, sustituye la grilla. Quitar llama `DELETE` de esa actividad. Ese llamado responde 204 sin cuerpo, así que después se vuelve a leer el plan. Si el DELETE falla, la fila sigue.
+
+`CONSULTA` ve la grilla y las marcas, y no ve casillas editables, ni **Agregar**, ni **Quitar**. Esos controles van con `*appSiTieneRol="['ADMINISTRADOR', 'AUDITOR_SST']"`. Sin plan, siguen los textos de SP-261 y no aparece la grilla. Esta historia no abre el plan, no toca el borrador de acciones y no recalcula el umbral de 85.
+
+La grilla va dentro de un contenedor con desplazamiento horizontal. El shell no se desplaza de lado. La edición de responsable e indicador de SP-261 se mantiene.
+
+## Criterios de aceptación
+- [ ] Con un plan que tiene actividades, se ven doce columnas, de Ene a Dic, y una fila por actividad en el orden recibido.
+- [ ] Un mes presente en `meses` sale marcado. Marcar o desmarcar guarda con PUT y, al recargar, la marca coincide con el `GET`.
+- [ ] **Agregar** crea la actividad con descripción, responsable, indicador y los meses marcados, y la grilla pasa a ser la del plan devuelto.
+- [ ] **Quitar** borra la fila. Tras el 204, un nuevo GET ya no la trae. Si el DELETE falla, la fila sigue.
+- [ ] `CONSULTA` ve la grilla y no ve casillas editables, ni **Agregar**, ni **Quitar**.
+- [ ] Sin plan, no hay grilla ni botones de alta o baja.
+- [ ] En un viewport estrecho la grilla se desplaza en horizontal y el shell no.
+- [ ] Un 422 muestra el `mensaje` del API. El cliente no recalcula la Resolución 0312.
+
+## Campos y endpoints
+- No hay endpoint nuevo. Base: `environment.apiBaseUrl` (`/api/v1`).
+- `PUT /planes-mejora/{plan_id}/actividades/{actividad_id}` — escritor. Cuerpo: `descripcion`, `responsable`, `indicador`, `meses`. 200 devuelve el plan. Al cambiar un mes se reenvían los otros tres campos intactos.
+- `POST /planes-mejora/{plan_id}/actividades` — escritor. El mismo cuerpo. 201 devuelve el plan completo.
+- `DELETE /planes-mejora/{plan_id}/actividades/{actividad_id}` — escritor. 204 sin cuerpo. Después, `GET /autoevaluaciones/{id}/plan-mejora`.
+- Meses: enteros del 1 al 12, sin repetir, al menos uno. El API los guarda ordenados. Vacío, fuera de rango o repetido responde 422 `ACTIVIDAD_CRONOGRAMA_INVALIDA`.
+- Textos vacíos, responsable de más de 150 o indicador de más de 200 también son 422. La pantalla muestra `mensaje` con `mensajeErrorHttp`.
+- 403 `ACCESO_DENEGADO` no debería verse: `CONSULTA` no tiene los controles.
+- Quedan fuera: abrir o borrar el plan, y el borrador `acciones/borrador`.
+
+## Archivos a crear o modificar
+- `src/app/features/planes-mejora/servicios/servicio-plan-mejora.ts` — Presentation — Modify. `agregarActividad` y `quitarActividad`. Los ids van con `codificarIdRuta`.
+- `src/app/features/planes-mejora/servicios/servicio-plan-mejora.spec.ts` — Presentation — Modify.
+- `src/app/features/planes-mejora/componentes/grilla-cronograma/grilla-cronograma.component.ts` — Presentation — Create. OnPush, `@Input()` y `@Output()`. Doce columnas y el desplazamiento horizontal.
+- `src/app/features/planes-mejora/componentes/grilla-cronograma/grilla-cronograma.component.html` — Presentation — Create.
+- `src/app/features/planes-mejora/componentes/grilla-cronograma/grilla-cronograma.component.css` — Presentation — Create.
+- `src/app/features/planes-mejora/componentes/grilla-cronograma/grilla-cronograma.component.spec.ts` — Presentation — Create.
+- `src/app/features/planes-mejora/paginas/pagina-plan-mejora/pagina-plan-mejora.component.ts` — Presentation — Modify. Alta, baja y cambio de mes. Sustituir el plan con la respuesta, o releerlo tras el 204.
+- `src/app/features/planes-mejora/paginas/pagina-plan-mejora/pagina-plan-mejora.component.html` — Presentation — Modify. La grilla reemplaza el texto «Meses:».
+- `src/app/features/planes-mejora/paginas/pagina-plan-mejora/pagina-plan-mejora.component.spec.ts` — Presentation — Modify.
+- `src/app/features/planes-mejora/README.md` — Presentation — Modify.
+
+No se modifica el shell, el inicio, el diagnóstico ni el backend.
+
+## Casos de prueba unitarios
+- Una actividad con meses `[12, 1]` marca Dic y Ene, y no marca Feb.
+- Desmarcar Ene envía el PUT con la descripción, el responsable y el indicador originales, y `meses: [12]`. La grilla queda con la respuesta.
+- Agregar con un mes llama al POST y pinta el plan devuelto.
+- Quitar llama al DELETE y después al GET. La fila ausente en esa lectura no se muestra. Un DELETE fallido deja la fila.
+- Con rol `CONSULTA` no hay `input` de mes editable, ni botón **Agregar**, ni **Quitar**.
+- Sin plan no se renderiza la grilla.
+- El contenedor de la grilla tiene desplazamiento horizontal propio.
+- Un 422 del PUT o del POST muestra `mensaje` y no cambia las marcas anteriores.
+- `npm test` mantiene el umbral global de ramas en 90 %.
+
+## Requisitos no funcionales
+- OnPush y `markForCheck` al pintar o al fallar.
+- `@Input()` y `@Output()` en la grilla. No usar `input()`, `output()` ni `model()`.
+- Nombres de archivos, clases y métodos en español.
+- El cliente no ordena las filas ni reinterpreta el mes: la celda `n` corresponde al entero `n`.
+- El desplazamiento horizontal es de la grilla, no del shell.
+- `CONSULTA` no recibe controles de escritura. El Bearer lo pone el interceptor.
+- No duplicar en el cliente el tope de 150 y 200 ni la regla del mes de un modo que oculte el 422.
+
+## Puntos de historia
+<!-- STORY_POINTS:5 -->
+**5** — grilla de doce meses sobre la pantalla y el API del cronograma que ya existen. Sin endpoint nuevo.
+<!-- /STORY_POINTS -->

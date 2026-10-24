@@ -1,0 +1,30 @@
+<div class="overflow-x-auto">
+  <table class="min-w-full text-sm">
+    <thead>
+      <tr>
+        <th class="px-2 py-1 text-left">Actividad</th>
+        <th *ngFor="let columna of columnas" class="px-2 py-1">{{ columna.etiqueta }}</th>
+        <th *appSiTieneRol="['ADMINISTRADOR', 'AUDITOR_SST']"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let actividad of actividades; trackBy: trackActividad">
+        <td class="px-2 py-1">{{ actividad.descripcion }}</td>
+        <td *ngFor="let columna of columnas" class="px-2 py-1 text-center">
+          <ng-container *appSiTieneRol="['ADMINISTRADOR', 'AUDITOR_SST']">
+            <input
+              type="checkbox"
+              [attr.aria-label]="columna.etiqueta"
+              [checked]="marcada(actividad, columna.numero)"
+              (click)="alCambiar(actividad, columna.numero, $event)"
+            />
+          </ng-container>
+          <span *ngIf="soloLectura && marcada(actividad, columna.numero)" [attr.aria-label]="columna.etiqueta">●</span>
+        </td>
+        <td *appSiTieneRol="['ADMINISTRADOR', 'AUDITOR_SST']">
+          <button type="button" (click)="alQuitar(actividad.id)">Quitar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
