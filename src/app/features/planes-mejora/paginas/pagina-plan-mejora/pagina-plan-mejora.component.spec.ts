@@ -22,6 +22,8 @@ describe('PaginaPlanMejoraComponent', () => {
   const obtenerPorId = jest.fn();
   const obtenerPorAutoevaluacion = jest.fn();
   const actualizarActividad = jest.fn();
+  const agregarActividad = jest.fn();
+  const quitarActividad = jest.fn();
 
   function autoevaluacion(requierePlanMejora: boolean): Autoevaluacion {
     return {
@@ -71,7 +73,7 @@ describe('PaginaPlanMejoraComponent', () => {
         { provide: ServicioAutoevaluaciones, useValue: { obtenerPorId } },
         {
           provide: ServicioPlanMejora,
-          useValue: { obtenerPorAutoevaluacion, actualizarActividad },
+          useValue: { obtenerPorAutoevaluacion, actualizarActividad, agregarActividad, quitarActividad },
         },
         {
           provide: ServicioAutenticacion,
@@ -89,6 +91,8 @@ describe('PaginaPlanMejoraComponent', () => {
     obtenerPorId.mockReset();
     obtenerPorAutoevaluacion.mockReset().mockReturnValue(of(plan()));
     actualizarActividad.mockReset();
+    agregarActividad.mockReset();
+    quitarActividad.mockReset();
   });
 
   it('should decir que no exige plan y no pedir el cronograma', async () => {
@@ -96,6 +100,7 @@ describe('PaginaPlanMejoraComponent', () => {
     await crear();
     expect(texto()).toContain('Esta autoevaluación no exige plan de mejora.');
     expect(obtenerPorAutoevaluacion).not.toHaveBeenCalled();
+    expect((fixture.nativeElement as HTMLElement).querySelector('app-grilla-cronograma')).toBeNull();
   });
 
   it('should listar descripcion responsable indicador y meses en el orden del api', async () => {
@@ -122,12 +127,19 @@ describe('PaginaPlanMejoraComponent', () => {
     );
     await crear();
 
-    const articulos = (fixture.nativeElement as HTMLElement).querySelectorAll('article');
-    const campos = articulos[0].querySelectorAll<HTMLInputElement>('input');
+    const raiz = fixture.nativeElement as HTMLElement;
+    const articulos = raiz.querySelectorAll('article');
+    const responsable = articulos[0].querySelector<HTMLInputElement>('input[name="responsable-act-1"]');
+    const indicador = articulos[0].querySelector<HTMLInputElement>('input[name="indicador-act-1"]');
+    const ene = raiz.querySelector<HTMLInputElement>('input[aria-label="Ene"]');
+    const feb = raiz.querySelector<HTMLInputElement>('input[aria-label="Feb"]');
+    const dic = raiz.querySelector<HTMLInputElement>('input[aria-label="Dic"]');
     expect(articulos[0].textContent).toContain('Inspección');
-    expect(articulos[0].textContent).toContain('12, 1');
-    expect(campos[0].value).toBe('Ana');
-    expect(campos[1].value).toBe('Cobertura');
+    expect(ene?.checked).toBe(true);
+    expect(feb?.checked).toBe(false);
+    expect(dic?.checked).toBe(true);
+    expect(responsable?.value).toBe('Ana');
+    expect(indicador?.value).toBe('Cobertura');
     expect(articulos[1].textContent).toContain('Capacitación');
     expect(texto().indexOf('Inspección')).toBeLessThan(texto().indexOf('Capacitación'));
   });
@@ -177,7 +189,11 @@ describe('PaginaPlanMejoraComponent', () => {
       indicador: 'Cierres',
       meses: [1, 12],
     });
-    expect((fixture.nativeElement as HTMLElement).querySelector('input')?.value).toBe('Luis');
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>(
+        'input[name="responsable-act-1"]'
+      )?.value
+    ).toBe('Luis');
   });
 
   it('should ocultar la edicion cuando el rol es CONSULTA', async () => {
@@ -200,6 +216,9 @@ describe('PaginaPlanMejoraComponent', () => {
     const raiz = fixture.nativeElement as HTMLElement;
     expect(raiz.querySelector('input')).toBeNull();
     expect(raiz.textContent).not.toContain('Guardar');
+    expect(raiz.textContent).not.toContain('Agregar');
+    expect(raiz.textContent).not.toContain('Quitar');
+    expect(raiz.querySelector('[aria-label="Ene"]')?.textContent).toContain('●');
     expect(raiz.textContent).toContain('Inspección');
     expect(raiz.textContent).toContain('Ana');
     expect(raiz.textContent).toContain('Cobertura');
@@ -220,6 +239,7 @@ describe('PaginaPlanMejoraComponent', () => {
     await crear();
     expect(texto()).toContain('Aún no hay plan de mejora para esta autoevaluación.');
     expect(texto()).not.toContain('no exige plan');
+    expect((fixture.nativeElement as HTMLElement).querySelector('app-grilla-cronograma')).toBeNull();
   });
 
   it('should decir que el plan no tiene actividades', async () => {
@@ -227,7 +247,8 @@ describe('PaginaPlanMejoraComponent', () => {
     obtenerPorAutoevaluacion.mockReturnValue(of(plan([])));
     await crear();
     expect(texto()).toContain('Este plan todavía no tiene actividades.');
-    expect(texto()).not.toContain('Agregar');
+    expect(texto()).toContain('Agregar');
+    expect((fixture.nativeElement as HTMLElement).querySelector('app-grilla-cronograma')).not.toBeNull();
   });
 
   it('should mostrar el mensaje si la autoevaluacion no existe', async () => {
@@ -297,5 +318,271 @@ describe('PaginaPlanMejoraComponent', () => {
     await crear();
     expect(texto()).toContain('Fallo al leer el plan.');
     expect(texto()).not.toContain('Aún no hay plan');
+  });
+
+  it('should desmarcar ene reenviando los datos persistidos', async () => {
+    obtenerPorId.mockReturnValue(of(autoevaluacion(true)));
+    obtenerPorAutoevaluacion.mockReturnValue(
+      of(
+        plan([
+          {
+            id: 'act-1',
+            descripcion: 'Inspección',
+            responsable: 'Ana',
+            indicador: 'Cobertura',
+            meses: [12, 1],
+          },
+        ])
+      )
+    );
+    actualizarActividad.mockReturnValue(
+      of(
+        plan([
+          {
+            id: 'act-1',
+            descripcion: 'Inspección',
+            responsable: 'Ana',
+            indicador: 'Cobertura',
+            meses: [12],
+          },
+        ])
+      )
+    );
+    await crear();
+    fixture.componentInstance.edicion['act-1'].responsable = 'Borrador';
+    (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>('input[aria-label="Ene"]')?.click();
+    fixture.detectChanges();
+
+    expect(actualizarActividad).toHaveBeenCalledWith('plan-1', 'act-1', {
+      descripcion: 'Inspección',
+      responsable: 'Ana',
+      indicador: 'Cobertura',
+      meses: [12],
+    });
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>('input[aria-label="Ene"]')
+        ?.checked
+    ).toBe(false);
+  });
+
+  it('should marcar un mes que no estaba', async () => {
+    obtenerPorId.mockReturnValue(of(autoevaluacion(true)));
+    obtenerPorAutoevaluacion.mockReturnValue(
+      of(
+        plan([
+          {
+            id: 'act-1',
+            descripcion: 'Inspección',
+            responsable: 'Ana',
+            indicador: 'Cobertura',
+            meses: [12, 1],
+          },
+        ])
+      )
+    );
+    actualizarActividad.mockReturnValue(
+      of(
+        plan([
+          {
+            id: 'act-1',
+            descripcion: 'Inspección',
+            responsable: 'Ana',
+            indicador: 'Cobertura',
+            meses: [12, 1, 2],
+          },
+        ])
+      )
+    );
+    await crear();
+    (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>('input[aria-label="Feb"]')?.click();
+    fixture.detectChanges();
+
+    expect(actualizarActividad).toHaveBeenCalledWith('plan-1', 'act-1', {
+      descripcion: 'Inspección',
+      responsable: 'Ana',
+      indicador: 'Cobertura',
+      meses: [12, 1, 2],
+    });
+  });
+
+  it('should mostrar el mensaje si el cambio de mes responde 422 y conservar la marca', async () => {
+    obtenerPorId.mockReturnValue(of(autoevaluacion(true)));
+    obtenerPorAutoevaluacion.mockReturnValue(
+      of(
+        plan([
+          {
+            id: 'act-1',
+            descripcion: 'Inspección',
+            responsable: 'Ana',
+            indicador: 'Cobertura',
+            meses: [12, 1],
+          },
+        ])
+      )
+    );
+    actualizarActividad.mockReturnValue(
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 422,
+            statusText: 'Unprocessable Entity',
+            error: { codigo: 'ACTIVIDAD_CRONOGRAMA_INVALIDA', mensaje: 'Mes inválido.' },
+          })
+      )
+    );
+    await crear();
+    (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>('input[aria-label="Ene"]')?.click();
+    fixture.detectChanges();
+
+    expect(texto()).toContain('Mes inválido.');
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>('input[aria-label="Ene"]')
+        ?.checked
+    ).toBe(true);
+  });
+
+  it('should agregar una actividad y pintar el plan devuelto', async () => {
+    obtenerPorId.mockReturnValue(of(autoevaluacion(true)));
+    obtenerPorAutoevaluacion.mockReturnValue(of(plan([])));
+    agregarActividad.mockReturnValue(
+      of(
+        plan([
+          {
+            id: 'act-1',
+            descripcion: 'Inspección',
+            responsable: 'Ana',
+            indicador: 'Cobertura',
+            meses: [1],
+          },
+        ])
+      )
+    );
+    await crear();
+    fixture.componentInstance.altaDescripcion = 'Inspección';
+    fixture.componentInstance.altaResponsable = 'Ana';
+    fixture.componentInstance.altaIndicador = 'Cobertura';
+    fixture.componentInstance.alternarAlta(1);
+    fixture.componentInstance.alternarAlta(1);
+    fixture.componentInstance.alternarAlta(1);
+    fixture.detectChanges();
+
+    const boton = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('button')
+    ).find((el) => el.textContent?.includes('Agregar'));
+    boton?.click();
+    fixture.detectChanges();
+
+    expect(agregarActividad).toHaveBeenCalledWith('plan-1', {
+      descripcion: 'Inspección',
+      responsable: 'Ana',
+      indicador: 'Cobertura',
+      meses: [1],
+    });
+    expect(texto()).toContain('Inspección');
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>('input[name="alta-descripcion"]')
+        ?.value
+    ).toBe('');
+  });
+
+  it('should mostrar el mensaje si el alta responde 422 y conservar el formulario', async () => {
+    obtenerPorId.mockReturnValue(of(autoevaluacion(true)));
+    obtenerPorAutoevaluacion.mockReturnValue(of(plan([])));
+    agregarActividad.mockReturnValue(
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 422,
+            statusText: 'Unprocessable Entity',
+            error: { codigo: 'ACTIVIDAD_CRONOGRAMA_INVALIDA', mensaje: 'Falta la descripción.' },
+          })
+      )
+    );
+    await crear();
+    const descripcion = (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>(
+      'input[name="alta-descripcion"]'
+    );
+    if (descripcion) {
+      descripcion.value = 'Borrador';
+      descripcion.dispatchEvent(new Event('input'));
+    }
+    fixture.detectChanges();
+    const boton = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('button')
+    ).find((el) => el.textContent?.includes('Agregar'));
+    boton?.click();
+    fixture.detectChanges();
+
+    expect(texto()).toContain('Falta la descripción.');
+    expect((fixture.nativeElement as HTMLElement).querySelectorAll('tbody tr')).toHaveLength(0);
+    expect(fixture.componentInstance.altaDescripcion).toBe('Borrador');
+  });
+
+  it('should quitar la actividad y volver a leer el plan', async () => {
+    obtenerPorId.mockReturnValue(of(autoevaluacion(true)));
+    obtenerPorAutoevaluacion
+      .mockReturnValueOnce(
+        of(
+          plan([
+            {
+              id: 'act-1',
+              descripcion: 'Inspección',
+              responsable: 'Ana',
+              indicador: 'Cobertura',
+              meses: [1],
+            },
+          ])
+        )
+      )
+      .mockReturnValue(of(plan([])));
+    quitarActividad.mockReturnValue(of(undefined));
+    await crear();
+
+    const boton = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('button')
+    ).find((el) => el.textContent?.includes('Quitar'));
+    boton?.click();
+    fixture.detectChanges();
+
+    expect(quitarActividad).toHaveBeenCalledWith('plan-1', 'act-1');
+    expect(obtenerPorAutoevaluacion).toHaveBeenCalledTimes(2);
+    expect(texto()).not.toContain('Inspección');
+  });
+
+  it('should conservar la fila si quitar falla', async () => {
+    obtenerPorId.mockReturnValue(of(autoevaluacion(true)));
+    obtenerPorAutoevaluacion.mockReturnValue(
+      of(
+        plan([
+          {
+            id: 'act-1',
+            descripcion: 'Inspección',
+            responsable: 'Ana',
+            indicador: 'Cobertura',
+            meses: [1],
+          },
+        ])
+      )
+    );
+    quitarActividad.mockReturnValue(
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 404,
+            statusText: 'Not Found',
+            error: { mensaje: 'No se pudo quitar.' },
+          })
+      )
+    );
+    await crear();
+    const boton = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('button')
+    ).find((el) => el.textContent?.includes('Quitar'));
+    boton?.click();
+    fixture.detectChanges();
+
+    expect(obtenerPorAutoevaluacion).toHaveBeenCalledTimes(1);
+    expect(texto()).toContain('Inspección');
+    expect(texto()).toContain('No se pudo quitar.');
   });
 });

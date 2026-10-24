@@ -16,6 +16,11 @@ import { ServicioAutenticacion } from '../../../../nucleo/auth/servicio-autentic
 import { SiTieneRolDirective } from '../../../../shared/directivas/si-tiene-rol.directive';
 import { ServicioAutoevaluaciones } from '../../../diagnostico/servicios/servicio-autoevaluaciones';
 import { mensajeErrorHttp } from '../../../diagnostico/utilidades/mensaje-error-http';
+import {
+  COLUMNAS_CRONOGRAMA,
+  GrillaCronogramaComponent,
+  type CambioMesCronograma,
+} from '../../componentes/grilla-cronograma/grilla-cronograma.component';
 import type { ActividadCronograma, PlanMejora } from '../../modelos/plan-mejora.model';
 import { ServicioPlanMejora } from '../../servicios/servicio-plan-mejora';
 
@@ -27,7 +32,7 @@ interface EdicionActividad {
 @Component({
   selector: 'app-pagina-plan-mejora',
   standalone: true,
-  imports: [NgIf, NgFor, FormsModule, SiTieneRolDirective],
+  imports: [NgIf, NgFor, FormsModule, SiTieneRolDirective, GrillaCronogramaComponent],
   templateUrl: './pagina-plan-mejora.component.html',
   styleUrls: ['./pagina-plan-mejora.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -41,11 +46,21 @@ export class PaginaPlanMejoraComponent implements OnInit, OnDestroy {
   private readonly suscripciones = new Subscription();
   private suscripcionCarga: Subscription | null = null;
   private suscripcionGuardar: Subscription | null = null;
+  private suscripcionAlta: Subscription | null = null;
+  private suscripcionBaja: Subscription | null = null;
+  private suscripcionMes: Subscription | null = null;
+  private autoevaluacionId: string | null = null;
 
   plan: PlanMejora | null = null;
   edicion: Record<string, EdicionActividad> = {};
+  altaDescripcion = '';
+  altaResponsable = '';
+  altaIndicador = '';
+  altaMeses: number[] = [];
   mensajeVacio = '';
   mensajeError = '';
+
+  readonly mesesAlta = COLUMNAS_CRONOGRAMA;
 
   readonly trackActividad = (_indice: number, actividad: ActividadCronograma): string =>
     actividad.id;
@@ -57,8 +72,7 @@ export class PaginaPlanMejoraComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.suscripcionCarga?.unsubscribe();
-    this.suscripcionGuardar?.unsubscribe();
+    this.cancelarOperaciones();
     this.suscripciones.unsubscribe();
   }
 
@@ -94,11 +108,118 @@ export class PaginaPlanMejoraComponent implements OnInit, OnDestroy {
       });
   }
 
+  agregar(): void {
+    if (!this.plan) {
+      return;
+    }
+    this.mensajeError = '';
+    this.suscripcionAlta?.unsubscribe();
+    this.suscripcionAlta = this.planes
+      .agregarActividad(this.plan.id, {
+        descripcion: this.altaDescripcion,
+        responsable: this.altaResponsable,
+        indicador: this.altaIndicador,
+        meses: [...this.altaMeses],
+      })
+      .subscribe({
+        next: (plan) => {
+          this.plan = plan;
+          this.prepararEdicion(plan);
+          this.altaDescripcion = '';
+          this.altaResponsable = '';
+          this.altaIndicador = '';
+          this.altaMeses = [];
+          this.mensajeVacio =
+            plan.actividades.length === 0 ? 'Este plan todavía no tiene actividades.' : '';
+          this.cdr.markForCheck();
+        },
+        error: (error: unknown) => {
+          this.mensajeError = mensajeErrorHttp(error);
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  cambiarMes(cambio: CambioMesCronograma): void {
+    if (!this.plan) {
+      return;
+    }
+    const { actividad, mes } = cambio;
+    const meses = actividad.meses.includes(mes)
+      ? actividad.meses.filter((numero) => numero !== mes)
+      : [...actividad.meses, mes];
+    this.mensajeError = '';
+    this.suscripcionMes?.unsubscribe();
+    this.suscripcionMes = this.planes
+      .actualizarActividad(this.plan.id, actividad.id, {
+        descripcion: actividad.descripcion,
+        responsable: actividad.responsable,
+        indicador: actividad.indicador,
+        meses,
+      })
+      .subscribe({
+        next: (plan) => {
+          this.plan = plan;
+          this.prepararEdicion(plan);
+          this.cdr.markForCheck();
+        },
+        error: (error: unknown) => {
+          this.mensajeError = mensajeErrorHttp(error);
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  quitar(actividadId: string): void {
+    if (!this.plan || !this.autoevaluacionId) {
+      return;
+    }
+    const planId = this.plan.id;
+    const autoevaluacionId = this.autoevaluacionId;
+    this.mensajeError = '';
+    this.suscripcionBaja?.unsubscribe();
+    this.suscripcionBaja = this.planes.quitarActividad(planId, actividadId).subscribe({
+      next: () => {
+        this.suscripcionBaja = this.planes.obtenerPorAutoevaluacion(autoevaluacionId).subscribe({
+          next: (plan) => {
+            this.plan = plan;
+            this.prepararEdicion(plan);
+            this.mensajeVacio =
+              plan.actividades.length === 0 ? 'Este plan todavía no tiene actividades.' : '';
+            this.cdr.markForCheck();
+          },
+          error: (error: unknown) => {
+            this.mensajeError = mensajeErrorHttp(error);
+            this.cdr.markForCheck();
+          },
+        });
+      },
+      error: (error: unknown) => {
+        this.mensajeError = mensajeErrorHttp(error);
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  valorCampo(evento: Event): string {
+    return (evento.target as HTMLInputElement).value;
+  }
+
+  alternarAlta(mes: number): void {
+    this.altaMeses = this.altaMeses.includes(mes)
+      ? this.altaMeses.filter((numero) => numero !== mes)
+      : [...this.altaMeses, mes];
+  }
+
   private cargar(autoevaluacionId: string | null): void {
-    this.suscripcionCarga?.unsubscribe();
-    this.suscripcionGuardar?.unsubscribe();
+    this.cancelarOperaciones();
+    this.autoevaluacionId = autoevaluacionId;
     this.plan = null;
     this.edicion = {};
+    this.altaDescripcion = '';
+    this.altaResponsable = '';
+    this.altaIndicador = '';
+    this.altaMeses = [];
     this.mensajeVacio = '';
     this.mensajeError = '';
     if (!autoevaluacionId) {
@@ -152,5 +273,13 @@ export class PaginaPlanMejoraComponent implements OnInit, OnDestroy {
 
   private esNoEncontrado(error: unknown): boolean {
     return error instanceof HttpErrorResponse && error.status === 404;
+  }
+
+  private cancelarOperaciones(): void {
+    this.suscripcionCarga?.unsubscribe();
+    this.suscripcionGuardar?.unsubscribe();
+    this.suscripcionAlta?.unsubscribe();
+    this.suscripcionBaja?.unsubscribe();
+    this.suscripcionMes?.unsubscribe();
   }
 }

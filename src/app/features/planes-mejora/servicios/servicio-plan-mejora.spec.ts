@@ -51,4 +51,27 @@ describe('ServicioPlanMejora', () => {
     expect(req.request.body).toEqual(solicitud);
     req.flush(plan);
   });
+
+  it('should crear una actividad y devolver el plan', () => {
+    const solicitud: SolicitudActividadCronograma = {
+      descripcion: 'Inspección',
+      responsable: 'Luis',
+      indicador: 'Cobertura',
+      meses: [1],
+    };
+    servicio.agregarActividad('plan/1', solicitud).subscribe((body) => expect(body).toEqual(plan));
+
+    const req = http.expectOne(`${base}/planes-mejora/plan%2F1/actividades`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(solicitud);
+    req.flush(plan);
+  });
+
+  it('should quitar una actividad con 204', () => {
+    servicio.quitarActividad('plan/1', 'act/1').subscribe((body) => expect(body).toBeNull());
+
+    const req = http.expectOne(`${base}/planes-mejora/plan%2F1/actividades/act%2F1`);
+    expect(req.request.method).toBe('DELETE');
+    req.flush(null, { status: 204, statusText: 'No Content' });
+  });
 });

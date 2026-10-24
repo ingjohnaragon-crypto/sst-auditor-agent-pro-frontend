@@ -17,6 +17,7 @@
           <input
             class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2"
             [name]="'responsable-' + actividad.id"
+            [attr.name]="'responsable-' + actividad.id"
             [(ngModel)]="edicionActividad.responsable"
           />
         </label>
@@ -25,6 +26,7 @@
           <input
             class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2"
             [name]="'indicador-' + actividad.id"
+            [attr.name]="'indicador-' + actividad.id"
             [(ngModel)]="edicionActividad.indicador"
           />
         </label>
@@ -38,7 +40,57 @@
       <p>{{ actividad.responsable }}</p>
       <p>{{ actividad.indicador }}</p>
     </ng-container>
-
-    <p class="text-sm text-slate-500">Meses: {{ actividad.meses.join(', ') }}</p>
   </article>
+
+  <ng-container *ngIf="plan">
+    <ng-container *appSiTieneRol="['ADMINISTRADOR', 'AUDITOR_SST']">
+      <form class="space-y-3 rounded-2xl border border-slate-200 p-4">
+        <label class="block text-sm text-slate-600">
+          Descripción
+          <input
+            class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2"
+            name="alta-descripcion"
+            [value]="altaDescripcion"
+            (input)="altaDescripcion = valorCampo($event)"
+          />
+        </label>
+        <label class="block text-sm text-slate-600">
+          Responsable
+          <input
+            class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2"
+            name="alta-responsable"
+            [value]="altaResponsable"
+            (input)="altaResponsable = valorCampo($event)"
+          />
+        </label>
+        <label class="block text-sm text-slate-600">
+          Indicador
+          <input
+            class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2"
+            name="alta-indicador"
+            [value]="altaIndicador"
+            (input)="altaIndicador = valorCampo($event)"
+          />
+        </label>
+        <div class="flex flex-wrap gap-2">
+          <label *ngFor="let mes of mesesAlta" class="text-xs text-slate-600">
+            {{ mes.etiqueta }}
+            <input
+              type="checkbox"
+              [name]="'alta-mes-' + mes.numero"
+              (change)="alternarAlta(mes.numero)"
+              [checked]="altaMeses.includes(mes.numero)"
+            />
+          </label>
+        </div>
+        <button type="button" class="text-sm font-semibold text-indigo-700" (click)="agregar()">Agregar</button>
+      </form>
+    </ng-container>
+
+    <app-grilla-cronograma
+      [actividades]="plan.actividades"
+      (cambioMes)="cambiarMes($event)"
+      (quitar)="quitar($event)"
+    />
+  </ng-container>
 </section>

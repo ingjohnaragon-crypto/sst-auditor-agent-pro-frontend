@@ -28,4 +28,18 @@ export class ServicioPlanMejora {
       solicitud
     );
   }
+
+  agregarActividad(planId: string, solicitud: SolicitudActividadCronograma): Observable<PlanMejora> {
+    const plan = codificarIdRuta(planId);
+    return this.http.post<PlanMejora>(
+      `${this.baseUrl}/planes-mejora/${plan}/actividades`,
+      solicitud
+    );
+  }
+
+  quitarActividad(planId: string, actividadId: string): Observable<void> {
+    const plan = codificarIdRuta(planId);
+    const actividad = codificarIdRuta(actividadId);
+    return this.http.delete<void>(`${this.baseUrl}/planes-mejora/${plan}/actividades/${actividad}`);
+  }
 }
