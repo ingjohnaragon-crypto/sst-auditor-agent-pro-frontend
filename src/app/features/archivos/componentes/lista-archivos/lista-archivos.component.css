@@ -1,0 +1,4 @@
+/* Estilos específicos de la lista; layout vía utilidades Tailwind en el template. */
+:host {
+  display: block;
+}

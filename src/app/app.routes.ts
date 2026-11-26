@@ -65,6 +65,13 @@ export const rutasApp: Routes = [
           ),
       },
       {
+        path: "archivos",
+        loadComponent: () =>
+          import("./features/archivos/paginas/pagina-archivos/pagina-archivos.component").then(
+            (modulo) => modulo.PaginaArchivosComponent
+          ),
+      },
+      {
         path: "ejemplo-sensible",
         component: PaginaEjemploSensibleComponent,
         canActivate: [guardRoles],

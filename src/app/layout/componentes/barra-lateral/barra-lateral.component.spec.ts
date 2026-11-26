@@ -15,6 +15,7 @@ describe("BarraLateralComponent", () => {
           { path: "dashboard", children: [] },
           { path: "matriz-riesgos", children: [] },
           { path: "diagnostico", children: [] },
+          { path: "archivos", children: [] },
         ]),
       ],
     }).compileComponents();
@@ -71,5 +72,14 @@ describe("BarraLateralComponent", () => {
     );
     expect(matriz?.classList.contains("bg-indigo-600")).toBe(true);
     expect(matriz?.classList.contains("text-white")).toBe(true);
+  });
+
+  it("should mostrar el acceso a archivos", () => {
+    const archivos = (fixture.nativeElement as HTMLElement).querySelector(
+      'a[aria-label="Archivos"]'
+    );
+
+    expect(archivos?.getAttribute("href")).toBe("/archivos");
+    expect(archivos?.textContent).toContain("Archivos");
   });
 });
