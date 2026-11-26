@@ -1,0 +1,52 @@
+<div *ngIf="archivos.length === 0" class="rounded-panel border border-dashed border-slate-300 bg-slate-50 px-6 py-14 text-center">
+  <p class="text-sm font-semibold text-slate-600">No hay archivos documentales para esta empresa.</p>
+</div>
+
+<div *ngIf="archivos.length > 0" class="overflow-x-auto rounded-panel border border-slate-200 bg-white shadow-sm">
+  <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+    <thead class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-500">
+      <tr>
+        <th scope="col" class="px-4 py-3">Nombre</th>
+        <th scope="col" class="px-4 py-3">Fecha</th>
+        <th scope="col" class="px-4 py-3">Tamaño</th>
+        <th scope="col" class="px-4 py-3">Quién cargó</th>
+        <th scope="col" class="px-4 py-3 text-right">Acciones</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100">
+      <tr *ngFor="let archivo of archivos; trackBy: trackArchivo" class="hover:bg-slate-50/80">
+        <td class="max-w-xs truncate px-4 py-3 font-semibold text-slate-800" [title]="archivo.nombre_original">
+          {{ archivo.nombre_original }}
+        </td>
+        <td class="whitespace-nowrap px-4 py-3 text-slate-600">
+          {{ archivo.fecha_carga | date: 'short' }}
+        </td>
+        <td class="whitespace-nowrap px-4 py-3 text-slate-600">
+          {{ formatearTamano(archivo.tamano_bytes) }}
+        </td>
+        <td class="px-4 py-3 text-slate-600">{{ quienCargo(archivo) }}</td>
+        <td class="px-4 py-3">
+          <div class="flex flex-wrap items-center justify-end gap-2">
+            <button
+              type="button"
+              class="rounded-control px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 disabled:opacity-50"
+              [disabled]="descargandoId === archivo.id"
+              (click)="alDescargar.emit(archivo)"
+            >
+              {{ descargandoId === archivo.id ? 'Descargando…' : 'Descargar' }}
+            </button>
+            <button
+              *ngIf="puedeEscribir"
+              type="button"
+              class="rounded-control px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-red-600 hover:bg-red-50 disabled:opacity-50"
+              [disabled]="eliminandoId === archivo.id"
+              (click)="alEliminar.emit(archivo)"
+            >
+              {{ eliminandoId === archivo.id ? 'Eliminando…' : 'Eliminar' }}
+            </button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

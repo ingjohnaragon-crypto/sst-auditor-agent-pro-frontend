@@ -98,6 +98,30 @@
         Diagnóstico
       </span>
     </a>
+
+    <a
+      routerLink="/archivos"
+      routerLinkActive="bg-indigo-600 text-white shadow-xl shadow-indigo-950/30"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="group flex items-center justify-center gap-4 rounded-2xl p-4 text-slate-500 transition hover:bg-slate-800/80 hover:text-white md:justify-start"
+      aria-label="Archivos"
+    >
+      <svg
+        class="h-5 w-5 shrink-0"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <path d="M14 2v6h6" />
+        <path d="M16 13H8" />
+        <path d="M16 17H8" />
+        <path d="M10 9H8" />
+      </svg>
+      <span class="hidden text-xs font-black uppercase tracking-widest md:block">Archivos</span>
+    </a>
   </div>
 
   <p class="sst-etiqueta hidden px-4 text-[9px] md:block">Gestión integral SG-SST</p>
