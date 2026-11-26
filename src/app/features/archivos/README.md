@@ -12,3 +12,9 @@ La descarga es un `blob` autenticado con el interceptor Bearer.
 
 - `CONSULTA`: lista y descarga.
 - `ADMINISTRADOR` / `AUDITOR_SST`: además carga y elimina (con confirmación).
+
+## Errores de UI
+
+Se muestran el `mensaje` del envelope SST o, si falta, el `detail` de FastAPI.
+Un `503` se interpreta como almacenamiento no disponible. Si la descarga falla
+con cuerpo `blob`, el mensaje es específico de descarga (el JSON no se lee en sync).
