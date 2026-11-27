@@ -12,7 +12,7 @@ import type { UsuarioAutenticado } from '../../nucleo/auth/modelos/usuario-auten
   template: `<p *appSiTieneRol="roles" class="secreto">contenido</p>`,
 })
 class AnfitrionDirectiveComponent {
-  roles: Array<UsuarioAutenticado['rol']> = ['AUDITOR_SST'];
+  roles: Array<UsuarioAutenticado['rol']> | UsuarioAutenticado['rol'] = ['AUDITOR_SST'];
 }
 
 describe('SiTieneRolDirective', () => {
@@ -74,5 +74,12 @@ describe('SiTieneRolDirective', () => {
     usuarioSignal.set(consulta);
     fixture.detectChanges();
     expect(fixture.debugElement.query(By.css('.secreto'))).toBeNull();
+  });
+
+  it('should aceptar un rol único sin array', () => {
+    fixture.componentInstance.roles = 'AUDITOR_SST';
+    usuarioSignal.set(auditor);
+    fixture.detectChanges();
+    expect(fixture.debugElement.query(By.css('.secreto'))).toBeTruthy();
   });
 });

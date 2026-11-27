@@ -1,4 +1,8 @@
-import { calcularAvanceDocumentos } from './avance-documentos';
+import {
+  calcularAvanceDocumentos,
+  etiquetarEstado,
+  etiquetarFase,
+} from './avance-documentos';
 import type { DocumentoEmpresa } from '../modelos';
 
 function doc(estado: DocumentoEmpresa['estado']): DocumentoEmpresa {
@@ -41,5 +45,30 @@ describe('calcularAvanceDocumentos', () => {
 
   it('should devolver 100 cuando ninguno está pendiente', () => {
     expect(calcularAvanceDocumentos([doc('CARGADO'), doc('REVISADO')])).toBe(100);
+  });
+});
+
+describe('etiquetarFase', () => {
+  it('should etiquetar las cuatro fases PHVA', () => {
+    expect(etiquetarFase('PLANEAR')).toBe('Planear');
+    expect(etiquetarFase('HACER')).toBe('Hacer');
+    expect(etiquetarFase('VERIFICAR')).toBe('Verificar');
+    expect(etiquetarFase('ACTUAR')).toBe('Actuar');
+  });
+
+  it('should devolver el valor crudo when fase desconocida', () => {
+    expect(etiquetarFase('OTRA')).toBe('OTRA');
+  });
+});
+
+describe('etiquetarEstado', () => {
+  it('should etiquetar estados conocidos', () => {
+    expect(etiquetarEstado('PENDIENTE')).toBe('Pendiente');
+    expect(etiquetarEstado('CARGADO')).toBe('Cargado');
+    expect(etiquetarEstado('REVISADO')).toBe('Revisado');
+  });
+
+  it('should devolver el valor crudo when estado desconocido', () => {
+    expect(etiquetarEstado('ARCHIVADO')).toBe('ARCHIVADO');
   });
 });
