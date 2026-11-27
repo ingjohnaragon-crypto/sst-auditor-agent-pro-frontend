@@ -16,6 +16,7 @@ describe("BarraLateralComponent", () => {
           { path: "matriz-riesgos", children: [] },
           { path: "diagnostico", children: [] },
           { path: "archivos", children: [] },
+          { path: "documentos", children: [] },
         ]),
       ],
     }).compileComponents();
@@ -81,5 +82,14 @@ describe("BarraLateralComponent", () => {
 
     expect(archivos?.getAttribute("href")).toBe("/archivos");
     expect(archivos?.textContent).toContain("Archivos");
+  });
+
+  it("should mostrar el acceso a documentos PHVA", () => {
+    const documentos = (fixture.nativeElement as HTMLElement).querySelector(
+      'a[aria-label="Documentos PHVA"]'
+    );
+
+    expect(documentos?.getAttribute("href")).toBe("/documentos");
+    expect(documentos?.textContent).toContain("Documentos");
   });
 });

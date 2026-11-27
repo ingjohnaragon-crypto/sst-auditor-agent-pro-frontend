@@ -1,0 +1,72 @@
+<article
+  class="rounded-panel flex flex-col gap-3 border border-slate-200 bg-white p-4 shadow-sm"
+>
+  <div class="flex items-start justify-between gap-3">
+    <div>
+      <h3 class="text-sm font-black text-slate-900">{{ vista.documento.tipo_nombre }}</h3>
+      <p class="mt-1 text-xs text-slate-500">{{ vista.documento.tipo_codigo }}</p>
+      <p *ngIf="vista.descripcion" class="mt-2 text-xs leading-relaxed text-slate-600">
+        {{ vista.descripcion }}
+      </p>
+    </div>
+    <div class="flex shrink-0 flex-col items-end gap-1">
+      <span
+        class="rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider"
+        [class]="claseEstado()"
+      >
+        {{ etiquetar(vista.documento.estado) }}
+      </span>
+      <span
+        *ngIf="vista.obligatorio"
+        class="text-[10px] font-bold uppercase tracking-wider text-rose-600"
+      >
+        Obligatorio
+      </span>
+    </div>
+  </div>
+
+  <p *ngIf="vista.documento.nombre_original" class="text-xs text-slate-600">
+    Archivo:
+    <span class="font-semibold text-slate-800">{{ vista.documento.nombre_original }}</span>
+    <span *ngIf="vista.documento.fecha_carga" class="text-slate-400">
+      · {{ vista.documento.fecha_carga | date: 'short' }}
+    </span>
+  </p>
+
+  <div class="mt-auto flex flex-wrap gap-2">
+    <input
+      #inputArchivo
+      type="file"
+      class="hidden"
+      accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+      (change)="alCambiarArchivo($event)"
+    />
+    <button
+      *ngIf="puedeEscribir"
+      type="button"
+      class="rounded-control border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold uppercase tracking-wide text-indigo-700 transition hover:bg-indigo-100 disabled:opacity-50"
+      [disabled]="subiendo"
+      (click)="abrirSelector()"
+    >
+      {{ subiendo ? 'Subiendo…' : vista.documento.estado === 'PENDIENTE' ? 'Cargar' : 'Reemplazar' }}
+    </button>
+    <button
+      *ngIf="puedeDescargar"
+      type="button"
+      class="rounded-control border border-slate-200 bg-white px-3 py-2 text-xs font-bold uppercase tracking-wide text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+      [disabled]="descargandoTipoId === tipoId"
+      (click)="descargar()"
+    >
+      {{ descargandoTipoId === tipoId ? 'Descargando…' : 'Descargar' }}
+    </button>
+    <button
+      *ngIf="puedeRevisar"
+      type="button"
+      class="rounded-control border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold uppercase tracking-wide text-emerald-800 transition hover:bg-emerald-100 disabled:opacity-50"
+      [disabled]="revisandoTipoId === tipoId"
+      (click)="marcarRevisado()"
+    >
+      {{ revisandoTipoId === tipoId ? 'Guardando…' : 'Marcar revisado' }}
+    </button>
+  </div>
+</article>
