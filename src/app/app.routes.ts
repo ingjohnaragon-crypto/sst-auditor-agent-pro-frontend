@@ -72,6 +72,13 @@ export const rutasApp: Routes = [
           ),
       },
       {
+        path: "documentos",
+        loadComponent: () =>
+          import("./features/documentos/paginas/pagina-documentos/pagina-documentos.component").then(
+            (modulo) => modulo.PaginaDocumentosComponent
+          ),
+      },
+      {
         path: "ejemplo-sensible",
         component: PaginaEjemploSensibleComponent,
         canActivate: [guardRoles],

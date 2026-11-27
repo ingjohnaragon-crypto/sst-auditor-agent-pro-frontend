@@ -1,0 +1,20 @@
+<p *ngIf="vistas.length === 0" class="rounded-panel border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center text-sm text-slate-500">
+  No hay documentos en esta fase.
+</p>
+
+<div
+  *ngIf="vistas.length > 0"
+  class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+>
+  <app-tarjeta-documento
+    *ngFor="let vista of vistas; trackBy: trackVista"
+    [vista]="vista"
+    [puedeEscribir]="puedeEscribir"
+    [subiendoTipoId]="subiendoTipoId"
+    [descargandoTipoId]="descargandoTipoId"
+    [revisandoTipoId]="revisandoTipoId"
+    (alCargar)="alCargar.emit($event)"
+    (alDescargar)="alDescargar.emit($event)"
+    (alMarcarRevisado)="alMarcarRevisado.emit($event)"
+  />
+</div>
